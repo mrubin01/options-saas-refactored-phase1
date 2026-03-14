@@ -4,6 +4,11 @@
 .env.production
 .env.staging
 .env.development
+*.env
+!.env.example
+!.env.docker.example
+.env*
+frontend/.env.v2
 
 # Secrets
 backend/.env
