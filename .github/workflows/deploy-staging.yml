@@ -1,0 +1,53 @@
+name: Deploy Staging
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare env file
+        run: |
+          cat > staging.env <<EOF
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          DATABASE_URL_ADMIN=${{ secrets.DATABASE_URL_ADMIN }}
+          DATABASE_URL_APP=${{ secrets.DATABASE_URL_APP }}
+          REDIS_URL=${{ secrets.REDIS_URL }}
+          APP_ENV=staging
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
+          ACCESS_TOKEN_EXPIRE_MINUTES=${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+          CORS_ORIGINS=${{ secrets.CORS_ORIGINS }}
+          BACKEND_IMAGE=${{ secrets.BACKEND_IMAGE }}
+          FRONTEND_IMAGE=${{ secrets.FRONTEND_IMAGE }}
+          EOF
+
+      - name: Copy files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "deploy/docker-compose.remote.yml,staging.env"
+          target: "~/options-saas"
+
+      - name: Deploy on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/options-saas
+            mv staging.env .env
+            docker compose -f deploy/docker-compose.remote.yml pull
+            docker compose -f deploy/docker-compose.remote.yml up -d

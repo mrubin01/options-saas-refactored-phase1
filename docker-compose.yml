@@ -1,0 +1,70 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: options-saas-db
+    environment:
+      POSTGRES_DB: options_saas
+      POSTGRES_USER: options_user
+      POSTGRES_PASSWORD: options_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U options_user -d options_saas"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: options-saas-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+    container_name: options-saas-backend
+    environment:
+      ENVIRONMENT: docker
+      SECRET_KEY: change-me-before-production
+      DATABASE_URL_ADMIN: postgresql+psycopg://options_user:options_password@db:5432/options_saas
+      DATABASE_URL_APP: postgresql+psycopg://options_user:options_password@db:5432/options_saas
+      REDIS_URL: redis://redis:6379/0
+      CORS_ORIGINS: http://localhost:4173,http://127.0.0.1:4173,http://localhost:5173,http://127.0.0.1:5173
+      SENTRY_DSN: ""
+      SENTRY_TRACES_SAMPLE_RATE: 0.0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./shared:/shared
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8000
+        VITE_API_VERSION: v1
+    container_name: options-saas-frontend
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "4173:80"
+
+volumes:
+  postgres_data:
+  redis_data:
