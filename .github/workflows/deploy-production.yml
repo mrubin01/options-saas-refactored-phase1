@@ -31,7 +31,7 @@ jobs:
           FRONTEND_IMAGE=${{ secrets.FRONTEND_IMAGE }}
           EOF
 
-            - name: Copy deploy compose file
+      - name: Copy deploy compose file
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -61,9 +61,8 @@ jobs:
               mv ~/options-saas/docker-compose.remote.yml ~/options-saas/deploy/docker-compose.remote.yml
             fi
             cd ~/options-saas
-            mv productio.env .env
+            mv production.env .env
             ls -la
             ls -la deploy || true
             docker compose -f deploy/docker-compose.remote.yml pull
             docker compose -f deploy/docker-compose.remote.yml up -d
-            
