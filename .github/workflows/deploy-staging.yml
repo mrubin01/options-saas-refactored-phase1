@@ -31,7 +31,7 @@ jobs:
           FRONTEND_IMAGE=${{ secrets.FRONTEND_IMAGE }}
           EOF
 
-            - name: Copy deploy compose file
+      - name: Copy deploy compose file
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
