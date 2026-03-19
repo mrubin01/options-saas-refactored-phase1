@@ -101,8 +101,8 @@ jobs:
             FRONTEND_IMAGE=${{ secrets.FRONTEND_IMAGE }}
             EOF
 
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
+
             cd ~/options-saas
-            ls -la
-            ls -la deploy
             docker compose --env-file ~/options-saas/.env -f deploy/docker-compose.remote.yml pull
             docker compose --env-file ~/options-saas/.env -f deploy/docker-compose.remote.yml up -d
