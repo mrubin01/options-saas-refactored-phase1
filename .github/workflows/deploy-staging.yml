@@ -104,5 +104,5 @@ jobs:
             cd ~/options-saas
             ls -la
             ls -la deploy
-            docker compose -f deploy/docker-compose.remote.yml pull
-            docker compose -f deploy/docker-compose.remote.yml up -d
+            docker compose --env-file ~/options-saas/.env -f deploy/docker-compose.remote.yml pull
+            docker compose --env-file ~/options-saas/.env -f deploy/docker-compose.remote.yml up -d
