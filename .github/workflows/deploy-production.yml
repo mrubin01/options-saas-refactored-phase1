@@ -31,14 +31,23 @@ jobs:
           FRONTEND_IMAGE=${{ secrets.FRONTEND_IMAGE }}
           EOF
 
-      - name: Copy files to server
+            - name: Copy deploy compose file
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "deploy/docker-compose.remote.yml,production.env"
-          target: "~/options-saas"
+          source: "deploy/docker-compose.remote.yml"
+          target: "~/options-saas/"
+
+      - name: Copy production env file
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "production.env"
+          target: "~/options-saas/"
 
       - name: Deploy on server
         uses: appleboy/ssh-action@v1.0.3
@@ -47,8 +56,14 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            mkdir -p ~/options-saas/deploy
+            if [ -f ~/options-saas/docker-compose.remote.yml ]; then
+              mv ~/options-saas/docker-compose.remote.yml ~/options-saas/deploy/docker-compose.remote.yml
+            fi
             cd ~/options-saas
-            mv production.env .env
+            mv productio.env .env
+            ls -la
+            ls -la deploy || true
             docker compose -f deploy/docker-compose.remote.yml pull
             docker compose -f deploy/docker-compose.remote.yml up -d
             
