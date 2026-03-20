@@ -2,6 +2,18 @@ const API_HOST = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 const API_VERSION = import.meta.env.VITE_API_VERSION || "v1";
 const API_URL = `${API_HOST}/${API_VERSION}`;
 
+function getRequestId(): string {
+  if (
+    typeof globalThis !== "undefined" &&
+    globalThis.crypto &&
+    typeof globalThis.crypto.randomUUID === "function"
+  ) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return `req-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 export interface ApiErrorPayload {
   code: string;
   message: string;
@@ -44,7 +56,7 @@ function authHeaders(): Record<string, string> {
 }
 
 function generateRequestId() {
-  return crypto.randomUUID();
+  return getRequestId();
 }
 
 export async function apiFetch<T>(
