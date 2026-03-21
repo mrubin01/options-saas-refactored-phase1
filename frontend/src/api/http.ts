@@ -1,7 +1,3 @@
-const API_HOST = "http://135.181.109.67:8000";
-const API_VERSION = "v1";
-const API_URL = `${API_HOST}/${API_VERSION}`;
-
 function getRequestId(): string {
   if (
     typeof globalThis !== "undefined" &&
@@ -13,6 +9,15 @@ function getRequestId(): string {
 
   return `req-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
+
+if (!import.meta.env.VITE_API_URL) {
+  throw new Error("VITE_API_URL is not defined");
+}
+
+const API_HOST = import.meta.env.VITE_API_URL;
+const API_VERSION = import.meta.env.VITE_API_VERSION || "v1";
+const API_URL = `${API_HOST.replace(/\/$/, "")}/${API_VERSION}`;
+
 
 export interface ApiErrorPayload {
   code: string;

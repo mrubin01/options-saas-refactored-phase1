@@ -49,7 +49,7 @@ jobs:
           provenance: false
           sbom: false
           build-args: |
-            VITE_API_URL=${{ vars.VITE_API_URL || 'http://localhost:8000' }}
+            VITE_API_URL=${{ vars.VITE_API_URL }}
             VITE_API_VERSION=${{ vars.VITE_API_VERSION || 'v1' }}
           tags: |
             ghcr.io/${{ steps.repo.outputs.repo }}/frontend:latest
