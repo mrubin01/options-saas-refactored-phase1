@@ -31,6 +31,8 @@ jobs:
         with:
           context: ./backend
           push: true
+          no-cache: true
+          pull: true
           provenance: false
           sbom: false
           tags: |
@@ -42,6 +44,8 @@ jobs:
         with:
           context: ./frontend
           push: true
+          no-cache: true
+          pull: true
           provenance: false
           sbom: false
           build-args: |
