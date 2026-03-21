@@ -1,4 +1,7 @@
-const API_HOST = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+if (!import.meta.env.VITE_API_URL) {
+  throw new Error("VITE_API_URL is not defined");
+}
+const API_HOST = import.meta.env.VITE_API_URL;
 const API_VERSION = import.meta.env.VITE_API_VERSION || "v1";
 const API_URL = `${API_HOST}/${API_VERSION}`;
 
