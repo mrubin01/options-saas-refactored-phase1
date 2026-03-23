@@ -25,6 +25,16 @@ class Settings(BaseSettings):
     # --- redis ---
     REDIS_URL: str = "redis://localhost:6379/0"
 
+    # --- refresh token ---
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 14
+    REFRESH_COOKIE_NAME: str = "refresh_token"
+    REFRESH_COOKIE_SECURE: bool = False  # for local, True in prod
+    REFRESH_COOKIE_SAMESITE: str = "lax"
+    REFRESH_COOKIE_DOMAIN: str | None = None
+    REFRESH_COOKIE_PATH: str = "/v1/auth"
+    FRONTEND_URL: str = "http://localhost:5173"
+
     
 
     class Config:  # type: ignore
