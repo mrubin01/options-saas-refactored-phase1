@@ -58,7 +58,11 @@ def clear_refresh_cookie(response: Response) -> None:
 @router.post("/register", response_model=ApiResponse[UserOut])
 @auth_limiter.limit(REGISTER_LIMIT)
 async def register(request: Request, user_in: UserCreate, db: Session = Depends(get_db)):
+    print("REGISTER ATTEMPT EMAIL:", repr(user_in.email))
+
     existing_user = db.query(User).filter(User.email == user_in.email).first()
+    print("REGISTER EXISTING USER:", repr(existing_user.email) if existing_user else None)
+
     if existing_user:
         raise AppException(
             code=ErrorCode.EMAIL_EXISTS,

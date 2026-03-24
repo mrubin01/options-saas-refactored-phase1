@@ -1,4 +1,5 @@
 from pydantic import BaseSettings
+from typing import Literal
 
 
 class Settings(BaseSettings):
@@ -13,7 +14,7 @@ class Settings(BaseSettings):
 
     REFRESH_COOKIE_NAME: str = "refresh_token"
     REFRESH_COOKIE_SECURE: bool = False
-    REFRESH_COOKIE_SAMESITE: str = "lax"
+    REFRESH_COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"
     REFRESH_COOKIE_DOMAIN: str | None = None
     REFRESH_COOKIE_PATH: str = "/v1/auth"
 
