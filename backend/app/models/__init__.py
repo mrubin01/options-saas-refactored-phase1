@@ -7,3 +7,4 @@ from app.models.trend import Trend
 from app.models.sector import Sector
 from app.models.industry import Industry
 from app.models.user import User
+from app.models.refresh_session import RefreshSession

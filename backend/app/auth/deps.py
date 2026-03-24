@@ -1,26 +1,23 @@
-from fastapi import Depends, HTTPException, status, Request
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import jwt, JWTError, ExpiredSignatureError
+from typing import Optional
+
+from fastapi import Depends, HTTPException, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import ExpiredSignatureError, JWTError
 from sqlalchemy.orm import Session
+
+from app.auth.jwt import decode_token, get_token_subject, get_token_type
+from app.core.config import settings
 from app.db.database import get_db
 from app.models.user import User
-from typing import Optional
-from app.core.config import settings
-
-# oauth2_scheme = OAuth2PasswordBearer(
-#     tokenUrl="auth/login",
-#     auto_error=False
-# )
 
 bearer_scheme = HTTPBearer(auto_error=False)
+
 
 async def get_current_user(
     request: Request,
     token: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> Optional[User]:
-
-    # Allow browser preflight
     if request.method == "OPTIONS":
         return None
 
@@ -32,16 +29,22 @@ async def get_current_user(
         )
 
     try:
-        payload = jwt.decode(
-            token.credentials,
-            settings.SECRET_KEY,
-            algorithms=[settings.ALGORITHM],
-        )
-        user_id = payload.get("sub")
+        payload = decode_token(token.credentials)
+
+        token_type = get_token_type(payload)
+        if token_type != "access":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token type",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        user_id = get_token_subject(payload)
         if user_id is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token",
+                headers={"WWW-Authenticate": "Bearer"},
             )
 
     except ExpiredSignatureError:
@@ -50,7 +53,6 @@ async def get_current_user(
             detail="Token expired",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -66,5 +68,3 @@ async def get_current_user(
         )
 
     return user
-
-

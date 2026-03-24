@@ -1,8 +1,10 @@
 from pydantic import BaseModel, EmailStr, Field
 
+
 class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=64)
+
 
 class UserRead(BaseModel):
     id: int
@@ -11,6 +13,7 @@ class UserRead(BaseModel):
     class Config:
         orm_mode = True
 
+
 class UserOut(BaseModel):
     id: int
     email: str
@@ -18,7 +21,12 @@ class UserOut(BaseModel):
     class Config:
         orm_mode = True
 
-class LoginResponseData(BaseModel):
+
+class AuthSessionData(BaseModel):
     access_token: str
     token_type: str
     user: UserOut
+
+
+class LogoutResponseData(BaseModel):
+    message: str
