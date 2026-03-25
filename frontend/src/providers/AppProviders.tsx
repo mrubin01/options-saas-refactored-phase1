@@ -20,9 +20,9 @@ const queryClient = new QueryClient({
 export default function AppProviders({ children }: PropsWithChildren) {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <BrowserRouter>{children}</BrowserRouter>
-      </AuthProvider>
+      <BrowserRouter>
+        <AuthProvider>{children}</AuthProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }

@@ -3,29 +3,40 @@ import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { getApiErrorMessage } from "../api/errors";
 
+type LocationState = {
+  from?: string;
+};
+
 export default function LoginPage() {
-  const { login, token } = useAuth();
+  const { login, token, isInitializing } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const state = (location.state as LocationState | null) ?? null;
+  const redirectTo = state?.from || "/covered-calls";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const expired = useMemo(() => new URLSearchParams(location.search).get("expired") === "1", [location.search]);
+  const expired = useMemo(
+    () => new URLSearchParams(location.search).get("expired") === "1",
+    [location.search]
+  );
 
-  if (token) {
-    return <Navigate to="/covered-calls" replace />;
+  if (!isInitializing && token) {
+    return <Navigate to={redirectTo} replace />;
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setIsSubmitting(true);
+
     try {
       await login(email, password);
-      navigate("/covered-calls", { replace: true });
+      navigate(redirectTo, { replace: true });
     } catch (err) {
       setError(getApiErrorMessage(err, "Unable to log in."));
     } finally {

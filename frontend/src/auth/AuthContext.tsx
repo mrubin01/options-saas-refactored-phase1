@@ -1,75 +1,96 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { login as apiLogin, fetchMe } from "../api/auth";
-
-type User = {
-  id: number;
-  email: string;
-};
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import {
+  login as apiLogin,
+  logout as apiLogout,
+  refreshSession,
+  type AuthUser,
+} from "../api/auth";
+import { clearAccessToken, getAccessToken, setAccessToken } from "./tokenStore";
 
 type AuthContextType = {
   token: string | null;
-  user: User | null;
+  user: AuthUser | null;
   isInitializing: boolean;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 };
+
+type BootstrapResult =
+  | { session: { access_token: string; user: AuthUser } }
+  | { session: null };
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [token, setToken] = useState<string | null>(localStorage.getItem("access_token"));
-  const [user, setUser] = useState<User | null>(null);
+  const [token, setTokenState] = useState<string | null>(getAccessToken());
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
 
+  const bootstrapPromiseRef = useRef<Promise<BootstrapResult> | null>(null);
+
   useEffect(() => {
-    let cancelled = false;
+    let mounted = true;
 
-    async function hydrateUser() {
-      if (!token) {
-        if (!cancelled) {
-          setUser(null);
-          setIsInitializing(false);
+    if (!bootstrapPromiseRef.current) {
+      bootstrapPromiseRef.current = (async (): Promise<BootstrapResult> => {
+        try {
+          const session = await refreshSession();
+          return {
+            session: {
+              access_token: session.access_token,
+              user: session.user,
+            },
+          };
+        } catch {
+          return { session: null };
         }
-        return;
-      }
-
-      try {
-        const me = await fetchMe();
-        if (!cancelled) {
-          setUser(me);
-        }
-      } catch {
-        localStorage.removeItem("access_token");
-        if (!cancelled) {
-          setToken(null);
-          setUser(null);
-        }
-      } finally {
-        if (!cancelled) {
-          setIsInitializing(false);
-        }
-      }
+      })();
     }
 
-    hydrateUser();
+    bootstrapPromiseRef.current
+      .then((result) => {
+        if (!mounted) return;
+
+        if (result.session) {
+          setAccessToken(result.session.access_token);
+          setTokenState(result.session.access_token);
+          setUser(result.session.user);
+        } else {
+          clearAccessToken();
+          setTokenState(null);
+          setUser(null);
+        }
+      })
+      .finally(() => {
+        if (mounted) {
+          setIsInitializing(false);
+        }
+      });
+
     return () => {
-      cancelled = true;
+      mounted = false;
     };
-  }, [token]);
+  }, []);
 
   async function login(email: string, password: string) {
     const data = await apiLogin(email, password);
-    localStorage.setItem("access_token", data.access_token);
-    setToken(data.access_token);
+    setAccessToken(data.access_token);
+    setTokenState(data.access_token);
     setUser(data.user);
     setIsInitializing(false);
   }
 
-  function logout() {
-    localStorage.removeItem("access_token");
-    setToken(null);
-    setUser(null);
-    setIsInitializing(false);
+  async function logout() {
+    try {
+      await apiLogout();
+    } catch {
+      // ignore logout API failures; still clear local state
+    } finally {
+      clearAccessToken();
+      setTokenState(null);
+      setUser(null);
+      setIsInitializing(false);
+    }
   }
 
   return (
@@ -81,6 +102,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("AuthContext missing");
+  if (!ctx) {
+    throw new Error("AuthContext missing");
+  }
   return ctx;
 }
