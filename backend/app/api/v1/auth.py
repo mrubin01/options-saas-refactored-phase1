@@ -53,7 +53,7 @@ def log_email_link(purpose: str, email: str, link: str) -> None:
             "link": link,
         },
     )
-    
+
 
 def set_refresh_cookie(response: Response, refresh_token: str) -> None:
     max_age = settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
@@ -98,6 +98,15 @@ async def register(request: Request, user_in: UserCreate, db: Session = Depends(
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    verification_token = create_one_time_token(
+        db,
+        user=user,
+        token_type="verify_email",
+        expires_in_minutes=24 * 60,
+    )
+    verification_link = build_frontend_url(f"/verify-email?token={verification_token}")
+    log_email_link("verify_email", user.email, verification_link)
 
     logger.info("New user registered", extra={"email": user.email})
 
@@ -281,3 +290,131 @@ async def me(
         request=request,
         data=UserOut.from_orm(current_user),
     )
+
+
+@router.post("/forgot-password", response_model=ApiResponse[MessageResponseData])
+async def forgot_password(
+    request: Request,
+    payload: ForgotPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.email == payload.email).first()
+
+    if user:
+        token = create_one_time_token(
+            db,
+            user=user,
+            token_type="reset_password",
+            expires_in_minutes=60,
+        )
+        reset_link = build_frontend_url(f"/reset-password?token={token}")
+        log_email_link("reset_password", user.email, reset_link)
+
+    return ok(
+        request=request,
+        data=MessageResponseData(
+            message="If an account exists for that email, a reset link has been generated."
+        ),
+    )
+
+
+@router.post("/reset-password", response_model=ApiResponse[MessageResponseData])
+async def reset_password(
+    request: Request,
+    payload: ResetPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    token_record = consume_one_time_token(
+        db,
+        raw_token=payload.token,
+        token_type="reset_password",
+    )
+
+    if not token_record:
+        raise AppException(
+            code=ErrorCode.INVALID_RESET_TOKEN,
+            message="Invalid or expired reset token",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    user = db.get(User, token_record.user_id)
+    if not user:
+        raise AppException(
+            code=ErrorCode.USER_NOT_FOUND,
+            message="User not found",
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    user.password_hash = hash_password(payload.new_password)
+    db.add(user)
+    db.commit()
+
+    return ok(
+        request=request,
+        data=MessageResponseData(message="Password reset successfully"),
+    )
+
+
+@router.post("/verify-email", response_model=ApiResponse[MessageResponseData])
+async def verify_email(
+    request: Request,
+    payload: VerifyEmailRequest,
+    db: Session = Depends(get_db),
+):
+    token_record = consume_one_time_token(
+        db,
+        raw_token=payload.token,
+        token_type="verify_email",
+    )
+
+    if not token_record:
+        raise AppException(
+            code=ErrorCode.INVALID_VERIFICATION_TOKEN,
+            message="Invalid or expired verification token",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    user = db.get(User, token_record.user_id)
+    if not user:
+        raise AppException(
+            code=ErrorCode.USER_NOT_FOUND,
+            message="User not found",
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    user.is_email_verified = True
+    user.email_verified_at = datetime.now(timezone.utc)
+    db.add(user)
+    db.commit()
+
+    return ok(
+        request=request,
+        data=MessageResponseData(message="Email verified successfully"),
+    )
+
+
+@router.post("/resend-verification", response_model=ApiResponse[MessageResponseData])
+async def resend_verification(
+    request: Request,
+    payload: ForgotPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.email == payload.email).first()
+
+    if user and not user.is_email_verified:
+        token = create_one_time_token(
+            db,
+            user=user,
+            token_type="verify_email",
+            expires_in_minutes=24 * 60,
+        )
+        verification_link = build_frontend_url(f"/verify-email?token={token}")
+        log_email_link("verify_email_resend", user.email, verification_link)
+
+    return ok(
+        request=request,
+        data=MessageResponseData(
+            message="If the account exists and is not yet verified, a verification link has been generated."
+        ),
+    )
+
