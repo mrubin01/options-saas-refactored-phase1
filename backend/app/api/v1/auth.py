@@ -27,10 +27,33 @@ from app.services.auth_sessions import (
     revoke_refresh_session,
     rotate_refresh_session,
 )
+from app.services.auth_tokens import create_one_time_token, consume_one_time_token
+from app.schemas.user import (
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
+    VerifyEmailRequest,
+    MessageResponseData,
+)
 
 logger = get_logger(__name__)
 router = APIRouter(tags=["auth"])
 
+
+def build_frontend_url(path: str) -> str:
+    base = getattr(settings, "FRONTEND_URL", "http://localhost:5173").rstrip("/")
+    return f"{base}{path}"
+
+
+def log_email_link(purpose: str, email: str, link: str) -> None:
+    logger.info(
+        "AUTH_EMAIL_LINK",
+        extra={
+            "purpose": purpose,
+            "email": email,
+            "link": link,
+        },
+    )
+    
 
 def set_refresh_cookie(response: Response, refresh_token: str) -> None:
     max_age = settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
