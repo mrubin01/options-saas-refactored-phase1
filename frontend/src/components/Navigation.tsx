@@ -13,6 +13,7 @@ export default function Navigation() {
           <Link to="/covered-calls">Covered Calls</Link>
           <Link to="/put-options">Put Options</Link>
           <Link to="/spread-options">Spread Options</Link>
+          <Link to="/account">Account</Link>
         </div>
 
         <div className="flex items-center gap-4 text-sm">
