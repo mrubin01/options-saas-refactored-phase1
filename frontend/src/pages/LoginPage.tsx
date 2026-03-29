@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { getApiErrorMessage } from "../api/errors";
 
@@ -71,6 +71,13 @@ export default function LoginPage() {
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Signing in…" : "Login"}
         </button>
+
+        <p>
+          <Link to="/forgot-password">Forgot password?</Link>
+        </p>
+        <p>
+          Don&apos;t have an account? <Link to="/register">Register</Link>
+        </p>
 
         {error && <p style={{ color: "red" }}>{error}</p>}
       </form>
