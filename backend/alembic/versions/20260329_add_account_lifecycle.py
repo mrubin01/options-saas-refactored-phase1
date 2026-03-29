@@ -1,7 +1,7 @@
 """add account lifecycle tables
 
 Revision ID: add_account_lifecycle_001
-Revises: 20260323_add_refresh_sessions.py
+Revises: 20260323_add_refresh_sessions
 Create Date: 2026-03-29
 """
 
