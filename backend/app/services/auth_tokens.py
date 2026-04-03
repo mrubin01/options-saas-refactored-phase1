@@ -12,6 +12,25 @@ def _hash_token(raw_token: str) -> str:
     return hashlib.sha256(raw_token.encode("utf-8")).hexdigest()
 
 
+def invalidate_existing_tokens(db: Session, *, user_id: int, token_type: str) -> None:
+    existing_tokens = (
+        db.query(AuthToken)
+        .filter(
+            AuthToken.user_id == user_id,
+            AuthToken.token_type == token_type,
+            AuthToken.used_at.is_(None),
+        )
+        .all()
+    )
+
+    now = datetime.now(timezone.utc)
+    for token in existing_tokens:
+        token.used_at = now
+        db.add(token)
+
+    db.commit()
+
+
 def create_one_time_token(
     db: Session,
     *,
@@ -19,6 +38,8 @@ def create_one_time_token(
     token_type: str,
     expires_in_minutes: int,
 ) -> str:
+    invalidate_existing_tokens(db, user_id=user.id, token_type=token_type)
+
     raw_token = secrets.token_urlsafe(48)
     token_hash = _hash_token(raw_token)
     expires_at = datetime.now(timezone.utc) + timedelta(minutes=expires_in_minutes)
