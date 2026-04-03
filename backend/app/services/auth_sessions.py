@@ -5,7 +5,6 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from app.auth.jwt import create_refresh_token, decode_token, get_token_jti, get_token_subject
-from app.core.config import settings
 from app.models.refresh_session import RefreshSession
 from app.models.user import User
 
@@ -56,11 +55,49 @@ def is_refresh_session_active(session: RefreshSession) -> bool:
 
 
 def revoke_refresh_session(session: RefreshSession, db: Session) -> None:
-    session.revoked_at = datetime.now(timezone.utc)
-    db.add(session)
+    if session.revoked_at is None:
+        session.revoked_at = datetime.now(timezone.utc)
+        db.add(session)
+        db.commit()
+
+
+def revoke_all_refresh_sessions_for_user(db: Session, user_id: int) -> None:
+    now = datetime.now(timezone.utc)
+
+    sessions = (
+        db.query(RefreshSession)
+        .filter(
+            RefreshSession.user_id == user_id,
+            RefreshSession.revoked_at.is_(None),
+        )
+        .all()
+    )
+
+    for session in sessions:
+        session.revoked_at = now
+        db.add(session)
+
     db.commit()
 
 
 def rotate_refresh_session(db: Session, current_session: RefreshSession, user: User) -> tuple[str, RefreshSession]:
     revoke_refresh_session(current_session, db)
     return create_refresh_session(db, user)
+
+
+def cleanup_expired_refresh_sessions(db: Session) -> int:
+    now = datetime.now(timezone.utc)
+
+    expired_sessions = (
+        db.query(RefreshSession)
+        .filter(RefreshSession.expires_at <= now)
+        .all()
+    )
+
+    count = 0
+    for session in expired_sessions:
+        db.delete(session)
+        count += 1
+
+    db.commit()
+    return count
