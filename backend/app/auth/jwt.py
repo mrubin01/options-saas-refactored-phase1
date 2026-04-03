@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 from uuid import uuid4
 
-from jose import JWTError, jwt
+from jose import jwt
 
 from app.core.config import settings
 
@@ -53,9 +53,6 @@ def create_refresh_token(data: dict[str, Any]) -> str:
 
 
 def decode_token(token: str) -> dict[str, Any]:
-    if not settings.SECRET_KEY:
-        raise RuntimeError("SECRET_KEY is not configured")
-
     return jwt.decode(
         token,
         settings.SECRET_KEY,

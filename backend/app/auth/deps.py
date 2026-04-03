@@ -6,7 +6,6 @@ from jose import ExpiredSignatureError, JWTError
 from sqlalchemy.orm import Session
 
 from app.auth.jwt import decode_token, get_token_subject, get_token_type
-from app.core.config import settings
 from app.db.database import get_db
 from app.models.user import User
 
@@ -31,11 +30,10 @@ async def get_current_user(
     try:
         payload = decode_token(token.credentials)
 
-        token_type = get_token_type(payload)
-        if token_type != "access":
+        if get_token_type(payload) != "access":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token type",
+                detail="Invalid token",
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
@@ -64,7 +62,7 @@ async def get_current_user(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
+            detail="Invalid token",
         )
 
     return user
