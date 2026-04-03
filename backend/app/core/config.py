@@ -1,12 +1,12 @@
-from pydantic import BaseSettings
 from typing import Literal
+from pydantic import BaseSettings, validator
 
 
 class Settings(BaseSettings):
-    ENVIRONMENT: str = "local"
+    ENVIRONMENT: Literal["local", "development", "staging", "production"] = "local"
 
     # --- security ---
-    SECRET_KEY: str = "9f7b28c1937bd96b06e69077040854d42959ae7fbc785dd69a6b2dc004bcb30d"
+    SECRET_KEY: str = "change-me-in-env"
     ALGORITHM: str = "HS256"
 
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
@@ -18,12 +18,12 @@ class Settings(BaseSettings):
     REFRESH_COOKIE_DOMAIN: str | None = None
     REFRESH_COOKIE_PATH: str = "/v1/auth"
 
+    FRONTEND_URL: str = "http://localhost:5173"
+
     # --- database ---
-    # Admin (migrations, seeding)  
-    DATABASE_URL_ADMIN: str = "postgresql+psycopg://options_admin:strongpsw123@localhost:5432/options_saas"
-    # App runtime (read-only)
-    DATABASE_URL_APP: str = "postgresql+psycopg://options_app:app_psw_987@localhost:5432/options_saas"
-    
+    DATABASE_URL_ADMIN: str = "postgresql+psycopg://options_admin:psw123@localhost:5432/options_saas"
+    DATABASE_URL_APP: str = "postgresql+psycopg://options_app:psw_987@localhost:5432/options_saas"
+
     # --- cors ---
     CORS_ORIGINS: str = (
         "http://localhost:5173,"
@@ -32,18 +32,46 @@ class Settings(BaseSettings):
         "http://127.0.0.1:4173"
     )
 
-    # --- sentry (optional) ---
+    # --- sentry ---
     SENTRY_DSN: str | None = None
     SENTRY_TRACES_SAMPLE_RATE: float = 0.0
 
     # --- redis ---
     REDIS_URL: str = "redis://localhost:6379/0"
 
-    
+    # --- one-time token expiry ---
+    RESET_PASSWORD_TOKEN_EXPIRE_MINUTES: int = 60
+    VERIFY_EMAIL_TOKEN_EXPIRE_MINUTES: int = 24 * 60
+
     class Config:  # type: ignore
         env_file = ".env"
         case_sensitive = True
 
+    @property
+    def cors_origins_list(self) -> list[str]:
+        return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
+
+    @validator("SECRET_KEY")
+    def validate_secret_key(cls, value: str, values: dict) -> str:
+        env = values.get("ENVIRONMENT", "local")
+        if env in {"staging", "production"}:
+            if value == "change-me-in-env" or len(value) < 32:
+                raise ValueError("SECRET_KEY must be set to a strong value outside local development")
+        return value
+
+    @validator("REFRESH_COOKIE_SECURE")
+    def validate_secure_cookie_for_non_local(cls, value: bool, values: dict) -> bool:
+        env = values.get("ENVIRONMENT", "local")
+        if env in {"staging", "production"} and value is not True:
+            raise ValueError("REFRESH_COOKIE_SECURE must be true in staging/production")
+        return value
+
+    @validator("REFRESH_COOKIE_SAMESITE")
+    def validate_samesite_secure_combo(cls, value: str, values: dict) -> str:
+        secure = values.get("REFRESH_COOKIE_SECURE", False)
+        if value == "none" and not secure:
+            raise ValueError('REFRESH_COOKIE_SAMESITE="none" requires REFRESH_COOKIE_SECURE=true')
+        return value
+
 
 settings = Settings()
-
