@@ -34,9 +34,33 @@ from app.schemas.user import (
     VerifyEmailRequest,
     MessageResponseData,
 )
+from app.core.security.cookies import clear_refresh_cookie, set_refresh_cookie
+from app.core.security.rate_policies import (
+    FORGOT_PASSWORD_LIMIT,
+    LOGIN_LIMIT,
+    LOGOUT_LIMIT,
+    ME_LIMIT,
+    REFRESH_LIMIT,
+    REGISTER_LIMIT,
+    RESEND_VERIFICATION_LIMIT,
+    RESET_PASSWORD_LIMIT,
+    VERIFY_EMAIL_LIMIT,
+)
+from app.services.auth_sessions import (
+    create_refresh_session,
+    get_refresh_session_by_token,
+    is_refresh_session_active,
+    revoke_all_refresh_sessions_for_user,
+    revoke_refresh_session,
+    rotate_refresh_session,
+)
 
 logger = get_logger(__name__)
 router = APIRouter(tags=["auth"])
+
+
+def normalize_email(email: str) -> str:
+    return email.strip().lower()
 
 
 def build_frontend_url(path: str) -> str:
@@ -55,35 +79,12 @@ def log_email_link(purpose: str, email: str, link: str) -> None:
     )
 
 
-def set_refresh_cookie(response: Response, refresh_token: str) -> None:
-    max_age = settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
-
-    response.set_cookie(
-        key=settings.REFRESH_COOKIE_NAME,
-        value=refresh_token,
-        httponly=True,
-        secure=settings.REFRESH_COOKIE_SECURE,
-        samesite=settings.REFRESH_COOKIE_SAMESITE,
-        domain=settings.REFRESH_COOKIE_DOMAIN,
-        path=settings.REFRESH_COOKIE_PATH,
-        max_age=max_age,
-    )
-
-
-def clear_refresh_cookie(response: Response) -> None:
-    response.delete_cookie(
-        key=settings.REFRESH_COOKIE_NAME,
-        domain=settings.REFRESH_COOKIE_DOMAIN,
-        path=settings.REFRESH_COOKIE_PATH,
-    )
-
-
 @router.post("/register", response_model=ApiResponse[UserOut])
 @auth_limiter.limit(REGISTER_LIMIT)
 async def register(request: Request, user_in: UserCreate, db: Session = Depends(get_db)):
+    normalized_email = normalize_email(user_in.email)
 
-    existing_user = db.query(User).filter(User.email == user_in.email).first()
-
+    existing_user = db.query(User).filter(User.email == normalized_email).first()
     if existing_user:
         raise AppException(
             code=ErrorCode.EMAIL_EXISTS,
@@ -92,7 +93,7 @@ async def register(request: Request, user_in: UserCreate, db: Session = Depends(
         )
 
     user = User(
-        email=user_in.email,
+        email=normalized_email,
         password_hash=hash_password(user_in.password),
     )
     db.add(user)
@@ -103,7 +104,7 @@ async def register(request: Request, user_in: UserCreate, db: Session = Depends(
         db,
         user=user,
         token_type="verify_email",
-        expires_in_minutes=24 * 60,
+        expires_in_minutes=settings.VERIFY_EMAIL_TOKEN_EXPIRE_MINUTES,
     )
     verification_link = build_frontend_url(f"/verify-email?token={verification_token}")
     log_email_link("verify_email", user.email, verification_link)
@@ -125,18 +126,19 @@ async def login(
     db: Session = Depends(get_db),
 ):
     ip = get_client_ip(request)
+    normalized_email = normalize_email(form_data.username)
 
     logger.info(
         "AUTH_LOGIN_ATTEMPT",
-        extra={"email": form_data.username, "ip": ip},
+        extra={"email": normalized_email, "ip": ip},
     )
 
-    user = db.query(User).filter(User.email == form_data.username).first()
+    user = db.query(User).filter(User.email == normalized_email).first()
 
     if not user or not verify_password(form_data.password, user.password_hash):
         logger.warning(
             "AUTH_LOGIN_FAILED",
-            extra={"email": form_data.username, "ip": ip},
+            extra={"email": normalized_email, "ip": ip},
         )
         raise AppException(
             code=ErrorCode.INVALID_CREDENTIALS,
@@ -165,6 +167,7 @@ async def login(
 
 
 @router.post("/refresh", response_model=ApiResponse[AuthSessionData])
+@auth_limiter.limit(REFRESH_LIMIT)
 async def refresh(
     request: Request,
     response: Response,
@@ -260,6 +263,7 @@ async def refresh(
 
 
 @router.post("/logout", response_model=ApiResponse[LogoutResponseData])
+@auth_limiter.limit(LOGOUT_LIMIT)
 async def logout(
     request: Request,
     response: Response,
@@ -293,19 +297,21 @@ async def me(
 
 
 @router.post("/forgot-password", response_model=ApiResponse[MessageResponseData])
+@auth_limiter.limit(FORGOT_PASSWORD_LIMIT)
 async def forgot_password(
     request: Request,
     payload: ForgotPasswordRequest,
     db: Session = Depends(get_db),
 ):
-    user = db.query(User).filter(User.email == payload.email).first()
+    normalized_email = normalize_email(payload.email)
+    user = db.query(User).filter(User.email == normalized_email).first()
 
     if user:
         token = create_one_time_token(
             db,
             user=user,
             token_type="reset_password",
-            expires_in_minutes=60,
+            expires_in_minutes=settings.RESET_PASSWORD_TOKEN_EXPIRE_MINUTES,
         )
         reset_link = build_frontend_url(f"/reset-password?token={token}")
         log_email_link("reset_password", user.email, reset_link)
@@ -319,6 +325,7 @@ async def forgot_password(
 
 
 @router.post("/reset-password", response_model=ApiResponse[MessageResponseData])
+@auth_limiter.limit(RESET_PASSWORD_LIMIT)
 async def reset_password(
     request: Request,
     payload: ResetPasswordRequest,
@@ -349,6 +356,8 @@ async def reset_password(
     db.add(user)
     db.commit()
 
+    revoke_all_refresh_sessions_for_user(db, user.id)
+
     return ok(
         request=request,
         data=MessageResponseData(message="Password reset successfully"),
@@ -356,6 +365,7 @@ async def reset_password(
 
 
 @router.post("/verify-email", response_model=ApiResponse[MessageResponseData])
+@auth_limiter.limit(VERIFY_EMAIL_LIMIT)
 async def verify_email(
     request: Request,
     payload: VerifyEmailRequest,
@@ -394,19 +404,21 @@ async def verify_email(
 
 
 @router.post("/resend-verification", response_model=ApiResponse[MessageResponseData])
+@auth_limiter.limit(RESEND_VERIFICATION_LIMIT)
 async def resend_verification(
     request: Request,
     payload: ForgotPasswordRequest,
     db: Session = Depends(get_db),
 ):
-    user = db.query(User).filter(User.email == payload.email).first()
+    normalized_email = normalize_email(payload.email)
+    user = db.query(User).filter(User.email == normalized_email).first()
 
     if user and not user.is_email_verified:
         token = create_one_time_token(
             db,
             user=user,
             token_type="verify_email",
-            expires_in_minutes=24 * 60,
+            expires_in_minutes=settings.VERIFY_EMAIL_TOKEN_EXPIRE_MINUTES,
         )
         verification_link = build_frontend_url(f"/verify-email?token={token}")
         log_email_link("verify_email_resend", user.email, verification_link)
