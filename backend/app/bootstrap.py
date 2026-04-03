@@ -25,9 +25,6 @@ def register_exception_handlers(app: FastAPI) -> None:
 
 
 def register_middleware(app: FastAPI) -> None:
-    cors_origins = settings.CORS_ORIGINS
-    allowed_origins = [o.strip() for o in cors_origins.split(",") if o.strip()]
-
     app.add_middleware(GZipMiddleware, minimum_size=1000)
     app.add_middleware(NoCacheAuthMiddleware)
     app.add_middleware(DeprecationHeadersMiddleware)
@@ -36,9 +33,9 @@ def register_middleware(app: FastAPI) -> None:
     app.add_middleware(UnwrapExceptionGroupMiddleware)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=allowed_origins,
+        allow_origins=settings.cors_origins_list,
         allow_credentials=True,
-        allow_methods=["*"],
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["*"],
     )
 
