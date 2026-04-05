@@ -3,9 +3,8 @@ from pydantic import BaseSettings, validator
 
 
 class Settings(BaseSettings):
-    ENVIRONMENT: Literal["local", "development", "staging", "production"] = "local"
+    ENVIRONMENT: Literal["local", "development", "docker", "staging", "production"] = "local"
 
-    # --- security ---
     SECRET_KEY: str = "change-me-in-env"
     ALGORITHM: str = "HS256"
 
@@ -18,30 +17,26 @@ class Settings(BaseSettings):
     REFRESH_COOKIE_DOMAIN: str | None = None
     REFRESH_COOKIE_PATH: str = "/v1/auth"
 
-    FRONTEND_URL: str = "http://localhost:5173"
+    FRONTEND_URL: str = "http://localhost:4173"
 
-    # --- database ---
     DATABASE_URL_ADMIN: str = "postgresql+psycopg://options_admin:psw123@localhost:5432/options_saas"
     DATABASE_URL_APP: str = "postgresql+psycopg://options_app:psw_987@localhost:5432/options_saas"
 
-    # --- cors ---
     CORS_ORIGINS: str = (
-        "http://localhost:5173,"
         "http://localhost:4173,"
-        "http://127.0.0.1:5173,"
         "http://127.0.0.1:4173"
     )
 
-    # --- sentry ---
     SENTRY_DSN: str | None = None
     SENTRY_TRACES_SAMPLE_RATE: float = 0.0
 
-    # --- redis ---
     REDIS_URL: str = "redis://localhost:6379/0"
 
-    # --- one-time token expiry ---
     RESET_PASSWORD_TOKEN_EXPIRE_MINUTES: int = 60
     VERIFY_EMAIL_TOKEN_EXPIRE_MINUTES: int = 24 * 60
+
+    BACKEND_PORT: int = 8000
+    RUN_MIGRATIONS: bool = True
 
     class Config:  # type: ignore
         env_file = ".env"
