@@ -10,6 +10,9 @@
 .env*
 frontend/.env.v2
 
+# Cookies
+backend/cookies.*
+
 # Secrets
 backend/.env
 
