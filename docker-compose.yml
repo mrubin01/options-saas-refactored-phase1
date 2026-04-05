@@ -1,13 +1,18 @@
+version: "3.9"
+
+name: ${COMPOSE_PROJECT_NAME:-options-saas}
+
 services:
   db:
     image: postgres:16-alpine
     container_name: ${COMPOSE_PROJECT_NAME:-options-saas}-db
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -19,10 +24,12 @@ services:
   redis:
     image: redis:7-alpine
     container_name: ${COMPOSE_PROJECT_NAME:-options-saas}-redis
+    restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -32,35 +39,67 @@ services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile
     container_name: ${COMPOSE_PROJECT_NAME:-options-saas}-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env.docker
     environment:
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
       DATABASE_URL_ADMIN: ${DATABASE_URL_ADMIN}
       DATABASE_URL_APP: ${DATABASE_URL_APP}
       REDIS_URL: ${REDIS_URL}
-      APP_ENV: ${APP_ENV}
       SECRET_KEY: ${SECRET_KEY}
-      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
-      CORS_ORIGINS: ${CORS_ORIGINS}
+      ALGORITHM: ${ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-15}
+      REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-14}
+      REFRESH_COOKIE_NAME: ${REFRESH_COOKIE_NAME:-refresh_token}
+      REFRESH_COOKIE_SECURE: ${REFRESH_COOKIE_SECURE:-false}
+      REFRESH_COOKIE_SAMESITE: ${REFRESH_COOKIE_SAMESITE:-lax}
+      REFRESH_COOKIE_DOMAIN: ${REFRESH_COOKIE_DOMAIN:-}
+      REFRESH_COOKIE_PATH: ${REFRESH_COOKIE_PATH:-/v1/auth}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:4173}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4173,http://127.0.0.1:4173}
+      RESET_PASSWORD_TOKEN_EXPIRE_MINUTES: ${RESET_PASSWORD_TOKEN_EXPIRE_MINUTES:-60}
+      VERIFY_EMAIL_TOKEN_EXPIRE_MINUTES: ${VERIFY_EMAIL_TOKEN_EXPIRE_MINUTES:-1440}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0.0}
+      BACKEND_PORT: 8000
+      RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
     ports:
-      - "8000:8000"
+      - "${BACKEND_PORT:-8000}:8000"
     volumes:
       - ./shared:/shared
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8000/v1/internal/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
 
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+        VITE_API_VERSION: ${VITE_API_VERSION:-v1}
     container_name: ${COMPOSE_PROJECT_NAME:-options-saas}-frontend
+    restart: unless-stopped
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     ports:
-      - "4173:80"
+      - "${FRONTEND_PORT:-4173}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
 
 volumes:
   postgres_data:
