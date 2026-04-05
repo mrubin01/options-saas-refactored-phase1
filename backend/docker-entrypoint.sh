@@ -1,5 +1,5 @@
 #!/bin/sh
-set -e
+set -eu
 
 echo "Waiting for database and Redis..."
 
@@ -25,41 +25,37 @@ if not redis_url:
     print("REDIS_URL is missing", file=sys.stderr)
     sys.exit(1)
 
-db_ok = False
 for attempt in range(30):
     try:
         conn = psycopg.connect(db_url)
         conn.close()
-        db_ok = True
         print("Database is ready")
         break
-    except Exception as e:
-        print(f"Database not ready yet ({attempt + 1}/30): {e}")
+    except Exception as exc:
+        if attempt == 29:
+            print(f"Database never became ready: {exc}", file=sys.stderr)
+            sys.exit(1)
+        print(f"Database not ready yet ({attempt + 1}/30): {exc}")
         time.sleep(2)
 
-if not db_ok:
-    print("Database never became ready", file=sys.stderr)
-    sys.exit(1)
-
-redis_ok = False
 client = redis.Redis.from_url(redis_url)
 for attempt in range(30):
     try:
         client.ping()
-        redis_ok = True
         print("Redis is ready")
         break
-    except Exception as e:
-        print(f"Redis not ready yet ({attempt + 1}/30): {e}")
+    except Exception as exc:
+        if attempt == 29:
+            print(f"Redis never became ready: {exc}", file=sys.stderr)
+            sys.exit(1)
+        print(f"Redis not ready yet ({attempt + 1}/30): {exc}")
         time.sleep(2)
-
-if not redis_ok:
-    print("Redis never became ready", file=sys.stderr)
-    sys.exit(1)
 PY
 
-echo "Running database migrations..."
-alembic upgrade head
+if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
+  echo "Running database migrations..."
+  alembic upgrade head
+fi
 
 echo "Starting backend..."
-exec uvicorn app.main:app --host 0.0.0.0 --port 8000
+exec uvicorn app.main:app --host 0.0.0.0 --port "${BACKEND_PORT:-8000}"
