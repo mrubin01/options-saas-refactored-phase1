@@ -37,9 +37,16 @@ def test_covered_calls_contract(client, auth_headers):
 
     if data["success"]:
         payload = data["data"]
-        assert "items" in payload
-        assert "limit" in payload
-        assert "offset" in payload
+        assert isinstance(payload, list)
+
+        if payload:
+            row = payload[0]
+            assert "contract" in row
+            assert "ticker" in row
+            assert "exchange" in row
+            assert "expiry_date" in row
+            assert "current_price" in row
+            assert "strike_price" in row
 
 
 def test_put_options_contract(client, auth_headers):
@@ -51,9 +58,16 @@ def test_put_options_contract(client, auth_headers):
 
     if data["success"]:
         payload = data["data"]
-        assert "items" in payload
-        assert "limit" in payload
-        assert "offset" in payload
+        assert isinstance(payload, list)
+
+        if payload:
+            row = payload[0]
+            assert "contract" in row
+            assert "ticker" in row
+            assert "exchange" in row
+            assert "expiry_date" in row
+            assert "current_price" in row
+            assert "strike_price" in row
 
 
 def test_spread_options_contract(client, auth_headers):
@@ -65,9 +79,16 @@ def test_spread_options_contract(client, auth_headers):
 
     if data["success"]:
         payload = data["data"]
-        assert "items" in payload
-        assert "limit" in payload
-        assert "offset" in payload
+        assert isinstance(payload, list)
+
+        if payload:
+            row = payload[0]
+            assert "contract" in row
+            assert "ticker" in row
+            assert "exchange" in row
+            assert "expiry_date" in row
+            assert "current_price" in row
+            assert "strike_price" in row
 
 
 def test_unauthorized_contract(client):
@@ -79,3 +100,4 @@ def test_unauthorized_contract(client):
 
     assert data["success"] is False
     assert data["error"]["code"] is not None
+    

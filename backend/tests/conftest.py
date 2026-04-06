@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -10,34 +11,33 @@ sys.path.insert(0, str(BASE_DIR))
 from app.main import app
 
 
-TEST_EMAIL = "test@example.com"
-TEST_PASSWORD = "testpassword123"
+TEST_PASSWORD = "testpassword123!"
 
 
 @pytest.fixture(scope="session")
 def client():
-    return TestClient(app)
+    with TestClient(app) as test_client:
+        yield test_client
 
 
 @pytest.fixture(scope="session")
 def auth_headers(client: TestClient):
+    test_email = f"test-{uuid4().hex[:12]}@example.com"
+
     register_response = client.post(
         "/v1/auth/register",
         json={
-            "email": TEST_EMAIL,
+            "email": test_email,
             "password": TEST_PASSWORD,
         },
     )
 
-    if register_response.status_code not in (200, 400):
-        raise AssertionError(
-            f"Unexpected register status: {register_response.status_code} {register_response.text}"
-        )
+    assert register_response.status_code == 200, register_response.text
 
     login_response = client.post(
         "/v1/auth/login",
         data={
-            "username": TEST_EMAIL,
+            "username": test_email,
             "password": TEST_PASSWORD,
         },
         headers={"Content-Type": "application/x-www-form-urlencoded"},
@@ -46,9 +46,9 @@ def auth_headers(client: TestClient):
     assert login_response.status_code == 200, login_response.text
 
     payload = login_response.json()
-    assert payload["success"] is True
-    assert payload["data"] is not None
-    assert "access_token" in payload["data"]
+    assert payload["success"] is True, payload
+    assert payload["data"] is not None, payload
+    assert "access_token" in payload["data"], payload
 
     token = payload["data"]["access_token"]
     return {"Authorization": f"Bearer {token}"}
