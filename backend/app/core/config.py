@@ -66,8 +66,8 @@ class Settings(BaseSettings):
     @validator("REFRESH_COOKIE_SECURE")
     def validate_secure_cookie_for_non_local(cls, value: bool, values: dict) -> bool:
         env = values.get("ENVIRONMENT", "local")
-        if env in {"staging", "production"} and value is not True:
-            raise ValueError("REFRESH_COOKIE_SECURE must be true in staging/production")
+        if env == "production" and value is not True:
+            raise ValueError("REFRESH_COOKIE_SECURE must be true in production")
         return value
 
     @validator("REFRESH_COOKIE_SAMESITE")
