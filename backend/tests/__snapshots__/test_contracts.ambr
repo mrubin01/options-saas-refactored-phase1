@@ -3,7 +3,6 @@
   dict({
     'data_is_list': True,
     'error_is_none': True,
-    'has_rows': True,
     'meta': dict({
       'version': 'v1',
     }),
@@ -22,7 +21,6 @@
   dict({
     'data_is_list': True,
     'error_is_none': True,
-    'has_rows': True,
     'meta': dict({
       'version': 'v1',
     }),
@@ -41,7 +39,6 @@
   dict({
     'data_is_list': True,
     'error_is_none': True,
-    'has_rows': True,
     'meta': dict({
       'version': 'v1',
     }),

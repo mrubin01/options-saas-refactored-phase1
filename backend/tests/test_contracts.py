@@ -12,28 +12,23 @@ def normalize_response(payload: dict) -> dict:
     data = payload.get("data")
     normalized["data_is_list"] = isinstance(data, list)
 
-    if isinstance(data, list):
-        normalized["has_rows"] = len(data) > 0
-        if data:
-            row = data[0]
-            normalized["row_keys"] = sorted(
-                [
-                    key
-                    for key in [
-                        "contract",
-                        "ticker",
-                        "exchange",
-                        "expiry_date",
-                        "strike_price",
-                        "current_price",
-                    ]
-                    if key in row
+    if isinstance(data, list) and data:
+        row = data[0]
+        normalized["row_keys"] = sorted(
+            [
+                key
+                for key in [
+                    "contract",
+                    "ticker",
+                    "exchange",
+                    "expiry_date",
+                    "strike_price",
+                    "current_price",
                 ]
-            )
-        else:
-            normalized["row_keys"] = []
+                if key in row
+            ]
+        )
     else:
-        normalized["has_rows"] = False
         normalized["row_keys"] = []
 
     return normalized
