@@ -3,7 +3,9 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    branches:
+      - develop
+      - main
 
 jobs:
   backend:
@@ -11,6 +13,7 @@ jobs:
     defaults:
       run:
         working-directory: backend
+
     steps:
       - uses: actions/checkout@v4
 
@@ -21,17 +24,23 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install -r requirements.txt
 
-      - name: Run tests
+      - name: Lint config import / app startup sanity
         run: |
-          pytest || true
+          python -c "from app.core.config import settings; print(settings.ENVIRONMENT)"
+          python -c "from app.main import app; print(app.title)"
+
+      - name: Run backend tests
+        run: |
+          pytest
 
   frontend:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: frontend
+
     steps:
       - uses: actions/checkout@v4
 
@@ -44,6 +53,39 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
+      - name: Build frontend
+        env:
+          VITE_API_URL: http://localhost:8000
+          VITE_API_VERSION: v1
         run: npm run build
-        
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: false
+          load: false
+          provenance: false
+          sbom: false
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: false
+          load: false
+          provenance: false
+          sbom: false
+          build-args: |
+            VITE_API_URL=http://localhost:8000
+            VITE_API_VERSION=v1
