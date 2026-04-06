@@ -2,6 +2,7 @@
 # real local env files
 .env
 .env.docker
+
 backend/.env
 backend/.env.docker
 frontend/.env
@@ -10,6 +11,11 @@ frontend/.env.development
 frontend/.env.production
 frontend/.env.v2
 
+# local artifacts
+backend/cookies.txt
+backend/logfile
+frontend/dist/
+
 # examples should stay tracked
 !backend/.env.example
 !backend/.env.docker.example
@@ -17,9 +23,6 @@ frontend/.env.v2
 !frontend/.env.docker.example
 !.env.example
 !.env.docker.example
-
-# Cookies
-backend/cookies.*
 
 # Secrets
 backend/.env
