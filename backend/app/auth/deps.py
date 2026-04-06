@@ -1,11 +1,13 @@
 from typing import Optional
 
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Depends, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import ExpiredSignatureError, JWTError
 from sqlalchemy.orm import Session
 
 from app.auth.jwt import decode_token, get_token_subject, get_token_type
+from app.core.error_codes import ErrorCode
+from app.core.exceptions import AppException
 from app.db.database import get_db
 from app.models.user import User
 
@@ -21,48 +23,49 @@ async def get_current_user(
         return None
 
     if token is None:
-        raise HTTPException(
+        raise AppException(
+            code=ErrorCode.UNAUTHORIZED,
+            message="Not authenticated",
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-            headers={"WWW-Authenticate": "Bearer"},
         )
 
     try:
         payload = decode_token(token.credentials)
 
         if get_token_type(payload) != "access":
-            raise HTTPException(
+            raise AppException(
+                code=ErrorCode.UNAUTHORIZED,
+                message="Invalid token",
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token",
-                headers={"WWW-Authenticate": "Bearer"},
             )
 
         user_id = get_token_subject(payload)
         if user_id is None:
-            raise HTTPException(
+            raise AppException(
+                code=ErrorCode.UNAUTHORIZED,
+                message="Invalid token",
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token",
-                headers={"WWW-Authenticate": "Bearer"},
             )
 
     except ExpiredSignatureError:
-        raise HTTPException(
+        raise AppException(
+            code=ErrorCode.UNAUTHORIZED,
+            message="Token expired",
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token expired",
-            headers={"WWW-Authenticate": "Bearer"},
         )
     except JWTError:
-        raise HTTPException(
+        raise AppException(
+            code=ErrorCode.UNAUTHORIZED,
+            message="Invalid token",
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
-            headers={"WWW-Authenticate": "Bearer"},
         )
 
     user = db.get(User, int(user_id))
     if not user:
-        raise HTTPException(
+        raise AppException(
+            code=ErrorCode.UNAUTHORIZED,
+            message="Invalid token",
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
         )
 
     return user

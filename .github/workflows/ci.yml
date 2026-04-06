@@ -10,12 +10,61 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: options_saas_test
+          POSTGRES_USER: options_user
+          POSTGRES_PASSWORD: options_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U options_user -d options_saas_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
     defaults:
       run:
         working-directory: backend
 
+    env:
+      ENVIRONMENT: development
+      SECRET_KEY: test_secret_key_that_is_long_enough_for_ci
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 15
+      REFRESH_TOKEN_EXPIRE_DAYS: 14
+      REFRESH_COOKIE_NAME: refresh_token
+      REFRESH_COOKIE_SECURE: "false"
+      REFRESH_COOKIE_SAMESITE: lax
+      REFRESH_COOKIE_DOMAIN: ""
+      REFRESH_COOKIE_PATH: /v1/auth
+      FRONTEND_URL: http://localhost:4173
+      CORS_ORIGINS: http://localhost:4173,http://127.0.0.1:4173
+      DATABASE_URL_ADMIN: postgresql+psycopg://options_user:options_password@127.0.0.1:5432/options_saas_test
+      DATABASE_URL_APP: postgresql+psycopg://options_user:options_password@127.0.0.1:5432/options_saas_test
+      REDIS_URL: redis://127.0.0.1:6379/0
+      RESET_PASSWORD_TOKEN_EXPIRE_MINUTES: 60
+      VERIFY_EMAIL_TOKEN_EXPIRE_MINUTES: 1440
+      SENTRY_DSN: ""
+      SENTRY_TRACES_SAMPLE_RATE: 0.0
+      BACKEND_PORT: 8000
+      RUN_MIGRATIONS: "false"
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-python@v5
         with:
@@ -25,16 +74,18 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest
+          pip install pytest syrupy
 
-      - name: Lint config import / app startup sanity
+      - name: Run migrations
+        run: alembic upgrade head
+
+      - name: App startup sanity
         run: |
           python -c "from app.core.config import settings; print(settings.ENVIRONMENT)"
           python -c "from app.main import app; print(app.title)"
 
       - name: Run backend tests
-        run: |
-          pytest
+        run: pytest
 
   frontend:
     runs-on: ubuntu-latest
@@ -43,9 +94,9 @@ jobs:
         working-directory: frontend
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: "20"
           cache: "npm"
@@ -65,7 +116,7 @@ jobs:
     needs: [backend, frontend]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
