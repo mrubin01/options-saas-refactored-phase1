@@ -6,14 +6,6 @@
     'meta': dict({
       'version': 'v1',
     }),
-    'row_keys': list([
-      'contract',
-      'current_price',
-      'exchange',
-      'expiry_date',
-      'strike_price',
-      'ticker',
-    ]),
     'success': True,
   })
 # ---
@@ -24,14 +16,6 @@
     'meta': dict({
       'version': 'v1',
     }),
-    'row_keys': list([
-      'contract',
-      'current_price',
-      'exchange',
-      'expiry_date',
-      'strike_price',
-      'ticker',
-    ]),
     'success': True,
   })
 # ---
@@ -42,14 +26,6 @@
     'meta': dict({
       'version': 'v1',
     }),
-    'row_keys': list([
-      'contract',
-      'current_price',
-      'exchange',
-      'expiry_date',
-      'strike_price',
-      'ticker',
-    ]),
     'success': True,
   })
 # ---

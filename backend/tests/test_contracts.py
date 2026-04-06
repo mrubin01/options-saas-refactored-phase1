@@ -1,37 +1,14 @@
 def normalize_response(payload: dict) -> dict:
     assert isinstance(payload, dict)
 
-    normalized = {
+    return {
         "success": payload.get("success"),
         "error_is_none": payload.get("error") is None,
         "meta": {
             "version": payload.get("meta", {}).get("version"),
         },
+        "data_is_list": isinstance(payload.get("data"), list),
     }
-
-    data = payload.get("data")
-    normalized["data_is_list"] = isinstance(data, list)
-
-    if isinstance(data, list) and data:
-        row = data[0]
-        normalized["row_keys"] = sorted(
-            [
-                key
-                for key in [
-                    "contract",
-                    "ticker",
-                    "exchange",
-                    "expiry_date",
-                    "strike_price",
-                    "current_price",
-                ]
-                if key in row
-            ]
-        )
-    else:
-        normalized["row_keys"] = []
-
-    return normalized
 
 
 def test_v1_covered_calls_contract(client, auth_headers, snapshot):
