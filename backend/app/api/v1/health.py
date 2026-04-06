@@ -11,6 +11,10 @@ router = APIRouter(prefix="/internal", tags=["infra"])
 
 @router.get("/health", include_in_schema=False)
 def health():
+    """
+    Infra endpoints intentionally do NOT use ApiResponse envelope.
+    Used for liveness/readiness probes.
+    """
     return {
         "status": "ok",
         "environment": settings.ENVIRONMENT,
@@ -19,6 +23,10 @@ def health():
 
 @router.get("/ready", include_in_schema=False)
 def readiness(response: Response, db: Session = Depends(get_db)):
+    """
+    Infra endpoints intentionally do NOT use ApiResponse envelope.
+    Used for liveness/readiness probes.
+    """
     checks = {
         "database": False,
         "redis": False,

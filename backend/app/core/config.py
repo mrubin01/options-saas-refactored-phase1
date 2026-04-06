@@ -5,6 +5,7 @@ from pydantic import BaseSettings, validator
 class Settings(BaseSettings):
     ENVIRONMENT: Literal["local", "development", "docker", "staging", "production"] = "local"
 
+    # --- security ---
     SECRET_KEY: str = "change-me-in-env"
     ALGORITHM: str = "HS256"
 
@@ -19,22 +20,30 @@ class Settings(BaseSettings):
 
     FRONTEND_URL: str = "http://localhost:4173"
 
-    DATABASE_URL_ADMIN: str = "postgresql+psycopg://options_admin:psw123@localhost:5432/options_saas"
-    DATABASE_URL_APP: str = "postgresql+psycopg://options_app:psw_987@localhost:5432/options_saas"
+    # --- database ---
+    DATABASE_URL_ADMIN: str = "postgresql+psycopg://options_user:change_me_db_password@localhost:5432/options_saas"
+    DATABASE_URL_APP: str = "postgresql+psycopg://options_user:change_me_db_password@localhost:5432/options_saas"
 
+    # --- cors ---
     CORS_ORIGINS: str = (
+        "http://localhost:5173,"
         "http://localhost:4173,"
+        "http://127.0.0.1:5173,"
         "http://127.0.0.1:4173"
     )
 
+    # --- sentry ---
     SENTRY_DSN: str | None = None
     SENTRY_TRACES_SAMPLE_RATE: float = 0.0
 
+    # --- redis ---
     REDIS_URL: str = "redis://localhost:6379/0"
 
+    # --- one-time token expiry ---
     RESET_PASSWORD_TOKEN_EXPIRE_MINUTES: int = 60
     VERIFY_EMAIL_TOKEN_EXPIRE_MINUTES: int = 24 * 60
 
+    # --- runtime ---
     BACKEND_PORT: int = 8000
     RUN_MIGRATIONS: bool = True
 
