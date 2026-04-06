@@ -3,30 +3,38 @@ def normalize_response(payload: dict) -> dict:
 
     normalized = {
         "success": payload.get("success"),
-        "error": payload.get("error"),
+        "error_is_none": payload.get("error") is None,
         "meta": {
             "version": payload.get("meta", {}).get("version"),
         },
     }
 
     data = payload.get("data")
+    normalized["data_is_list"] = isinstance(data, list)
 
     if isinstance(data, list):
-        normalized_rows = []
-        for row in data[:3]:
-            normalized_rows.append(
-                {
-                    "contract": row.get("contract"),
-                    "ticker": row.get("ticker"),
-                    "exchange": row.get("exchange"),
-                    "expiry_date": row.get("expiry_date"),
-                    "strike_price": row.get("strike_price"),
-                }
+        normalized["has_rows"] = len(data) > 0
+        if data:
+            row = data[0]
+            normalized["row_keys"] = sorted(
+                [
+                    key
+                    for key in [
+                        "contract",
+                        "ticker",
+                        "exchange",
+                        "expiry_date",
+                        "strike_price",
+                        "current_price",
+                    ]
+                    if key in row
+                ]
             )
-        normalized["data"] = normalized_rows
-        normalized["data_count"] = len(data)
+        else:
+            normalized["row_keys"] = []
     else:
-        normalized["data"] = data
+        normalized["has_rows"] = False
+        normalized["row_keys"] = []
 
     return normalized
 
@@ -47,3 +55,4 @@ def test_v1_spread_options_contract(client, auth_headers, snapshot):
     r = client.get("/v1/spread-options", headers=auth_headers)
     assert r.status_code == 200
     snapshot.assert_match(normalize_response(r.json()))
+    

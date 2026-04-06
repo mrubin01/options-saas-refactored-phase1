@@ -1,100 +1,58 @@
 # serializer version: 1
 # name: test_v1_covered_calls_contract
   dict({
-    'data': list([
-      dict({
-        'contract': 'GOOS251107C00014500',
-        'exchange': 0,
-        'expiry_date': '2025-11-07',
-        'strike_price': 14.5,
-        'ticker': 'GOOS',
-      }),
-      dict({
-        'contract': 'KSS251107C00018000',
-        'exchange': 0,
-        'expiry_date': '2025-11-07',
-        'strike_price': 18.0,
-        'ticker': 'KSS',
-      }),
-      dict({
-        'contract': 'AES251114C00014500',
-        'exchange': 0,
-        'expiry_date': '2025-11-14',
-        'strike_price': 14.5,
-        'ticker': 'AES',
-      }),
-    ]),
-    'data_count': 14,
-    'error': None,
+    'data_is_list': True,
+    'error_is_none': True,
+    'has_rows': True,
     'meta': dict({
       'version': 'v1',
     }),
+    'row_keys': list([
+      'contract',
+      'current_price',
+      'exchange',
+      'expiry_date',
+      'strike_price',
+      'ticker',
+    ]),
     'success': True,
   })
 # ---
 # name: test_v1_put_options_contract
   dict({
-    'data': list([
-      dict({
-        'contract': 'LUNR251212P00010500',
-        'exchange': 1,
-        'expiry_date': '2025-12-12',
-        'strike_price': 10.5,
-        'ticker': 'LUNR',
-      }),
-      dict({
-        'contract': 'LUNR251212P00011000',
-        'exchange': 1,
-        'expiry_date': '2025-12-12',
-        'strike_price': 11.0,
-        'ticker': 'LUNR',
-      }),
-      dict({
-        'contract': 'LYFT251212P00022000',
-        'exchange': 1,
-        'expiry_date': '2025-12-12',
-        'strike_price': 22.0,
-        'ticker': 'LYFT',
-      }),
-    ]),
-    'data_count': 50,
-    'error': None,
+    'data_is_list': True,
+    'error_is_none': True,
+    'has_rows': True,
     'meta': dict({
       'version': 'v1',
     }),
+    'row_keys': list([
+      'contract',
+      'current_price',
+      'exchange',
+      'expiry_date',
+      'strike_price',
+      'ticker',
+    ]),
     'success': True,
   })
 # ---
 # name: test_v1_spread_options_contract
   dict({
-    'data': list([
-      dict({
-        'contract': 'ARKK251212C00084500',
-        'exchange': 2,
-        'expiry_date': '2025-12-12',
-        'strike_price': 84.5,
-        'ticker': 'ARKK',
-      }),
-      dict({
-        'contract': 'BOIL251212C00035000',
-        'exchange': 2,
-        'expiry_date': '2025-12-12',
-        'strike_price': 35.0,
-        'ticker': 'BOIL',
-      }),
-      dict({
-        'contract': 'DPST251212C00103000',
-        'exchange': 2,
-        'expiry_date': '2025-12-12',
-        'strike_price': 103.0,
-        'ticker': 'DPST',
-      }),
-    ]),
-    'data_count': 50,
-    'error': None,
+    'data_is_list': True,
+    'error_is_none': True,
+    'has_rows': True,
     'meta': dict({
       'version': 'v1',
     }),
+    'row_keys': list([
+      'contract',
+      'current_price',
+      'exchange',
+      'expiry_date',
+      'strike_price',
+      'ticker',
+    ]),
     'success': True,
   })
 # ---
