@@ -12,8 +12,29 @@ function getRequestId(): string {
   return `req-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-const API_HOST = import.meta.env.VITE_API_URL || "http://localhost:8000";
-const API_VERSION = import.meta.env.VITE_API_VERSION || "v1";
+function getApiHost(): string {
+  const envApiUrl = import.meta.env.VITE_API_URL?.trim();
+
+  if (envApiUrl) {
+    return envApiUrl.replace(/\/+$/, "");
+  }
+
+  if (typeof window !== "undefined") {
+    const { protocol, hostname } = window.location;
+    const isLocalHost = hostname === "localhost" || hostname === "127.0.0.1";
+
+    if (isLocalHost) {
+      return "http://localhost:8000";
+    }
+
+    return `${protocol}//${hostname}:8000`;
+  }
+
+  return "http://localhost:8000";
+}
+
+const API_HOST = getApiHost();
+const API_VERSION = import.meta.env.VITE_API_VERSION?.trim() || "v1";
 const API_URL = `${API_HOST.replace(/\/$/, "")}/${API_VERSION}`;
 
 export interface ApiErrorPayload {
