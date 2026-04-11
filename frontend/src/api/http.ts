@@ -33,9 +33,10 @@ function getApiHost(): string {
   return "http://localhost:8000";
 }
 
-const API_HOST = getApiHost();
+const envApiUrl = import.meta.env.VITE_API_URL?.trim();
+const API_HOST = envApiUrl ? envApiUrl.replace(/\/+$/, "") : "";
 const API_VERSION = import.meta.env.VITE_API_VERSION?.trim() || "v1";
-const API_URL = `${API_HOST.replace(/\/$/, "")}/${API_VERSION}`;
+const API_URL = API_HOST ? `${API_HOST}/${API_VERSION}` : `/${API_VERSION}`;
 
 export interface ApiErrorPayload {
   code: string;
