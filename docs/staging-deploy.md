@@ -318,3 +318,10 @@ Production requirements later:
 3. add uptime monitoring
 4. add Sentry in staging
 5. optionally put frontend and backend behind one origin with a reverse proxy
+
+## Monitoring
+
+http://135.181.109.67
+http://135.181.109.67:8000/v1/internal/health
+http://135.181.109.67:8000/v1/internal/ready
+

@@ -149,3 +149,10 @@ For every staging deploy, record:
 - date/time of deployment
 - whether smoke test passed
 - any anomalies observed
+
+## Monitoring
+
+http://135.181.109.67
+http://135.181.109.67:8000/v1/internal/health
+http://135.181.109.67:8000/v1/internal/ready
+
