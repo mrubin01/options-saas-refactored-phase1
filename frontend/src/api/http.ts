@@ -13,7 +13,7 @@ function getRequestId(): string {
 }
 
 function getApiHost(): string {
-  const envApiUrl = import.meta.env.VITE_API_URL?.trim();
+  const envApiUrl = String(import.meta.env.VITE_API_URL ?? "").trim();
 
   if (envApiUrl) {
     return envApiUrl.replace(/\/+$/, "");
@@ -33,10 +33,9 @@ function getApiHost(): string {
   return "http://localhost:8000";
 }
 
-const envApiUrl = import.meta.env.VITE_API_URL?.trim();
-const API_HOST = envApiUrl ? envApiUrl.replace(/\/+$/, "") : "";
-const API_VERSION = import.meta.env.VITE_API_VERSION?.trim() || "v1";
-const API_URL = API_HOST ? `${API_HOST}/${API_VERSION}` : `/${API_VERSION}`;
+const API_HOST = getApiHost();
+const API_VERSION = String(import.meta.env.VITE_API_VERSION ?? "v1").trim() || "v1";
+const API_URL = `${API_HOST.replace(/\/+$/, "")}/${API_VERSION}`;
 
 export interface ApiErrorPayload {
   code: string;
