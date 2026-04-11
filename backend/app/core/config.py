@@ -82,6 +82,12 @@ class Settings(BaseSettings):
         if not value or not value.strip():
             raise ValueError("ALGORITHM must not be empty")
         return value.strip()
+    
+    @validator("SENTRY_DSN", pre=True)
+    def normalize_sentry_dsn(cls, value):
+        if value in ("", "__EMPTY__", None):
+            return None
+        return value
 
 
 settings = Settings()
