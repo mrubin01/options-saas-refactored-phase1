@@ -77,5 +77,11 @@ class Settings(BaseSettings):
             raise ValueError('REFRESH_COOKIE_SAMESITE="none" requires REFRESH_COOKIE_SECURE=true')
         return value
 
+    @validator("ALGORITHM")
+    def validate_algorithm(cls, value: str) -> str:
+        if not value or not value.strip():
+            raise ValueError("ALGORITHM must not be empty")
+        return value.strip()
+
 
 settings = Settings()
