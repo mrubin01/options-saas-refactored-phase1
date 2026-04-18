@@ -26,7 +26,7 @@ class CoveredCallBase(BaseModel):
     lowest_price: float
     main_trend: float
 
-    beta: int | None = None
+    beta: float | None = None
     sector: str | None = None
     industry: str | None = None
 
