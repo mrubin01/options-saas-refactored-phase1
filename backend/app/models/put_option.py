@@ -16,10 +16,28 @@ class PutOption(Base):
     ),
     nullable=False,
     )
-    # exchange = Column(Integer, ForeignKey("EXCHANGE.exchange_id"), nullable=False)
     expiry_date = Column(Date, nullable=False, index=True)
     current_price = Column(Float, nullable=False)
     strike_price = Column(Float, nullable=False)
+
+    rel_std_deviation = Column(Float, nullable=False)
+    spread_premium_price_and_bid = Column(Float, nullable=False)
+    spread_strike_price = Column(Float, nullable=False)
+    bid_per_share = Column(Float, nullable=False)
+    premium_per_contract = Column(Float, nullable=False)
+    spread_bid_ask = Column(Float, nullable=False)
+    open_interest = Column(Integer, nullable=True)
+    impl_volatility = Column(Float, nullable=False)
+    ratio_bid_strike = Column(Float, nullable=False)
+    highest_price = Column(Float, nullable=False)
+    avg_price = Column(Float, nullable=False)
+    lowest_price = Column(Float, nullable=False)
+    main_trend = Column(Integer, nullable=False)
+
+    beta = Column(Float, nullable=True)
+    sector = Column(String, nullable=True)
+    industry = Column(String, nullable=True)
+
     updated_at = Column(DateTime(timezone=True), 
                         server_default=func.now(),
                         onupdate=func.now(),

@@ -12,13 +12,13 @@ class CoveredCallBase(BaseModel):
     current_price: float
     strike_price: float
 
-    rel_std_dev: float
+    rel_std_deviation: float
     spread_premium_price_and_bid: float
     spread_strike_price: float
     bid_per_share: float
     premium_per_contract: float
     spread_bid_ask: float
-    open_interest: float
+    open_interest: int | None = None
     impl_volatility: float
     ratio_bid_strike: float
     highest_price: float

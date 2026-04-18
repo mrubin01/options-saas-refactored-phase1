@@ -27,7 +27,7 @@ class CoveredCall(Base):
     bid_per_share = Column(Float, nullable=False)
     premium_per_contract = Column(Float, nullable=False)
     spread_bid_ask = Column(Float, nullable=False)
-    open_interest = Column(Integer, nullable=False)
+    open_interest = Column(Integer, nullable=True)
     impl_volatility = Column(Float, nullable=False)
     ratio_bid_strike = Column(Float, nullable=False)
     highest_price = Column(Float, nullable=False)
