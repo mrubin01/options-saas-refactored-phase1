@@ -47,6 +47,22 @@ def test_covered_calls_contract(client, auth_headers):
             assert "expiry_date" in row
             assert "current_price" in row
             assert "strike_price" in row
+            assert "rel_std_deviation" in row
+            assert "spread_premium_price_and_bid" in row
+            assert "spread_strike_price" in row
+            assert "bid_per_share" in row
+            assert "premium_per_contract" in row
+            assert "spread_bid_ask" in row
+            assert "open_interest" in row
+            assert "impl_volatility" in row
+            assert "ratio_bid_strike" in row
+            assert "highest_price" in row
+            assert "avg_price" in row
+            assert "lowest_price" in row
+            assert "main_trend" in row
+            assert "beta" in row
+            assert "sector" in row
+            assert "industry" in row
 
 
 def test_put_options_contract(client, auth_headers):
@@ -68,6 +84,7 @@ def test_put_options_contract(client, auth_headers):
             assert "expiry_date" in row
             assert "current_price" in row
             assert "strike_price" in row
+
 
 
 def test_spread_options_contract(client, auth_headers):
