@@ -6,6 +6,7 @@ import json
 import math
 
 from sqlalchemy.orm import Session
+from sqlalchemy import insert
 
 from app.core.paths import DATA_DIR
 from app.models.covered_call import CoveredCall
@@ -125,7 +126,7 @@ def ingest_covered_calls(db: Session) -> None:
     db.query(CoveredCall).delete()
 
     logger.info("Inserting fresh covered calls", extra={"rows_to_insert": len(all_payloads)})
-    db.bulk_insert_mappings(CoveredCall, all_payloads)
+    db.execute(insert(CoveredCall), all_payloads)
 
     db.commit()
     logger.info("Covered calls replacement complete", extra={"rows_inserted": len(all_payloads)})

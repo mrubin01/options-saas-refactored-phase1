@@ -6,6 +6,7 @@ import json
 import math
 
 from sqlalchemy.orm import Session
+from sqlalchemy import insert
 
 from app.core.paths import DATA_DIR
 from app.models.put_option import PutOption
@@ -127,7 +128,7 @@ def ingest_put_options(db: Session) -> None:
     db.query(PutOption).delete()
 
     logger.info("Inserting fresh put options", extra={"rows_to_insert": len(all_payloads)})
-    db.bulk_insert_mappings(PutOption, all_payloads)
+    db.execute(insert(PutOption), all_payloads)
 
     db.commit()
     logger.info("Put options replacement complete", extra={"rows_inserted": len(all_payloads)})

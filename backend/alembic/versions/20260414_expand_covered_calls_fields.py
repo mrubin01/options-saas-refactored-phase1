@@ -49,5 +49,5 @@ def downgrade() -> None:
     op.drop_column("BEST_COVERED_CALLS", "bid_per_share")
     op.drop_column("BEST_COVERED_CALLS", "spread_strike_price")
     op.drop_column("BEST_COVERED_CALLS", "spread_premium_price_and_bid")
-    op.drop_column("COVERED_CALLS", "rel_std_deviation")
+    op.drop_column("BEST_COVERED_CALLS", "rel_std_deviation")
     
