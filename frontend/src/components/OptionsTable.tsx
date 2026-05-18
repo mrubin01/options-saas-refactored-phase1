@@ -23,16 +23,23 @@ export default function OptionsTable({
           <th>Expiry</th>
           <th>Current</th>
           <th>Strike</th>
-
-          <th>Rel Std Dev</th>
-          <th>Spread Premium - Price/Bid</th>
-          <th>Spread Strike Price - Current Price</th>
-          <th>Bid per Share</th>
-          <th>Premium per Contract</th>
+          <th>DTE</th>
+          <th>Coeff Variation</th>
+          <th>Max Profit</th>
+          <th>Max Profit per Contract</th>
+          <th>OTM</th>
+          <th>Moneyness</th>
+          <th>Sigma Distance</th>
+          <th>Break-Even</th>
+          <th>Option Yield</th>
+          <th>RO</th>
+          <th>Tot Return</th>
+          <th>Delta</th>
           <th>Spread Bid - Ask</th>
           <th>Open Interest</th>
           <th>Implied Volatility</th>
-          <th>Ratio Bid - Strike Price</th>
+          <th>Bid per Share</th>
+          <th>Premium per Contract</th>
           <th>Sector</th>
           <th>Industry</th>
           <th>Highest Price</th>
@@ -40,7 +47,6 @@ export default function OptionsTable({
           <th>Lowest Price</th>
           <th>Trend</th>
           <th>Beta</th>
-
         </tr>
       </thead>
       <tbody>
@@ -52,16 +58,23 @@ export default function OptionsTable({
             <td>{row.expiry_date}</td>
             <td>{row.current_price}</td>
             <td>{row.strike_price}</td>
-
-            <td>{row.rel_std_deviation}</td>
-            <td>{row.spread_premium_price_and_bid}</td>
-            <td>{row.spread_strike_price}</td>
-            <td>{row.bid_per_share}</td>
-            <td>{row.premium_per_contract}</td>
+            <td>{row.days_to_expiration}</td>
+            <td>{row.coeff_variation}</td>
+            <td>{row.max_profit}</td>
+            <td>{row.max_profit_per_contract}</td>
+            <td>{row.otm}</td>
+            <td>{row.moneyness}</td>
+            <td>{row.sigma_distance}</td>
+            <td>{row.break_even}</td>
+            <td>{row.option_yield}</td>
+            <td>{row.roc}</td>
+            <td>{row.tot_return}</td>
+            <td>{row.delta}</td>
             <td>{row.spread_bid_ask}</td>
             <td>{row.open_interest}</td>
             <td>{row.impl_volatility}</td>
-            <td>{row.ratio_bid_strike}</td>
+            <td>{row.bid_per_share}</td>
+            <td>{row.premium_per_contract}</td>
             <td>{row.sector}</td>
             <td>{row.industry}</td>
             <td>{row.highest_price}</td>
