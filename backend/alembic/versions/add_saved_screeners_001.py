@@ -1,8 +1,8 @@
 """add saved screeners table
 
 Revision ID: saved_screeners_001
-Revises: so_fields_20260419
-Create Date: 2026-04-18
+Revises: cc_fields_20260517
+Create Date: 2026-05-18
 """
 
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 revision = "saved_screeners_001"
-down_revision = "so_fields_20260419"
+down_revision = "cc_fields_20260517"
 branch_labels = None
 depends_on = None
 
