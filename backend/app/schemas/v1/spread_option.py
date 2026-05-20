@@ -12,15 +12,23 @@ class SpreadOptionBase(BaseModel):
     current_price: float
     strike_price: float
 
-    rel_std_deviation: float
-    spread_premium_price_and_bid: float
-    spread_strike_price: float
+    days_to_expiration: int
+    coeff_variation: float
+    max_profit: float
+    max_profit_per_contract: float
+    otm: float
+    moneyness: float
+    sigma_distance: float
     bid_per_share: float
     premium_per_contract: float
     spread_bid_ask: float
+    break_even: float
     open_interest: int | None = None
     impl_volatility: float
-    ratio_bid_strike: float
+    option_yield: float
+    roc: float
+    tot_return: float
+    delta: float
     highest_price: float
     avg_price: float
     lowest_price: float
