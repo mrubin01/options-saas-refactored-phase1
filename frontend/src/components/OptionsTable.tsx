@@ -1,9 +1,9 @@
-import type { CoveredCall } from "../types/coveredCall";
+import type { OptionRow } from "../types/optionRow";
 
-interface OptionsTableProps {
-  data: CoveredCall[];
+type OptionsTableProps = {
+  data: OptionRow[];
   exchangeMap: Record<number, string>;
-}
+};
 
 export default function OptionsTable({
   data,
