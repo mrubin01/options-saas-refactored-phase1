@@ -26,19 +26,9 @@ def upgrade() -> None:
     op.add_column("BEST_COVERED_CALLS", sa.Column("roc", sa.Float(), nullable=True))
     op.add_column("BEST_COVERED_CALLS", sa.Column("tot_return", sa.Float(), nullable=True))
     op.add_column("BEST_COVERED_CALLS", sa.Column("delta", sa.Float(), nullable=True))
-    op.add_column("BEST_COVERED_CALLS", sa.Column("spread_bid_ask", sa.Float(), nullable=True))
-    op.add_column("BEST_SPREAD_OPTIONS", sa.Column("open_interest", sa.Integer(), nullable=True))
-    op.add_column("BEST_SPREAD_OPTIONS", sa.Column("impl_volatility", sa.Float(), nullable=True))
-    op.add_column("BEST_SPREAD_OPTIONS", sa.Column("bid_per_share", sa.Float(), nullable=True))
-    op.add_column("BEST_SPREAD_OPTIONS", sa.Column("premium_per_contract", sa.Float(), nullable=True))
 
 
 def downgrade() -> None:
-    op.drop_column("BEST_COVERED_CALLS", "premium_per_contract")
-    op.drop_column("BEST_COVERED_CALLS", "bid_per_share")
-    op.drop_column("BEST_COVERED_CALLS", "impl_volatility")
-    op.drop_column("BEST_COVERED_CALLS", "open_interest")
-    op.drop_column("BEST_COVERED_CALLS", "spread_bid_ask")
     op.drop_column("BEST_COVERED_CALLS", "delta")
     op.drop_column("BEST_COVERED_CALLS", "tot_return")
     op.drop_column("BEST_COVERED_CALLS", "roc")
