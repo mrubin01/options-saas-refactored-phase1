@@ -14,7 +14,6 @@ branch_labels = None
 depends_on = None
 
 def upgrade() -> None:
-    op.add_column("BEST_COVERED_CALLS", sa.Column("days_to_expiration", sa.Integer(), nullable=True))
     op.add_column("BEST_COVERED_CALLS", sa.Column("coeff_variation", sa.Float(), nullable=True))
     op.add_column("BEST_COVERED_CALLS", sa.Column("max_profit", sa.Float(), nullable=True))
     op.add_column("BEST_COVERED_CALLS", sa.Column("max_profit_per_contract", sa.Float(), nullable=True))
@@ -40,7 +39,6 @@ def downgrade() -> None:
     op.drop_column("BEST_COVERED_CALLS", "max_profit_per_contract")
     op.drop_column("BEST_COVERED_CALLS", "max_profit")
     op.drop_column("BEST_COVERED_CALLS", "coeff_variation")
-    op.drop_column("BEST_COVERED_CALLS", "days_to_expiration")  
 
 
 
