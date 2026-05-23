@@ -13,30 +13,30 @@ class PutOptionBase(BaseModel):
     strike_price: float
 
     days_to_expiration: int
-    coeff_variation: float
-    max_profit: float
-    max_profit_per_contract: float
-    otm: float
-    moneyness: float
-    sigma_distance: float
-    bid_per_share: float
-    premium_per_contract: float
-    spread_bid_ask: float
-    break_even: float
-    open_interest: int | None = None
-    impl_volatility: float
-    option_yield: float
-    roc: float
-    tot_return: float
-    delta: float
-    highest_price: float
-    avg_price: float
-    lowest_price: float
-    main_trend: float
+    coeff_variation: float | None = None
+    max_profit: float | None = None
+    max_profit_per_contract: float | None = None
+    otm: float | None = None
+    moneyness: float | None = None
+    sigma_distance: float | None = None
+    bid_per_share: float | None = None
+    premium_per_contract: float | None = None
+    spread_bid_ask: float | None = None
+    break_even: float | None = None
+    open_interest: int | None = None  # nullable 
+    impl_volatility: float | None = None
+    option_yield: float | None = None
+    roc: float | None = None
+    tot_return: float | None = None
+    delta: float | None = None
+    highest_price: float | None = None
+    avg_price: float | None = None
+    lowest_price: float | None = None
+    main_trend: float | None = None
 
-    beta: float | None = None
-    sector: str | None = None
-    industry: str | None = None
+    beta: float | None = None  # nullable
+    sector: str | None = None  # nullable
+    industry: str | None = None  # nullable
 
     updated_at: datetime | None = None
 
