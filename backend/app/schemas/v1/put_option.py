@@ -12,7 +12,7 @@ class PutOptionBase(BaseModel):
     current_price: float
     strike_price: float
 
-    days_to_expiration: int
+    days_to_expiration: int | None = None
     coeff_variation: float | None = None
     max_profit: float | None = None
     max_profit_per_contract: float | None = None
