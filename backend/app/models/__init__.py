@@ -9,3 +9,4 @@ from app.models.user import User
 from app.models.refresh_session import RefreshSession
 from app.models.auth_token import AuthToken
 from app.models.saved_screener import SavedScreener
+from app.models.watchlist_item import WatchlistItem
