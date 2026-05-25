@@ -45,15 +45,17 @@ export default function Navigation() {
           Spread Options
         </NavLink>
 
+        <NavLink to="/watchlist" style={linkStyle}>
+          Watchlist
+        </NavLink>
+
         <NavLink to="/account" style={linkStyle}>
           Account
         </NavLink>
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        {user?.email && (
-          <span style={{ fontSize: 14, color: "#555" }}>{user.email}</span>
-        )}
+        {user?.email && <span style={{ fontSize: 14, color: "#555" }}>{user.email}</span>}
 
         <button onClick={handleLogout}>Logout</button>
       </div>

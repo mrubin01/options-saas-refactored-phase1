@@ -10,6 +10,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
 import AccountPage from "./pages/AccountPage";
+import WatchlistPage from "./pages/WatchlistPage";
 
 export default function App() {
   return (
@@ -56,6 +57,17 @@ export default function App() {
       />
 
       <Route
+        path="/watchlist"
+        element={
+          <RequireAuth>
+            <Layout>
+              <WatchlistPage />
+            </Layout>
+          </RequireAuth>
+        }
+      />
+
+      <Route
         path="/account"
         element={
           <RequireAuth>
@@ -68,4 +80,3 @@ export default function App() {
     </Routes>
   );
 }
-
