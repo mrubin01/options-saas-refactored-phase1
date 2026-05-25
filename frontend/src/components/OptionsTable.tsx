@@ -6,8 +6,9 @@ type OptionsTableProps = {
   exchangeMap: Record<number, string>;
   strategyType?: WatchlistStrategyType;
   watchlistItems?: WatchlistItem[];
+  pendingWatchlistContracts?: string[];
   onAddToWatchlist?: (row: OptionRow) => void;
-  onRemoveFromWatchlist?: (itemId: number) => void;
+  onRemoveFromWatchlist?: (itemId: number, contract: string) => void;
 };
 
 function formatValue(value: string | number | null | undefined) {
@@ -23,6 +24,7 @@ export default function OptionsTable({
   exchangeMap,
   strategyType,
   watchlistItems = [],
+  pendingWatchlistContracts = [],
   onAddToWatchlist,
   onRemoveFromWatchlist,
 }: OptionsTableProps) {
@@ -40,6 +42,10 @@ export default function OptionsTable({
         (item) => item.contract === row.contract && item.strategy_type === strategyType
       ) ?? null
     );
+  }
+
+  function isPending(contract: string) {
+    return pendingWatchlistContracts.includes(contract);
   }
 
   return (
@@ -91,6 +97,7 @@ export default function OptionsTable({
       <tbody>
         {data.map((row) => {
           const savedItem = getWatchlistItemForRow(row);
+          const rowPending = isPending(row.contract);
 
           return (
             <tr key={row.contract}>
@@ -98,16 +105,18 @@ export default function OptionsTable({
                 {savedItem ? (
                   <button
                     type="button"
-                    onClick={() => onRemoveFromWatchlist?.(savedItem.id)}
+                    disabled={rowPending}
+                    onClick={() => onRemoveFromWatchlist?.(savedItem.id, row.contract)}
                   >
-                    Remove
+                    {rowPending ? "Removing..." : "Remove"}
                   </button>
                 ) : (
                   <button
                     type="button"
+                    disabled={rowPending}
                     onClick={() => onAddToWatchlist?.(row)}
                   >
-                    Watch
+                    {rowPending ? "Saving..." : "Add to watchlist"}
                   </button>
                 )}
               </td>

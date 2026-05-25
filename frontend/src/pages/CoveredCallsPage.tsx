@@ -24,6 +24,8 @@ export default function CoveredCallsPage() {
   const [filters, setFilters] = useState<Filters>({});
   const [watchlistItems, setWatchlistItems] = useState<WatchlistItem[]>([]);
   const [watchlistError, setWatchlistError] = useState<string | null>(null);
+  const [watchlistSuccess, setWatchlistSuccess] = useState<string | null>(null);
+  const [pendingWatchlistContracts, setPendingWatchlistContracts] = useState<string[]>([]);
 
   const debouncedFilters = useDebouncedValue(filters, 300);
   const stableFilters = useMemo(() => debouncedFilters, [debouncedFilters]);
@@ -49,6 +51,8 @@ export default function CoveredCallsPage() {
   async function handleAddToWatchlist(row: CoveredCall) {
     try {
       setWatchlistError(null);
+      setWatchlistSuccess(null);
+      setPendingWatchlistContracts((prev) => [...prev, row.contract]);
 
       const created = await createWatchlistItem({
         strategy_type: "covered_calls",
@@ -58,18 +62,27 @@ export default function CoveredCallsPage() {
       });
 
       setWatchlistItems((prev) => [created, ...prev]);
+      setWatchlistSuccess(`Added ${row.ticker} to watchlist`);
     } catch (err) {
       setWatchlistError(err instanceof Error ? err.message : "Failed to add to watchlist");
+    } finally {
+      setPendingWatchlistContracts((prev) => prev.filter((contract) => contract !== row.contract));
     }
   }
 
-  async function handleRemoveFromWatchlist(itemId: number) {
+  async function handleRemoveFromWatchlist(itemId: number, contract: string) {
     try {
       setWatchlistError(null);
+      setWatchlistSuccess(null);
+      setPendingWatchlistContracts((prev) => [...prev, contract]);
+
       await deleteWatchlistItem(itemId);
       setWatchlistItems((prev) => prev.filter((item) => item.id !== itemId));
+      setWatchlistSuccess("Removed item from watchlist");
     } catch (err) {
       setWatchlistError(err instanceof Error ? err.message : "Failed to remove from watchlist");
+    } finally {
+      setPendingWatchlistContracts((prev) => prev.filter((itemContract) => itemContract !== contract));
     }
   }
 
@@ -105,6 +118,7 @@ export default function CoveredCallsPage() {
       />
 
       {watchlistError && <div className="text-sm text-red-600 py-2">{watchlistError}</div>}
+      {watchlistSuccess && <div className="text-sm text-green-600 py-2">{watchlistSuccess}</div>}
 
       {!isLoading && !error && rows.length > 0 && (
         <OptionsTable
@@ -112,6 +126,7 @@ export default function CoveredCallsPage() {
           exchangeMap={exchangeMap}
           strategyType="covered_calls"
           watchlistItems={watchlistItems}
+          pendingWatchlistContracts={pendingWatchlistContracts}
           onAddToWatchlist={handleAddToWatchlist}
           onRemoveFromWatchlist={handleRemoveFromWatchlist}
         />

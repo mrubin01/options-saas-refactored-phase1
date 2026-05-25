@@ -16,6 +16,12 @@ const strategyOptions: Array<{ value: "all" | WatchlistStrategyType; label: stri
   { value: "spread_options", label: "Spread Options" },
 ];
 
+const strategyLabelMap: Record<WatchlistStrategyType, string> = {
+  covered_calls: "Covered Calls",
+  put_options: "Put Options",
+  spread_options: "Spread Options",
+};
+
 function formatDateTime(value: string) {
   const date = new Date(value);
 
@@ -30,6 +36,8 @@ export default function WatchlistPage() {
   const [items, setItems] = useState<WatchlistItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [pendingItemIds, setPendingItemIds] = useState<number[]>([]);
   const [filterStrategy, setFilterStrategy] = useState<"all" | WatchlistStrategyType>("all");
 
   useEffect(() => {
@@ -52,10 +60,16 @@ export default function WatchlistPage() {
   async function handleRemove(itemId: number) {
     try {
       setError(null);
+      setSuccess(null);
+      setPendingItemIds((prev) => [...prev, itemId]);
+
       await deleteWatchlistItem(itemId);
       setItems((prev) => prev.filter((item) => item.id !== itemId));
+      setSuccess("Removed item from watchlist");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to remove watchlist item");
+    } finally {
+      setPendingItemIds((prev) => prev.filter((id) => id !== itemId));
     }
   }
 
@@ -67,26 +81,37 @@ export default function WatchlistPage() {
     return items.filter((item) => item.strategy_type === filterStrategy);
   }, [items, filterStrategy]);
 
+  function isPending(itemId: number) {
+    return pendingItemIds.includes(itemId);
+  }
+
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
       <PageHeader title="Watchlist" />
 
-      <div className="mb-4">
-        <label className="mr-2 text-sm font-medium">Strategy:</label>
-        <select
-          value={filterStrategy}
-          onChange={(e) => setFilterStrategy(e.target.value as "all" | WatchlistStrategyType)}
-          className="border rounded px-3 py-2 text-sm"
-        >
-          {strategyOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+      <div className="mb-4 flex items-center gap-4">
+        <div>
+          <label className="mr-2 text-sm font-medium">Strategy:</label>
+          <select
+            value={filterStrategy}
+            onChange={(e) => setFilterStrategy(e.target.value as "all" | WatchlistStrategyType)}
+            className="border rounded px-3 py-2 text-sm"
+          >
+            {strategyOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="text-sm text-gray-600">
+          {filteredItems.length} item{filteredItems.length === 1 ? "" : "s"}
+        </div>
       </div>
 
       {error && <div className="text-sm text-red-600 py-2">{error}</div>}
+      {success && <div className="text-sm text-green-600 py-2">{success}</div>}
 
       {isLoading ? (
         <div className="text-sm text-gray-500 py-3">Loading watchlist…</div>
@@ -107,14 +132,18 @@ export default function WatchlistPage() {
           <tbody>
             {filteredItems.map((item) => (
               <tr key={item.id}>
-                <td>{item.strategy_type}</td>
+                <td>{strategyLabelMap[item.strategy_type]}</td>
                 <td>{item.ticker}</td>
                 <td>{item.contract}</td>
                 <td>{exchangeMap[item.exchange] ?? item.exchange}</td>
                 <td>{formatDateTime(item.created_at)}</td>
                 <td>
-                  <button type="button" onClick={() => void handleRemove(item.id)}>
-                    Remove
+                  <button
+                    type="button"
+                    disabled={isPending(item.id)}
+                    onClick={() => void handleRemove(item.id)}
+                  >
+                    {isPending(item.id) ? "Removing..." : "Remove"}
                   </button>
                 </td>
               </tr>
