@@ -26,6 +26,7 @@ export default function SavedScreenersPanel({
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState("");
   const [isRenaming, setIsRenaming] = useState(false);
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
 
   async function loadItems() {
     try {
@@ -53,6 +54,19 @@ export default function SavedScreenersPanel({
   function cancelRename() {
     setEditingId(null);
     setEditingName("");
+  }
+
+  async function handleUpdateConfig(id: number) {
+    try {
+      setUpdatingId(id);
+      setError(null);
+      await updateSavedScreener(id, { config_json: getCurrentConfig() });
+      await loadItems();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update screener");
+    } finally {
+      setUpdatingId(null);
+    }
   }
 
   async function handleRename(id: number) {
@@ -203,6 +217,14 @@ export default function SavedScreenersPanel({
                     className="rounded-md border border-slate-300 px-3 py-1 text-sm"
                   >
                     Apply
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void handleUpdateConfig(item.id)}
+                    disabled={updatingId === item.id}
+                    className="rounded-md border border-slate-300 px-3 py-1 text-sm"
+                  >
+                    {updatingId === item.id ? "Updating..." : "Update"}
                   </button>
                   <button
                     type="button"
