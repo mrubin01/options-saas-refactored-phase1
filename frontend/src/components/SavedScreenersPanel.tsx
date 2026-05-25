@@ -23,10 +23,12 @@ export default function SavedScreenersPanel({
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState("");
   const [isRenaming, setIsRenaming] = useState(false);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [duplicateCandidate, setDuplicateCandidate] = useState<SavedScreener | null>(null);
 
   async function loadItems() {
@@ -46,10 +48,15 @@ export default function SavedScreenersPanel({
     void loadItems();
   }, [strategyType]);
 
+  function resetMessages() {
+    setError(null);
+    setSuccess(null);
+  }
+
   function startRename(item: SavedScreener) {
     setEditingId(item.id);
     setEditingName(item.name);
-    setError(null);
+    resetMessages();
   }
 
   function cancelRename() {
@@ -64,9 +71,10 @@ export default function SavedScreenersPanel({
   async function handleUpdateConfig(id: number) {
     try {
       setUpdatingId(id);
-      setError(null);
+      resetMessages();
       await updateSavedScreener(id, { config_json: getCurrentConfig() });
       await loadItems();
+      setSuccess("Screener updated successfully.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update screener");
     } finally {
@@ -83,13 +91,14 @@ export default function SavedScreenersPanel({
 
     try {
       setIsRenaming(true);
-      setError(null);
+      resetMessages();
 
       await updateSavedScreener(id, { name: trimmed });
 
       setEditingId(null);
       setEditingName("");
       await loadItems();
+      setSuccess("Screener renamed successfully.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to rename screener");
     } finally {
@@ -104,7 +113,7 @@ export default function SavedScreenersPanel({
 
     try {
       setIsSaving(true);
-      setError(null);
+      resetMessages();
 
       await updateSavedScreener(duplicateCandidate.id, {
         config_json: getCurrentConfig(),
@@ -113,6 +122,7 @@ export default function SavedScreenersPanel({
       setDuplicateCandidate(null);
       setName("");
       await loadItems();
+      setSuccess("Existing screener overwritten successfully.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to overwrite screener");
     } finally {
@@ -133,13 +143,14 @@ export default function SavedScreenersPanel({
 
     if (existing) {
       setDuplicateCandidate(existing);
+      setSuccess(null);
       setError(null);
       return;
     }
 
     try {
       setIsSaving(true);
-      setError(null);
+      resetMessages();
       setDuplicateCandidate(null);
 
       await createSavedScreener({
@@ -150,6 +161,7 @@ export default function SavedScreenersPanel({
 
       setName("");
       await loadItems();
+      setSuccess("Screener saved successfully.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save screener");
     } finally {
@@ -159,7 +171,8 @@ export default function SavedScreenersPanel({
 
   async function handleDelete(id: number) {
     try {
-      setError(null);
+      setDeletingId(id);
+      resetMessages();
 
       if (editingId === id) {
         cancelRename();
@@ -171,8 +184,11 @@ export default function SavedScreenersPanel({
 
       await deleteSavedScreener(id);
       await loadItems();
+      setSuccess("Screener deleted successfully.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete screener");
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -197,6 +213,7 @@ export default function SavedScreenersPanel({
           }}
           placeholder="Screener name"
           className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          disabled={isSaving}
         />
         <button
           type="button"
@@ -211,6 +228,12 @@ export default function SavedScreenersPanel({
       {error && (
         <div className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="mb-3 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
+          {success}
         </div>
       )}
 
@@ -246,80 +269,91 @@ export default function SavedScreenersPanel({
         <div className="text-sm text-slate-500">No saved screeners yet.</div>
       ) : (
         <div className="space-y-2">
-          {items.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2"
-            >
-              <div className="min-w-0 flex-1">
-                {editingId === item.id ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={editingName}
-                      onChange={(e) => setEditingName(e.target.value)}
-                      className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    />
+          {items.map((item) => {
+            const isUpdatingThis = updatingId === item.id;
+            const isDeletingThis = deletingId === item.id;
+            const isEditingThis = editingId === item.id;
+            const isBusy = isUpdatingThis || isDeletingThis || (isEditingThis && isRenaming);
+
+            return (
+              <div
+                key={item.id}
+                className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2"
+              >
+                <div className="min-w-0 flex-1">
+                  {editingId === item.id ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                        disabled={isRenaming}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => void handleRename(item.id)}
+                        disabled={isRenaming}
+                        className="rounded-md border border-slate-300 px-3 py-1 text-sm"
+                      >
+                        {isRenaming ? "Saving..." : "Save"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelRename}
+                        disabled={isRenaming}
+                        className="rounded-md border border-slate-300 px-3 py-1 text-sm"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="font-medium text-slate-900">{item.name}</div>
+                      <div className="text-xs text-slate-500">{item.strategy_type}</div>
+                    </>
+                  )}
+                </div>
+
+                {editingId !== item.id && (
+                  <div className="ml-4 flex gap-2">
                     <button
                       type="button"
-                      onClick={() => void handleRename(item.id)}
-                      disabled={isRenaming}
-                      className="rounded-md border border-slate-300 px-3 py-1 text-sm"
+                      onClick={() => onApply(item.config_json)}
+                      disabled={isBusy}
+                      className="rounded-md border border-slate-300 px-3 py-1 text-sm disabled:opacity-50"
                     >
-                      {isRenaming ? "Saving..." : "Save"}
+                      Apply
                     </button>
                     <button
                       type="button"
-                      onClick={cancelRename}
-                      disabled={isRenaming}
-                      className="rounded-md border border-slate-300 px-3 py-1 text-sm"
+                      onClick={() => void handleUpdateConfig(item.id)}
+                      disabled={isBusy}
+                      className="rounded-md border border-slate-300 px-3 py-1 text-sm disabled:opacity-50"
                     >
-                      Cancel
+                      {isUpdatingThis ? "Updating..." : "Update"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => startRename(item)}
+                      disabled={isBusy}
+                      className="rounded-md border border-slate-300 px-3 py-1 text-sm disabled:opacity-50"
+                    >
+                      Rename
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleDelete(item.id)}
+                      disabled={isBusy}
+                      className="rounded-md border border-red-300 px-3 py-1 text-sm text-red-700 disabled:opacity-50"
+                    >
+                      {isDeletingThis ? "Deleting..." : "Delete"}
                     </button>
                   </div>
-                ) : (
-                  <>
-                    <div className="font-medium text-slate-900">{item.name}</div>
-                    <div className="text-xs text-slate-500">{item.strategy_type}</div>
-                  </>
                 )}
               </div>
-
-              {editingId !== item.id && (
-                <div className="ml-4 flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => onApply(item.config_json)}
-                    className="rounded-md border border-slate-300 px-3 py-1 text-sm"
-                  >
-                    Apply
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void handleUpdateConfig(item.id)}
-                    disabled={updatingId === item.id}
-                    className="rounded-md border border-slate-300 px-3 py-1 text-sm"
-                  >
-                    {updatingId === item.id ? "Updating..." : "Update"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => startRename(item)}
-                    className="rounded-md border border-slate-300 px-3 py-1 text-sm"
-                  >
-                    Rename
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void handleDelete(item.id)}
-                    className="rounded-md border border-red-300 px-3 py-1 text-sm text-red-700"
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

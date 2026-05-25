@@ -65,7 +65,7 @@ export default function WatchlistPage() {
 
       await deleteWatchlistItem(itemId);
       setItems((prev) => prev.filter((item) => item.id !== itemId));
-      setSuccess("Removed item from watchlist");
+      setSuccess("Removed item from watchlist.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to remove watchlist item");
     } finally {
@@ -106,17 +106,28 @@ export default function WatchlistPage() {
         </div>
 
         <div className="text-sm text-gray-600">
-          {filteredItems.length} item{filteredItems.length === 1 ? "" : "s"}
+          {filteredItems.length} item{filteredItems.length === 1 ? "" : "s"} shown
         </div>
       </div>
 
-      {error && <div className="text-sm text-red-600 py-2">{error}</div>}
-      {success && <div className="text-sm text-green-600 py-2">{success}</div>}
+      {error && (
+        <div className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="mb-3 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
+          {success}
+        </div>
+      )}
 
       {isLoading ? (
         <div className="text-sm text-gray-500 py-3">Loading watchlist…</div>
       ) : filteredItems.length === 0 ? (
-        <div className="text-sm text-gray-500 py-3">No watchlist items yet.</div>
+        <div className="text-sm text-gray-500 py-3">
+          Your watchlist is empty. Add opportunities from Covered Calls, Put Options, or Spread Options.
+        </div>
       ) : (
         <table border={1} cellPadding={6} cellSpacing={0}>
           <thead>
