@@ -1,22 +1,52 @@
 import type { OptionRow } from "../types/optionRow";
+import type { WatchlistItem, WatchlistStrategyType } from "../types/watchlistItem";
 
 type OptionsTableProps = {
   data: OptionRow[];
   exchangeMap: Record<number, string>;
+  strategyType?: WatchlistStrategyType;
+  watchlistItems?: WatchlistItem[];
+  onAddToWatchlist?: (row: OptionRow) => void;
+  onRemoveFromWatchlist?: (itemId: number) => void;
 };
+
+function formatValue(value: string | number | null | undefined) {
+  if (value === null || value === undefined || value === "") {
+    return "—";
+  }
+
+  return value;
+}
 
 export default function OptionsTable({
   data,
   exchangeMap,
+  strategyType,
+  watchlistItems = [],
+  onAddToWatchlist,
+  onRemoveFromWatchlist,
 }: OptionsTableProps) {
   if (data.length === 0) {
     return <p>No results found.</p>;
+  }
+
+  function getWatchlistItemForRow(row: OptionRow) {
+    if (!strategyType) {
+      return null;
+    }
+
+    return (
+      watchlistItems.find(
+        (item) => item.contract === row.contract && item.strategy_type === strategyType
+      ) ?? null
+    );
   }
 
   return (
     <table border={1} cellPadding={6} cellSpacing={0}>
       <thead>
         <tr>
+          <th>Watchlist</th>
           <th>Ticker</th>
           <th>Contract</th>
           <th>Exchange</th>
@@ -59,49 +89,71 @@ export default function OptionsTable({
         </tr>
       </thead>
       <tbody>
-        {data.map((row) => (
-          <tr key={row.contract}>
-            <td>{row.ticker}</td>
-            <td>{row.contract}</td>
-            <td>{exchangeMap[row.exchange] ?? row.exchange}</td>
+        {data.map((row) => {
+          const savedItem = getWatchlistItemForRow(row);
 
-            <td>{row.expiry_date}</td>
-            <td>{row.days_to_expiration}</td>
-            <td>{row.current_price}</td>
+          return (
+            <tr key={row.contract}>
+              <td>
+                {savedItem ? (
+                  <button
+                    type="button"
+                    onClick={() => onRemoveFromWatchlist?.(savedItem.id)}
+                  >
+                    Remove
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onAddToWatchlist?.(row)}
+                  >
+                    Watch
+                  </button>
+                )}
+              </td>
 
-            <td>{row.strike_price}</td>
-            <td>{row.highest_price}</td>
-            <td>{row.avg_price}</td>
+              <td>{formatValue(row.ticker)}</td>
+              <td>{formatValue(row.contract)}</td>
+              <td>{formatValue(exchangeMap[row.exchange] ?? row.exchange)}</td>
 
-            <td>{row.lowest_price}</td>
-            <td>{row.coeff_variation}</td>
-            <td>{row.bid_per_share}</td>
+              <td>{formatValue(row.expiry_date)}</td>
+              <td>{formatValue(row.days_to_expiration)}</td>
+              <td>{formatValue(row.current_price)}</td>
 
-            <td>{row.premium_per_contract}</td>
-            <td>{row.option_yield}</td>
-            <td>{row.max_profit}</td>
-            
-            <td>{row.max_profit_per_contract}</td>
-            <td>{row.otm}</td>
-            <td>{row.moneyness}</td>
+              <td>{formatValue(row.strike_price)}</td>
+              <td>{formatValue(row.highest_price)}</td>
+              <td>{formatValue(row.avg_price)}</td>
 
-            <td>{row.sigma_distance}</td>
-            <td>{row.break_even}</td>
-            <td>{row.roc}</td>
+              <td>{formatValue(row.lowest_price)}</td>
+              <td>{formatValue(row.coeff_variation)}</td>
+              <td>{formatValue(row.bid_per_share)}</td>
 
-            <td>{row.tot_return}</td>
-            <td>{row.delta}</td>
-            <td>{row.spread_bid_ask}</td>
+              <td>{formatValue(row.premium_per_contract)}</td>
+              <td>{formatValue(row.option_yield)}</td>
+              <td>{formatValue(row.max_profit)}</td>
 
-            <td>{row.open_interest}</td>
-            <td>{row.impl_volatility}</td>
-            <td>{row.sector}</td>
+              <td>{formatValue(row.max_profit_per_contract)}</td>
+              <td>{formatValue(row.otm)}</td>
+              <td>{formatValue(row.moneyness)}</td>
 
-            <td>{row.industry}</td>
-            <td>{row.main_trend}</td>
-            <td>{row.beta}</td>
-          </tr>
-        ))}
+              <td>{formatValue(row.sigma_distance)}</td>
+              <td>{formatValue(row.break_even)}</td>
+              <td>{formatValue(row.roc)}</td>
+
+              <td>{formatValue(row.tot_return)}</td>
+              <td>{formatValue(row.delta)}</td>
+              <td>{formatValue(row.spread_bid_ask)}</td>
+
+              <td>{formatValue(row.open_interest)}</td>
+              <td>{formatValue(row.impl_volatility)}</td>
+              <td>{formatValue(row.sector)}</td>
+
+              <td>{formatValue(row.industry)}</td>
+              <td>{formatValue(row.main_trend)}</td>
+              <td>{formatValue(row.beta)}</td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );
