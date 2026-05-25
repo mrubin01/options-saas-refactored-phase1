@@ -29,9 +29,13 @@ export default function Navigation() {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <Link to="/covered-calls" style={{ fontWeight: 700, textDecoration: "none" }}>
+        <Link to="/dashboard" style={{ fontWeight: 700, textDecoration: "none" }}>
           Options SaaS
         </Link>
+
+        <NavLink to="/dashboard" style={linkStyle}>
+          Dashboard
+        </NavLink>
 
         <NavLink to="/covered-calls" style={linkStyle}>
           Covered Calls

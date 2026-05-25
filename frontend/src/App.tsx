@@ -11,17 +11,29 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
 import AccountPage from "./pages/AccountPage";
 import WatchlistPage from "./pages/WatchlistPage";
+import DashboardPage from "./pages/DashboardPage";
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/covered-calls" replace />} />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
+
+      <Route
+        path="/dashboard"
+        element={
+          <RequireAuth>
+            <Layout>
+              <DashboardPage />
+            </Layout>
+          </RequireAuth>
+        }
+      />
 
       <Route
         path="/covered-calls"
