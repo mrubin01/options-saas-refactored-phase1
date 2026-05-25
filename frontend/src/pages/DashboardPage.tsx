@@ -6,12 +6,7 @@ import { listWatchlistItems } from "../api/watchlist";
 import PageHeader from "../components/PageHeader";
 import type { SavedScreener } from "../types/savedScreener";
 import type { WatchlistItem } from "../types/watchlistItem";
-
-const strategyLabelMap: Record<string, string> = {
-  covered_calls: "Covered Calls",
-  put_options: "Put Options",
-  spread_options: "Spread Options",
-};
+import { strategyLabelMap, strategyPathMap } from "../utils/strategyLabels";
 
 function formatDateTime(value: string) {
   const date = new Date(value);
@@ -108,6 +103,12 @@ export default function DashboardPage() {
         <div className="text-sm text-gray-500 py-3">Loading dashboard…</div>
       ) : (
         <>
+          <div className="text-sm text-gray-600" style={{ marginBottom: 20 }}>
+            You currently have {screenerCounts.total} saved screener
+            {screenerCounts.total === 1 ? "" : "s"} and {watchlistCounts.total} watchlist item
+            {watchlistCounts.total === 1 ? "" : "s"}.
+          </div>
+
           <div
             style={{
               display: "grid",
@@ -127,19 +128,28 @@ export default function DashboardPage() {
               subtitle="Tracked option opportunities"
             />
             <DashboardCard
-              title="Covered Calls"
+              title="Covered Calls Screeners"
+              value={screenerCounts.covered_calls}
+            />
+            <DashboardCard
+              title="Put Options Screeners"
+              value={screenerCounts.put_options}
+            />
+            <DashboardCard
+              title="Spread Options Screeners"
+              value={screenerCounts.spread_options}
+            />
+            <DashboardCard
+              title="Covered Calls Watchlist"
               value={watchlistCounts.covered_calls}
-              subtitle="Items in watchlist"
             />
             <DashboardCard
-              title="Put Options"
+              title="Put Options Watchlist"
               value={watchlistCounts.put_options}
-              subtitle="Items in watchlist"
             />
             <DashboardCard
-              title="Spread Options"
+              title="Spread Options Watchlist"
               value={watchlistCounts.spread_options}
-              subtitle="Items in watchlist"
             />
           </div>
 
@@ -165,7 +175,9 @@ export default function DashboardPage() {
               </div>
 
               {recentScreeners.length === 0 ? (
-                <div className="text-sm text-gray-500">No saved screeners yet.</div>
+                <div className="text-sm text-gray-500">
+                  You have not saved any screeners yet. Start from one of the strategy pages.
+                </div>
               ) : (
                 <div style={{ display: "grid", gap: 10 }}>
                   {recentScreeners.map((item) => (
@@ -183,6 +195,9 @@ export default function DashboardPage() {
                       </div>
                       <div style={{ fontSize: 12, color: "#777", marginTop: 4 }}>
                         Updated {formatDateTime(item.updated_at)}
+                      </div>
+                      <div style={{ marginTop: 8 }}>
+                        <Link to={strategyPathMap[item.strategy_type]}>Open strategy</Link>
                       </div>
                     </div>
                   ))}
@@ -204,7 +219,10 @@ export default function DashboardPage() {
               </div>
 
               {recentWatchlist.length === 0 ? (
-                <div className="text-sm text-gray-500">No watchlist items yet.</div>
+                <div className="text-sm text-gray-500">
+                  Your watchlist is empty. Add opportunities from Covered Calls, Put Options, or
+                  Spread Options.
+                </div>
               ) : (
                 <div style={{ display: "grid", gap: 10 }}>
                   {recentWatchlist.map((item) => (
@@ -224,6 +242,9 @@ export default function DashboardPage() {
                       </div>
                       <div style={{ fontSize: 12, color: "#777", marginTop: 4 }}>
                         Added {formatDateTime(item.created_at)}
+                      </div>
+                      <div style={{ marginTop: 8 }}>
+                        <Link to={strategyPathMap[item.strategy_type]}>Open strategy</Link>
                       </div>
                     </div>
                   ))}
