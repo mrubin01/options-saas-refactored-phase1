@@ -27,6 +27,7 @@ export default function SavedScreenersPanel({
   const [editingName, setEditingName] = useState("");
   const [isRenaming, setIsRenaming] = useState(false);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [duplicateCandidate, setDuplicateCandidate] = useState<SavedScreener | null>(null);
 
   async function loadItems() {
     try {
@@ -54,6 +55,10 @@ export default function SavedScreenersPanel({
   function cancelRename() {
     setEditingId(null);
     setEditingName("");
+  }
+
+  function clearDuplicateCandidate() {
+    setDuplicateCandidate(null);
   }
 
   async function handleUpdateConfig(id: number) {
@@ -92,6 +97,29 @@ export default function SavedScreenersPanel({
     }
   }
 
+  async function handleOverwriteDuplicate() {
+    if (!duplicateCandidate) {
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      setError(null);
+
+      await updateSavedScreener(duplicateCandidate.id, {
+        config_json: getCurrentConfig(),
+      });
+
+      setDuplicateCandidate(null);
+      setName("");
+      await loadItems();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to overwrite screener");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   async function handleSave() {
     const trimmed = name.trim();
     if (!trimmed) {
@@ -99,9 +127,20 @@ export default function SavedScreenersPanel({
       return;
     }
 
+    const existing = items.find(
+      (item) => item.name.trim().toLowerCase() === trimmed.toLowerCase()
+    );
+
+    if (existing) {
+      setDuplicateCandidate(existing);
+      setError(null);
+      return;
+    }
+
     try {
       setIsSaving(true);
       setError(null);
+      setDuplicateCandidate(null);
 
       await createSavedScreener({
         name: trimmed,
@@ -126,6 +165,10 @@ export default function SavedScreenersPanel({
         cancelRename();
       }
 
+      if (duplicateCandidate?.id === id) {
+        clearDuplicateCandidate();
+      }
+
       await deleteSavedScreener(id);
       await loadItems();
     } catch (err) {
@@ -137,14 +180,21 @@ export default function SavedScreenersPanel({
     <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="mb-3">
         <h3 className="text-lg font-semibold text-slate-900">Saved screeners</h3>
-        <p className="text-sm text-slate-500">Save, rename, and reload your current filters and sorting.</p>
+        <p className="text-sm text-slate-500">
+          Save, rename, update, and reload your current filters and sorting.
+        </p>
       </div>
 
       <div className="mb-4 flex gap-2">
         <input
           type="text"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value);
+            if (duplicateCandidate) {
+              setDuplicateCandidate(null);
+            }
+          }}
           placeholder="Screener name"
           className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
         />
@@ -161,6 +211,32 @@ export default function SavedScreenersPanel({
       {error && (
         <div className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
+        </div>
+      )}
+
+      {duplicateCandidate && (
+        <div className="mb-3 rounded-lg bg-amber-50 px-3 py-3 text-sm text-amber-800">
+          <div className="mb-2">
+            A screener named <strong>{duplicateCandidate.name}</strong> already exists.
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => void handleOverwriteDuplicate()}
+              disabled={isSaving}
+              className="rounded-md border border-amber-300 px-3 py-1 text-sm"
+            >
+              {isSaving ? "Overwriting..." : "Overwrite existing"}
+            </button>
+            <button
+              type="button"
+              onClick={clearDuplicateCandidate}
+              disabled={isSaving}
+              className="rounded-md border border-slate-300 px-3 py-1 text-sm"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
 
