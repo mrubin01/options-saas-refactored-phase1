@@ -184,3 +184,12 @@ export function hasActiveCoveredCallsDiscoveryFilters(
     return value !== undefined && value !== null && value !== "";
   });
 }
+
+export function buildCoveredCallsPathFromFilters(
+  filters: CoveredCallsDiscoveryFilters,
+) {
+  const searchParams = coveredCallsFiltersToSearchParams(filters);
+  const qs = searchParams.toString();
+
+  return qs ? `/covered-calls?${qs}` : "/covered-calls";
+}

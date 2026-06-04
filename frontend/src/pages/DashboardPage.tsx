@@ -4,8 +4,10 @@ import { Link } from "react-router-dom";
 import { listSavedScreeners } from "../api/savedScreeners";
 import { listWatchlistItems } from "../api/watchlist";
 import PageHeader from "../components/PageHeader";
+import type { CoveredCallsDiscoveryFilters } from "../types/discovery";
 import type { SavedScreener } from "../types/savedScreener";
 import type { WatchlistItem } from "../types/watchlistItem";
+import { coveredCallsFiltersToSearchParams } from "../utils/queryParams";
 import { strategyLabelMap, strategyPathMap } from "../utils/strategyLabels";
 
 function formatDateTime(value: string) {
@@ -36,11 +38,40 @@ function DashboardCard({
         background: "#fff",
       }}
     >
-      <div style={{ fontSize: 14, color: "#666", marginBottom: 6 }}>{title}</div>
+      <div style={{ fontSize: 14, color: "#666", marginBottom: 6 }}>
+        {title}
+      </div>
       <div style={{ fontSize: 28, fontWeight: 700 }}>{value}</div>
-      {subtitle && <div style={{ fontSize: 13, color: "#777", marginTop: 6 }}>{subtitle}</div>}
+      {subtitle && (
+        <div style={{ fontSize: 13, color: "#777", marginTop: 6 }}>
+          {subtitle}
+        </div>
+      )}
     </div>
   );
+}
+
+function getSavedScreenerPath(item: SavedScreener) {
+  if (item.strategy_type !== "covered_calls") {
+    return strategyPathMap[item.strategy_type];
+  }
+
+  const filters =
+    (item.config_json?.filters as CoveredCallsDiscoveryFilters | undefined) ??
+    {};
+
+  const sort = item.config_json?.sort;
+
+  const normalizedFilters: CoveredCallsDiscoveryFilters = {
+    ...filters,
+    sort_by: filters.sort_by ?? sort?.sort_by,
+    sort_dir: filters.sort_dir ?? sort?.sort_dir,
+  } as CoveredCallsDiscoveryFilters;
+
+  const searchParams = coveredCallsFiltersToSearchParams(normalizedFilters);
+  const queryString = searchParams.toString();
+
+  return queryString ? `/covered-calls?${queryString}` : "/covered-calls";
 }
 
 export default function DashboardPage() {
@@ -63,7 +94,9 @@ export default function DashboardPage() {
         setSavedScreeners(screeners);
         setWatchlistItems(watchlist);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load dashboard");
+        setError(
+          err instanceof Error ? err.message : "Failed to load dashboard",
+        );
       } finally {
         setIsLoading(false);
       }
@@ -75,23 +108,42 @@ export default function DashboardPage() {
   const screenerCounts = useMemo(() => {
     return {
       total: savedScreeners.length,
-      covered_calls: savedScreeners.filter((item) => item.strategy_type === "covered_calls").length,
-      put_options: savedScreeners.filter((item) => item.strategy_type === "put_options").length,
-      spread_options: savedScreeners.filter((item) => item.strategy_type === "spread_options").length,
+      covered_calls: savedScreeners.filter(
+        (item) => item.strategy_type === "covered_calls",
+      ).length,
+      put_options: savedScreeners.filter(
+        (item) => item.strategy_type === "put_options",
+      ).length,
+      spread_options: savedScreeners.filter(
+        (item) => item.strategy_type === "spread_options",
+      ).length,
     };
   }, [savedScreeners]);
 
   const watchlistCounts = useMemo(() => {
     return {
       total: watchlistItems.length,
-      covered_calls: watchlistItems.filter((item) => item.strategy_type === "covered_calls").length,
-      put_options: watchlistItems.filter((item) => item.strategy_type === "put_options").length,
-      spread_options: watchlistItems.filter((item) => item.strategy_type === "spread_options").length,
+      covered_calls: watchlistItems.filter(
+        (item) => item.strategy_type === "covered_calls",
+      ).length,
+      put_options: watchlistItems.filter(
+        (item) => item.strategy_type === "put_options",
+      ).length,
+      spread_options: watchlistItems.filter(
+        (item) => item.strategy_type === "spread_options",
+      ).length,
     };
   }, [watchlistItems]);
 
-  const recentScreeners = useMemo(() => savedScreeners.slice(0, 5), [savedScreeners]);
-  const recentWatchlist = useMemo(() => watchlistItems.slice(0, 5), [watchlistItems]);
+  const recentScreeners = useMemo(
+    () => savedScreeners.slice(0, 5),
+    [savedScreeners],
+  );
+
+  const recentWatchlist = useMemo(
+    () => watchlistItems.slice(0, 5),
+    [watchlistItems],
+  );
 
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
@@ -105,7 +157,8 @@ export default function DashboardPage() {
         <>
           <div className="text-sm text-gray-600" style={{ marginBottom: 20 }}>
             You currently have {screenerCounts.total} saved screener
-            {screenerCounts.total === 1 ? "" : "s"} and {watchlistCounts.total} watchlist item
+            {screenerCounts.total === 1 ? "" : "s"} and{" "}
+            {watchlistCounts.total} watchlist item
             {watchlistCounts.total === 1 ? "" : "s"}.
           </div>
 
@@ -169,14 +222,23 @@ export default function DashboardPage() {
                 background: "#fff",
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-                <h2 style={{ margin: 0, fontSize: 18 }}>Recent Saved Screeners</h2>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: 12,
+                }}
+              >
+                <h2 style={{ margin: 0, fontSize: 18 }}>
+                  Recent Saved Screeners
+                </h2>
                 <Link to="/covered-calls">Open strategies</Link>
               </div>
 
               {recentScreeners.length === 0 ? (
                 <div className="text-sm text-gray-500">
-                  You have not saved any screeners yet. Start from one of the strategy pages.
+                  You have not saved any screeners yet. Start from one of the
+                  strategy pages.
                 </div>
               ) : (
                 <div style={{ display: "grid", gap: 10 }}>
@@ -197,7 +259,9 @@ export default function DashboardPage() {
                         Updated {formatDateTime(item.updated_at)}
                       </div>
                       <div style={{ marginTop: 8 }}>
-                        <Link to={strategyPathMap[item.strategy_type]}>Open strategy</Link>
+                        <Link to={getSavedScreenerPath(item)}>
+                          Open screener
+                        </Link>
                       </div>
                     </div>
                   ))}
@@ -213,15 +277,23 @@ export default function DashboardPage() {
                 background: "#fff",
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-                <h2 style={{ margin: 0, fontSize: 18 }}>Recent Watchlist Items</h2>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: 12,
+                }}
+              >
+                <h2 style={{ margin: 0, fontSize: 18 }}>
+                  Recent Watchlist Items
+                </h2>
                 <Link to="/watchlist">Open watchlist</Link>
               </div>
 
               {recentWatchlist.length === 0 ? (
                 <div className="text-sm text-gray-500">
-                  Your watchlist is empty. Add opportunities from Covered Calls, Put Options, or
-                  Spread Options.
+                  Your watchlist is empty. Add opportunities from Covered Calls,
+                  Put Options, or Spread Options.
                 </div>
               ) : (
                 <div style={{ display: "grid", gap: 10 }}>
@@ -244,7 +316,9 @@ export default function DashboardPage() {
                         Added {formatDateTime(item.created_at)}
                       </div>
                       <div style={{ marginTop: 8 }}>
-                        <Link to={strategyPathMap[item.strategy_type]}>Open strategy</Link>
+                        <Link to={strategyPathMap[item.strategy_type]}>
+                          Open strategy
+                        </Link>
                       </div>
                     </div>
                   ))}

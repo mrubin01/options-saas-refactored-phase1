@@ -1,8 +1,13 @@
 export type StrategyType = "covered_calls" | "put_options" | "spread_options";
+import type { CoveredCallsDiscoveryFilters } from "./discovery";
+import type { OptionsFilters } from "./filters";
 
 export type SavedScreenerConfig = {
-  filters: object;
-  sort: Record<string, unknown> | null;
+  filters?: OptionsFilters | CoveredCallsDiscoveryFilters;
+  sort?: {
+    sort_by?: string;
+    sort_dir?: "asc" | "desc";
+  } | null;
 };
 
 export type SavedScreener = {

@@ -17,7 +17,10 @@ import ActiveFilterChips from "../components/ActiveFilterChips";
 import AdvancedFiltersPanel from "../components/AdvancedFiltersPanel";
 import { EXCHANGES } from "../constants/exchanges";
 import type { CoveredCall } from "../types/coveredCall";
-import type { CoveredCallsDiscoveryFilters } from "../types/discovery";
+import type {
+  CoveredCallSortField,
+  CoveredCallsDiscoveryFilters,
+} from "../types/discovery";
 import type { OptionsFilters as LegacyOptionsFilters } from "../types/filters";
 import type { SavedScreenerConfig } from "../types/savedScreener";
 import type { WatchlistItem } from "../types/watchlistItem";
@@ -68,6 +71,27 @@ function getUniqueSortedValues(values: Array<string | null | undefined>) {
   ).sort((a, b) => a.localeCompare(b));
 }
 
+function normalizeSavedScreenerFilters(
+  config: SavedScreenerConfig,
+): CoveredCallsDiscoveryFilters {
+  const rawFilters =
+    (config.filters as
+      | (CoveredCallsDiscoveryFilters & { expiry_date?: string })
+      | undefined) ?? {};
+
+  const expiryDateMin =
+    rawFilters.expiry_date_min ?? rawFilters.min_expiry ?? rawFilters.expiry_date;
+
+  return {
+    ...rawFilters,
+    min_expiry: expiryDateMin,
+    expiry_date_min: expiryDateMin,
+    sort_by: rawFilters.sort_by ?? (config.sort?.sort_by as CoveredCallSortField | undefined),
+    sort_dir: rawFilters.sort_dir ?? config.sort?.sort_dir,
+    offset: 0,
+  };
+}
+
 export default function CoveredCallsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -101,7 +125,9 @@ export default function CoveredCallsPage() {
       ? rows.filter((row) => row.sector === filters.sector)
       : rows;
 
-    return getUniqueSortedValues(rowsForSelectedSector.map((row) => row.industry));
+    return getUniqueSortedValues(
+      rowsForSelectedSector.map((row) => row.industry),
+    );
   }, [rows, filters.sector]);
 
   useEffect(() => {
@@ -177,11 +203,24 @@ export default function CoveredCallsPage() {
   }
 
   function handleRemoveFilter(key: keyof CoveredCallsDiscoveryFilters) {
-    setFilters((current) => ({
-      ...current,
-      [key]: undefined,
-      offset: 0,
-    }));
+    setFilters((current) => {
+      const next: CoveredCallsDiscoveryFilters = {
+        ...current,
+        [key]: undefined,
+        offset: 0,
+      };
+
+      if (key === "expiry_date_min" || key === "min_expiry") {
+        next.expiry_date_min = undefined;
+        next.min_expiry = undefined;
+      }
+
+      if (key === "sector") {
+        next.industry = undefined;
+      }
+
+      return next;
+    });
   }
 
   function handleClearAllFilters() {
@@ -201,13 +240,7 @@ export default function CoveredCallsPage() {
   }
 
   function applySavedScreener(config: SavedScreenerConfig) {
-    const nextFilters =
-      (config.filters as CoveredCallsDiscoveryFilters | undefined) ?? {};
-
-    setFilters({
-      ...nextFilters,
-      offset: 0,
-    });
+    setFilters(normalizeSavedScreenerFilters(config));
   }
 
   return (

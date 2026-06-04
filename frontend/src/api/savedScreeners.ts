@@ -7,7 +7,10 @@ import type {
 } from "../types/savedScreener";
 
 export function listSavedScreeners(strategyType?: StrategyType) {
-  const query = strategyType ? `?strategy_type=${strategyType}` : "";
+  const query = strategyType
+    ? `?strategy_type=${encodeURIComponent(strategyType)}`
+    : "";
+
   return apiFetch<SavedScreener[]>(`/saved-screeners${query}`);
 }
 
@@ -22,7 +25,10 @@ export function createSavedScreener(payload: CreateSavedScreenerPayload) {
   });
 }
 
-export function updateSavedScreener(id: number, payload: UpdateSavedScreenerPayload) {
+export function updateSavedScreener(
+  id: number,
+  payload: UpdateSavedScreenerPayload,
+) {
   return apiFetch<SavedScreener>(`/saved-screeners/${id}`, {
     method: "PUT",
     body: JSON.stringify(payload),

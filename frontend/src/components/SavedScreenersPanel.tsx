@@ -5,7 +5,11 @@ import {
   listSavedScreeners,
   updateSavedScreener,
 } from "../api/savedScreeners";
-import type { SavedScreener, SavedScreenerConfig, StrategyType } from "../types/savedScreener";
+import type {
+  SavedScreener,
+  SavedScreenerConfig,
+  StrategyType,
+} from "../types/savedScreener";
 
 type SavedScreenersPanelProps = {
   strategyType: StrategyType;
@@ -29,7 +33,8 @@ export default function SavedScreenersPanel({
   const [isRenaming, setIsRenaming] = useState(false);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [duplicateCandidate, setDuplicateCandidate] = useState<SavedScreener | null>(null);
+  const [duplicateCandidate, setDuplicateCandidate] =
+    useState<SavedScreener | null>(null);
 
   async function loadItems() {
     try {
@@ -38,7 +43,9 @@ export default function SavedScreenersPanel({
       const data = await listSavedScreeners(strategyType);
       setItems(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load saved screeners");
+      setError(
+        err instanceof Error ? err.message : "Failed to load saved screeners",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -68,15 +75,28 @@ export default function SavedScreenersPanel({
     setDuplicateCandidate(null);
   }
 
+  function handleApply(config: SavedScreenerConfig) {
+    resetMessages();
+    clearDuplicateCandidate();
+    onApply(config);
+    setSuccess("Screener applied.");
+  }
+
   async function handleUpdateConfig(id: number) {
     try {
       setUpdatingId(id);
       resetMessages();
-      await updateSavedScreener(id, { config_json: getCurrentConfig() });
+
+      await updateSavedScreener(id, {
+        config_json: getCurrentConfig(),
+      });
+
       await loadItems();
       setSuccess("Screener updated successfully.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update screener");
+      setError(
+        err instanceof Error ? err.message : "Failed to update screener",
+      );
     } finally {
       setUpdatingId(null);
     }
@@ -84,6 +104,7 @@ export default function SavedScreenersPanel({
 
   async function handleRename(id: number) {
     const trimmed = editingName.trim();
+
     if (!trimmed) {
       setError("Please enter a screener name");
       return;
@@ -93,14 +114,18 @@ export default function SavedScreenersPanel({
       setIsRenaming(true);
       resetMessages();
 
-      await updateSavedScreener(id, { name: trimmed });
+      await updateSavedScreener(id, {
+        name: trimmed,
+      });
 
       setEditingId(null);
       setEditingName("");
       await loadItems();
       setSuccess("Screener renamed successfully.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to rename screener");
+      setError(
+        err instanceof Error ? err.message : "Failed to rename screener",
+      );
     } finally {
       setIsRenaming(false);
     }
@@ -124,7 +149,9 @@ export default function SavedScreenersPanel({
       await loadItems();
       setSuccess("Existing screener overwritten successfully.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to overwrite screener");
+      setError(
+        err instanceof Error ? err.message : "Failed to overwrite screener",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -132,13 +159,14 @@ export default function SavedScreenersPanel({
 
   async function handleSave() {
     const trimmed = name.trim();
+
     if (!trimmed) {
       setError("Please enter a screener name");
       return;
     }
 
     const existing = items.find(
-      (item) => item.name.trim().toLowerCase() === trimmed.toLowerCase()
+      (item) => item.name.trim().toLowerCase() === trimmed.toLowerCase(),
     );
 
     if (existing) {
@@ -186,7 +214,9 @@ export default function SavedScreenersPanel({
       await loadItems();
       setSuccess("Screener deleted successfully.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete screener");
+      setError(
+        err instanceof Error ? err.message : "Failed to delete screener",
+      );
     } finally {
       setDeletingId(null);
     }
@@ -195,7 +225,9 @@ export default function SavedScreenersPanel({
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="mb-3">
-        <h3 className="text-lg font-semibold text-slate-900">Saved screeners</h3>
+        <h3 className="text-lg font-semibold text-slate-900">
+          Saved screeners
+        </h3>
         <p className="text-sm text-slate-500">
           Save, rename, update, and reload your current filters and sorting.
         </p>
@@ -207,6 +239,7 @@ export default function SavedScreenersPanel({
           value={name}
           onChange={(e) => {
             setName(e.target.value);
+
             if (duplicateCandidate) {
               setDuplicateCandidate(null);
             }
@@ -215,6 +248,7 @@ export default function SavedScreenersPanel({
           className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
           disabled={isSaving}
         />
+
         <button
           type="button"
           onClick={handleSave}
@@ -240,8 +274,10 @@ export default function SavedScreenersPanel({
       {duplicateCandidate && (
         <div className="mb-3 rounded-lg bg-amber-50 px-3 py-3 text-sm text-amber-800">
           <div className="mb-2">
-            A screener named <strong>{duplicateCandidate.name}</strong> already exists.
+            A screener named <strong>{duplicateCandidate.name}</strong> already
+            exists.
           </div>
+
           <div className="flex gap-2">
             <button
               type="button"
@@ -251,6 +287,7 @@ export default function SavedScreenersPanel({
             >
               {isSaving ? "Overwriting..." : "Overwrite existing"}
             </button>
+
             <button
               type="button"
               onClick={clearDuplicateCandidate}
@@ -273,7 +310,8 @@ export default function SavedScreenersPanel({
             const isUpdatingThis = updatingId === item.id;
             const isDeletingThis = deletingId === item.id;
             const isEditingThis = editingId === item.id;
-            const isBusy = isUpdatingThis || isDeletingThis || (isEditingThis && isRenaming);
+            const isBusy =
+              isUpdatingThis || isDeletingThis || (isEditingThis && isRenaming);
 
             return (
               <div
@@ -290,6 +328,7 @@ export default function SavedScreenersPanel({
                         className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
                         disabled={isRenaming}
                       />
+
                       <button
                         type="button"
                         onClick={() => void handleRename(item.id)}
@@ -298,6 +337,7 @@ export default function SavedScreenersPanel({
                       >
                         {isRenaming ? "Saving..." : "Save"}
                       </button>
+
                       <button
                         type="button"
                         onClick={cancelRename}
@@ -309,8 +349,12 @@ export default function SavedScreenersPanel({
                     </div>
                   ) : (
                     <>
-                      <div className="font-medium text-slate-900">{item.name}</div>
-                      <div className="text-xs text-slate-500">{item.strategy_type}</div>
+                      <div className="font-medium text-slate-900">
+                        {item.name}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {item.strategy_type}
+                      </div>
                     </>
                   )}
                 </div>
@@ -319,12 +363,13 @@ export default function SavedScreenersPanel({
                   <div className="ml-4 flex gap-2">
                     <button
                       type="button"
-                      onClick={() => onApply(item.config_json)}
+                      onClick={() => handleApply(item.config_json)}
                       disabled={isBusy}
                       className="rounded-md border border-slate-300 px-3 py-1 text-sm disabled:opacity-50"
                     >
                       Apply
                     </button>
+
                     <button
                       type="button"
                       onClick={() => void handleUpdateConfig(item.id)}
@@ -333,6 +378,7 @@ export default function SavedScreenersPanel({
                     >
                       {isUpdatingThis ? "Updating..." : "Update"}
                     </button>
+
                     <button
                       type="button"
                       onClick={() => startRename(item)}
@@ -341,6 +387,7 @@ export default function SavedScreenersPanel({
                     >
                       Rename
                     </button>
+
                     <button
                       type="button"
                       onClick={() => void handleDelete(item.id)}

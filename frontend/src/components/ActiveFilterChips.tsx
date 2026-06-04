@@ -35,6 +35,21 @@ const FILTER_LABELS: Partial<Record<FilterKey, string>> = {
   sort_dir: "Sort direction",
 };
 
+const SORT_FIELD_LABELS: Record<string, string> = {
+  ticker: "Ticker",
+  expiry_date: "Expiry date",
+  days_to_expiration: "DTE",
+  premium_per_contract: "Premium",
+  option_yield: "Option yield",
+  roc: "ROC",
+  tot_return: "Total return",
+  open_interest: "Open interest",
+  impl_volatility: "Implied volatility",
+  delta: "Delta",
+  moneyness: "Moneyness",
+  spread_bid_ask: "Bid/ask spread",
+};
+
 const HIDDEN_KEYS = new Set<FilterKey>(["limit", "offset"]);
 
 function formatKey(key: string) {
@@ -43,9 +58,17 @@ function formatKey(key: string) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function formatValue(value: unknown) {
+function formatValue(key: FilterKey, value: unknown) {
   if (value === undefined || value === null || value === "") {
     return "";
+  }
+
+  if (key === "sort_by") {
+    return SORT_FIELD_LABELS[String(value)] ?? formatKey(String(value));
+  }
+
+  if (key === "sort_dir") {
+    return String(value).toUpperCase();
   }
 
   return String(value);
@@ -63,7 +86,14 @@ export default function ActiveFilterChips({
   onClearAll,
 }: Props) {
   const activeEntries = Object.entries(filters).filter(([key, value]) => {
-    if (HIDDEN_KEYS.has(key as FilterKey)) {
+    const typedKey = key as FilterKey;
+
+    if (HIDDEN_KEYS.has(typedKey)) {
+      return false;
+    }
+
+    // Avoid showing two chips for the same effective expiry lower-bound.
+    if (typedKey === "min_expiry" && filters.expiry_date_min) {
       return false;
     }
 
@@ -102,7 +132,7 @@ export default function ActiveFilterChips({
               }}
               title="Remove filter"
             >
-              {label}: {formatValue(value)} ×
+              {label}: {formatValue(key, value)} ×
             </button>
           );
         })}
