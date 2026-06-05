@@ -1,8 +1,11 @@
 import type {
   CoveredCallSortField,
   CoveredCallsDiscoveryFilters,
+  PutOptionSortField,
+  PutOptionsDiscoveryFilters,
   SortDirection,
 } from "../types/discovery";
+
 
 const NUMBER_FILTER_KEYS = [
   "exchange",
@@ -103,12 +106,47 @@ const COVERED_CALL_SORT_FIELDS: CoveredCallSortField[] = [
   "beta",
 ];
 
-function isCoveredCallSortField(value: string): value is CoveredCallSortField {
-  return COVERED_CALL_SORT_FIELDS.includes(value as CoveredCallSortField);
-}
+const PUT_OPTION_SORT_FIELDS: PutOptionSortField[] = [
+  "ticker",
+  "exchange",
+  "contract",
+  "expiry_date",
+  "current_price",
+  "strike_price",
+  "days_to_expiration",
+  "coeff_variation",
+  "max_profit",
+  "max_profit_per_contract",
+  "otm",
+  "moneyness",
+  "sigma_distance",
+  "break_even",
+  "option_yield",
+  "roc",
+  "tot_return",
+  "delta",
+  "spread_bid_ask",
+  "open_interest",
+  "impl_volatility",
+  "bid_per_share",
+  "premium_per_contract",
+  "sector",
+  "industry",
+  "highest_price",
+  "avg_price",
+  "lowest_price",
+  "main_trend",
+  "beta",
+];
 
 function isSortDirection(value: string): value is SortDirection {
   return value === "asc" || value === "desc";
+}
+
+
+// covered calls
+function isCoveredCallSortField(value: string): value is CoveredCallSortField {
+  return COVERED_CALL_SORT_FIELDS.includes(value as CoveredCallSortField);
 }
 
 export function parseCoveredCallsFiltersFromSearchParams(
@@ -193,3 +231,94 @@ export function buildCoveredCallsPathFromFilters(
 
   return qs ? `/covered-calls?${qs}` : "/covered-calls";
 }
+
+
+
+// put options
+function isPutOptionSortField(value: string): value is PutOptionSortField {
+  return PUT_OPTION_SORT_FIELDS.includes(value as PutOptionSortField);
+}
+
+export function parsePutOptionsFiltersFromSearchParams(
+  searchParams: URLSearchParams,
+): PutOptionsDiscoveryFilters {
+  const filters: PutOptionsDiscoveryFilters = {};
+
+  NUMBER_FILTER_KEYS.forEach((key) => {
+    const value = searchParams.get(key);
+
+    if (value === null || value === "") {
+      return;
+    }
+
+    const numericValue = Number(value);
+
+    if (!Number.isNaN(numericValue)) {
+      filters[key] = numericValue as never;
+    }
+  });
+
+  STRING_FILTER_KEYS.forEach((key) => {
+    const value = searchParams.get(key);
+
+    if (value === null || value === "") {
+      return;
+    }
+
+    if (key === "sort_by") {
+      if (isPutOptionSortField(value)) {
+        filters.sort_by = value;
+      }
+      return;
+    }
+
+    if (key === "sort_dir") {
+      if (isSortDirection(value)) {
+        filters.sort_dir = value;
+      }
+      return;
+    }
+
+    filters[key] = value as never;
+  });
+
+  return filters;
+}
+
+export function putOptionsFiltersToSearchParams(
+  filters: PutOptionsDiscoveryFilters,
+): URLSearchParams {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === "") {
+      return;
+    }
+
+    searchParams.set(key, String(value));
+  });
+
+  return searchParams;
+}
+
+export function hasActivePutOptionsDiscoveryFilters(
+  filters: PutOptionsDiscoveryFilters,
+): boolean {
+  return Object.entries(filters).some(([key, value]) => {
+    if (key === "limit" || key === "offset") {
+      return false;
+    }
+
+    return value !== undefined && value !== null && value !== "";
+  });
+}
+
+export function buildPutOptionsPathFromFilters(
+  filters: PutOptionsDiscoveryFilters,
+) {
+  const searchParams = putOptionsFiltersToSearchParams(filters);
+  const qs = searchParams.toString();
+
+  return qs ? `/put-options?${qs}` : "/put-options";
+}
+
