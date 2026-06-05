@@ -3,6 +3,8 @@ import type {
   CoveredCallsDiscoveryFilters,
   PutOptionSortField,
   PutOptionsDiscoveryFilters,
+  SpreadOptionSortField,
+  SpreadOptionsDiscoveryFilters,
   SortDirection,
 } from "../types/discovery";
 
@@ -107,6 +109,39 @@ const COVERED_CALL_SORT_FIELDS: CoveredCallSortField[] = [
 ];
 
 const PUT_OPTION_SORT_FIELDS: PutOptionSortField[] = [
+  "ticker",
+  "exchange",
+  "contract",
+  "expiry_date",
+  "current_price",
+  "strike_price",
+  "days_to_expiration",
+  "coeff_variation",
+  "max_profit",
+  "max_profit_per_contract",
+  "otm",
+  "moneyness",
+  "sigma_distance",
+  "break_even",
+  "option_yield",
+  "roc",
+  "tot_return",
+  "delta",
+  "spread_bid_ask",
+  "open_interest",
+  "impl_volatility",
+  "bid_per_share",
+  "premium_per_contract",
+  "sector",
+  "industry",
+  "highest_price",
+  "avg_price",
+  "lowest_price",
+  "main_trend",
+  "beta",
+];
+
+const SPREAD_OPTION_SORT_FIELDS: SpreadOptionSortField[] = [
   "ticker",
   "exchange",
   "contract",
@@ -322,3 +357,91 @@ export function buildPutOptionsPathFromFilters(
   return qs ? `/put-options?${qs}` : "/put-options";
 }
 
+
+// spread options
+function isSpreadOptionSortField(value: string): value is SpreadOptionSortField {
+  return SPREAD_OPTION_SORT_FIELDS.includes(value as SpreadOptionSortField);
+}
+
+export function parseSpreadOptionsFiltersFromSearchParams(
+  searchParams: URLSearchParams,
+): SpreadOptionsDiscoveryFilters {
+  const filters: SpreadOptionsDiscoveryFilters = {};
+
+  NUMBER_FILTER_KEYS.forEach((key) => {
+    const value = searchParams.get(key);
+
+    if (value === null || value === "") {
+      return;
+    }
+
+    const numericValue = Number(value);
+
+    if (!Number.isNaN(numericValue)) {
+      filters[key] = numericValue as never;
+    }
+  });
+
+  STRING_FILTER_KEYS.forEach((key) => {
+    const value = searchParams.get(key);
+
+    if (value === null || value === "") {
+      return;
+    }
+
+    if (key === "sort_by") {
+      if (isSpreadOptionSortField(value)) {
+        filters.sort_by = value;
+      }
+      return;
+    }
+
+    if (key === "sort_dir") {
+      if (isSortDirection(value)) {
+        filters.sort_dir = value;
+      }
+      return;
+    }
+
+    filters[key] = value as never;
+  });
+
+  return filters;
+}
+
+export function spreadOptionsFiltersToSearchParams(
+  filters: SpreadOptionsDiscoveryFilters,
+): URLSearchParams {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === "") {
+      return;
+    }
+
+    searchParams.set(key, String(value));
+  });
+
+  return searchParams;
+}
+
+export function hasActiveSpreadOptionsDiscoveryFilters(
+  filters: SpreadOptionsDiscoveryFilters,
+): boolean {
+  return Object.entries(filters).some(([key, value]) => {
+    if (key === "limit" || key === "offset") {
+      return false;
+    }
+
+    return value !== undefined && value !== null && value !== "";
+  });
+}
+
+export function buildSpreadOptionsPathFromFilters(
+  filters: SpreadOptionsDiscoveryFilters,
+) {
+  const searchParams = spreadOptionsFiltersToSearchParams(filters);
+  const qs = searchParams.toString();
+
+  return qs ? `/spread-options?${qs}` : "/spread-options";
+}
