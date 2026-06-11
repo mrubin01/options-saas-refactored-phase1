@@ -30,6 +30,7 @@ import {
   spreadOptionsFiltersToSearchParams,
   parseSpreadOptionsFiltersFromSearchParams,
 } from "../utils/queryParams";
+import StrategyHelpPanel from "../components/StrategyHelpPanel";
 
 const exchangeMap: Record<number, string> = Object.fromEntries(
   EXCHANGES.map((e) => [e.id, e.name])
@@ -246,6 +247,17 @@ export default function SpreadOptionsPage() {
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
       <PageHeader title="Best Spread Options" lastUpdated={lastUpdated} />
+
+      <StrategyHelpPanel title="How to read spreads">
+        <p>
+          Spread opportunities should be compared by maximum profit, defined risk,
+          return on capital, expiration, liquidity, and strike structure.
+        </p>
+        <p>
+          Pay close attention to bid/ask spread and maximum loss assumptions before
+          treating a spread as attractive.
+        </p>
+      </StrategyHelpPanel>
 
       <div className="mb-4">
         <SavedScreenersPanel

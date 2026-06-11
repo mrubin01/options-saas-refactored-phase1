@@ -30,6 +30,7 @@ import {
   coveredCallsFiltersToSearchParams,
   parseCoveredCallsFiltersFromSearchParams,
 } from "../utils/queryParams";
+import StrategyHelpPanel from "../components/StrategyHelpPanel";
 
 const exchangeMap: Record<number, string> = Object.fromEntries(
   EXCHANGES.map((e) => [e.id, e.name]),
@@ -246,6 +247,19 @@ export default function CoveredCallsPage() {
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
       <PageHeader title="Best Covered Calls" lastUpdated={lastUpdated} />
+
+      <StrategyHelpPanel title="How to read covered calls">
+        <p>
+          Covered calls are income strategies where premium, DTE, strike distance,
+          open interest, bid/ask spread, and implied volatility should be considered
+          together.
+        </p>
+        <p>
+          Higher yield is not automatically better. Check whether the strike is close
+          to the current price, whether liquidity is sufficient, and whether the
+          expiration fits your intended holding period.
+        </p>
+      </StrategyHelpPanel>
 
       <div className="mb-4">
         <SavedScreenersPanel

@@ -30,6 +30,7 @@ import {
   putOptionsFiltersToSearchParams,
   parsePutOptionsFiltersFromSearchParams,
 } from "../utils/queryParams";
+import StrategyHelpPanel from "../components/StrategyHelpPanel";
 
 const exchangeMap: Record<number, string> = Object.fromEntries(
   EXCHANGES.map((e) => [e.id, e.name])
@@ -246,6 +247,17 @@ export default function PutOptionsPage() {
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
       <PageHeader title="Best Put Options" lastUpdated={lastUpdated} />
+
+      <StrategyHelpPanel title="How to read cash-secured puts">
+        <p>
+          Cash-secured puts should be compared by premium, return on capital,
+          break-even price, DTE, liquidity, and downside risk.
+        </p>
+        <p>
+          Higher premium may mean the market is pricing in greater uncertainty or a
+          higher chance that the stock falls below the strike.
+        </p>
+      </StrategyHelpPanel>
 
       <div className="mb-4">
         <SavedScreenersPanel
