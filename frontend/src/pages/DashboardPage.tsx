@@ -341,6 +341,7 @@ export default function DashboardPage() {
               <Link to="/put-options">Put Options</Link>
               <Link to="/spread-options">Spread Options</Link>
               <Link to="/watchlist">Watchlist</Link>
+              <Link to="/glossary">Glossary</Link>
               <Link to="/account">Account</Link>
             </div>
           </div>

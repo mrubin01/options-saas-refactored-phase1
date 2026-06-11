@@ -53,6 +53,10 @@ export default function Navigation() {
           Watchlist
         </NavLink>
 
+        <NavLink to="/glossary" style={linkStyle}>
+          Glossary
+        </NavLink>
+
         <NavLink to="/account" style={linkStyle}>
           Account
         </NavLink>

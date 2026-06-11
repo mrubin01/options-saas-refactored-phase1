@@ -1,5 +1,6 @@
 import type { CoveredCallsDiscoveryFilters } from "../types/discovery";
 import SortPresetSelect from "./SortPresetSelect";
+import { metricGlossary } from "../constants/metricGlossary";
 
 interface Props {
   filters: CoveredCallsDiscoveryFilters;
@@ -10,78 +11,25 @@ interface Props {
 
 type DiscoveryFilterKey = keyof CoveredCallsDiscoveryFilters;
 
-type MetricHelp = {
-  label: string;
-  description: string;
-};
+type MetricKey = keyof typeof metricGlossary;
 
-const METRIC_HELP: Record<string, MetricHelp> = {
-  expiry_date: {
-    label: "Expiry",
-    description:
-      "The date when the option contract expires. Shorter expirations usually mean faster time decay and less time for the trade to recover.",
-  },
-  days_to_expiration: {
-    label: "DTE",
-    description:
-      "Days to expiration. Lower DTE means the contract expires sooner; higher DTE gives the position more time.",
-  },
-  option_yield: {
-    label: "Option yield",
-    description:
-      "Option premium expressed as a percentage yield. Useful for comparing income opportunities across different prices and strikes.",
-  },
-  roc: {
-    label: "ROC",
-    description:
-      "Return on capital. Compare this with DTE, liquidity, and downside risk before judging an opportunity.",
-  },
-  tot_return: {
-    label: "Total return",
-    description:
-      "Estimated total return for the opportunity. Useful as a broad comparison metric, but it should not be used alone.",
-  },
-  premium_per_contract: {
-    label: "Premium",
-    description:
-      "Estimated option premium for one contract. Higher premium can mean more income, but often also more risk.",
-  },
-  open_interest: {
-    label: "Open interest",
-    description:
-      "Number of outstanding option contracts. Higher open interest can indicate stronger market participation and better liquidity.",
-  },
-  impl_volatility: {
-    label: "Implied volatility",
-    description:
-      "Market-implied expectation of future price movement. Higher IV often increases premiums but may indicate higher risk.",
-  },
-  delta: {
-    label: "Delta",
-    description:
-      "Approximate option sensitivity to movement in the underlying price. It can also be used as a rough probability proxy.",
-  },
-  moneyness: {
-    label: "Moneyness",
-    description:
-      "Relationship between the current price and the strike price. Helps show how close the option is to the money.",
-  },
-  spread_bid_ask: {
-    label: "Bid/ask spread",
-    description:
-      "Difference between bid and ask. Lower spreads usually indicate better liquidity and lower execution friction.",
-  },
-  sector: {
-    label: "Sector",
-    description:
-      "Broad market sector of the underlying company. Useful for diversification and avoiding overconcentration.",
-  },
-  industry: {
-    label: "Industry",
-    description:
-      "More specific industry group of the underlying company.",
-  },
-};
+function getMetricEntry(metricKey: string) {
+  return metricGlossary[metricKey as MetricKey];
+}
+
+function getMetricTooltip(metricKey: string) {
+  const metric = getMetricEntry(metricKey);
+
+  if (!metric) {
+    return undefined;
+  }
+
+  return [
+    metric.shortDefinition,
+    metric.interpretation ? `\n\nHow to read it: ${metric.interpretation}` : "",
+    metric.caution ? `\n\nCaution: ${metric.caution}` : "",
+  ].join("");
+}
 
 function toOptionalNumber(value: string) {
   if (value === "") {
@@ -92,15 +40,16 @@ function toOptionalNumber(value: string) {
 
   return Number.isNaN(numericValue) ? undefined : numericValue;
 }
-
 function FieldLabel({
   label,
   metricKey,
 }: {
   label: string;
-  metricKey?: keyof typeof METRIC_HELP;
+  metricKey?: string;
 }) {
-  const help = metricKey ? METRIC_HELP[metricKey] : undefined;
+  const metric = metricKey ? getMetricEntry(metricKey) : undefined;
+  const tooltip = metricKey ? getMetricTooltip(metricKey) : undefined;
+  const accessibleLabel = metric?.label ?? label;
 
   return (
     <span
@@ -113,10 +62,10 @@ function FieldLabel({
       }}
     >
       {label}
-      {help && (
+      {tooltip && (
         <span
-          title={help.description}
-          aria-label={`Explanation for ${help.label}`}
+          title={tooltip}
+          aria-label={`Explanation for ${accessibleLabel}`}
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -147,7 +96,7 @@ function NumberInput({
   step,
 }: {
   label: string;
-  metricKey?: keyof typeof METRIC_HELP;
+  metricKey?: string;
   value?: number;
   onChange: (value: number | undefined) => void;
   min?: number;
@@ -174,7 +123,7 @@ function DateInput({
   onChange,
 }: {
   label: string;
-  metricKey?: keyof typeof METRIC_HELP;
+  metricKey?: string;
   value?: string;
   onChange: (value: string | undefined) => void;
 }) {
@@ -198,7 +147,7 @@ function SelectInput({
   onChange,
 }: {
   label: string;
-  metricKey?: keyof typeof METRIC_HELP;
+  metricKey?: string;
   value?: string;
   options: string[];
   onChange: (value: string | undefined) => void;

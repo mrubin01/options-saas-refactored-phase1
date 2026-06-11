@@ -12,6 +12,7 @@ import VerifyEmailPage from "./pages/VerifyEmailPage";
 import AccountPage from "./pages/AccountPage";
 import WatchlistPage from "./pages/WatchlistPage";
 import DashboardPage from "./pages/DashboardPage";
+import GlossaryPage from "./pages/GlossaryPage";
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
+      <Route path="/glossary" element={<GlossaryPage />} />
 
       <Route
         path="/dashboard"

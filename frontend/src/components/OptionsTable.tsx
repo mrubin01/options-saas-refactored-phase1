@@ -1,5 +1,6 @@
 import type { OptionRow } from "../types/optionRow";
 import type { WatchlistItem, WatchlistStrategyType } from "../types/watchlistItem";
+import { metricGlossary } from "../constants/metricGlossary";
 
 type OptionsTableProps = {
   data: OptionRow[];
@@ -11,151 +12,6 @@ type OptionsTableProps = {
   onRemoveFromWatchlist?: (itemId: number, contract: string) => void;
 };
 
-type MetricHelp = {
-  label: string;
-  description: string;
-};
-
-const METRIC_HELP: Record<string, MetricHelp> = {
-  ticker: {
-    label: "Ticker",
-    description: "The stock symbol of the underlying security.",
-  },
-  contract: {
-    label: "Contract",
-    description: "The option contract identifier.",
-  },
-  exchange: {
-    label: "Exchange",
-    description: "The exchange where the underlying security is listed.",
-  },
-  expiry_date: {
-    label: "Expiry Date",
-    description: "The date when the option contract expires.",
-  },
-  days_to_expiration: {
-    label: "DTE",
-    description:
-      "Days to expiration. Lower DTE means the contract expires sooner; higher DTE gives the position more time.",
-  },
-  current_price: {
-    label: "Current Price",
-    description: "The latest available price of the underlying stock or ETF.",
-  },
-  strike_price: {
-    label: "Strike Price",
-    description:
-      "The price at which the option can be exercised. Compare this with current price to understand moneyness.",
-  },
-  highest_price: {
-    label: "Highest Price",
-    description: "The highest observed price in the reference lookback period used by the scanner.",
-  },
-  avg_price: {
-    label: "Avg. Price",
-    description: "The average observed price in the reference lookback period used by the scanner.",
-  },
-  lowest_price: {
-    label: "Lowest Price",
-    description: "The lowest observed price in the reference lookback period used by the scanner.",
-  },
-  coeff_variation: {
-    label: "Coeff Variation %",
-    description:
-      "Coefficient of variation. A relative measure of price variability. Higher values indicate more variability.",
-  },
-  bid_per_share: {
-    label: "Bid per Share ($)",
-    description:
-      "The quoted option bid per share. This is often used as a conservative estimate of received premium.",
-  },
-  premium_per_contract: {
-    label: "Premium per Contract ($)",
-    description:
-      "Estimated option premium for one contract. Higher premium can mean more income, but often also more risk.",
-  },
-  option_yield: {
-    label: "Option Yield %",
-    description:
-      "Option premium expressed as a percentage yield. Useful for comparing opportunities across different prices.",
-  },
-  max_profit: {
-    label: "Max Profit ($)",
-    description: "Estimated maximum profit for the opportunity.",
-  },
-  max_profit_per_contract: {
-    label: "Max Profit per Contract ($)",
-    description: "Estimated maximum profit for one option contract.",
-  },
-  otm: {
-    label: "OTM ($)",
-    description:
-      "Out-of-the-money distance. For income strategies, farther OTM usually means more cushion but lower premium.",
-  },
-  moneyness: {
-    label: "Moneyness %",
-    description:
-      "Relationship between the current price and the strike price. Helps show how close the option is to the money.",
-  },
-  sigma_distance: {
-    label: "Sigma Distance",
-    description:
-      "Strike distance expressed in volatility-adjusted terms. Higher values usually mean the strike is farther away relative to volatility.",
-  },
-  break_even: {
-    label: "Break-Even ($)",
-    description:
-      "Approximate underlying price where the trade breaks even.",
-  },
-  roc: {
-    label: "ROC %",
-    description:
-      "Return on capital. Compare this with DTE, liquidity, and risk before judging an opportunity.",
-  },
-  tot_return: {
-    label: "Tot Return %",
-    description:
-      "Estimated total return for the opportunity. Useful as a broad comparison metric.",
-  },
-  delta: {
-    label: "Delta %",
-    description:
-      "Approximate option sensitivity to movement in the underlying price. It can also be used as a rough probability proxy.",
-  },
-  spread_bid_ask: {
-    label: "Spread Bid - Ask",
-    description:
-      "Difference between bid and ask. Lower spreads usually indicate better liquidity and lower execution friction.",
-  },
-  open_interest: {
-    label: "Open Interest",
-    description:
-      "Number of outstanding option contracts. Higher open interest can indicate stronger market participation.",
-  },
-  impl_volatility: {
-    label: "Implied Volatility",
-    description:
-      "Market-implied expectation of future price movement. Higher IV often increases premiums but may indicate higher risk.",
-  },
-  sector: {
-    label: "Sector",
-    description: "Broad market sector of the underlying company.",
-  },
-  industry: {
-    label: "Industry",
-    description: "More specific industry group of the underlying company.",
-  },
-  main_trend: {
-    label: "Trend",
-    description: "Scanner-derived trend measure for the underlying price.",
-  },
-  beta: {
-    label: "Beta",
-    description:
-      "Measure of how much the underlying tends to move relative to the broader market.",
-  },
-};
-
 function formatValue(value: string | number | null | undefined) {
   if (value === null || value === undefined || value === "") {
     return "—";
@@ -164,32 +20,89 @@ function formatValue(value: string | number | null | undefined) {
   return value;
 }
 
-function HeaderCell({ metricKey }: { metricKey: keyof typeof METRIC_HELP }) {
-  const metric = METRIC_HELP[metricKey];
+const HEADER_LABELS: Record<string, string> = {
+  ticker: "Ticker",
+  contract: "Contract",
+  exchange: "Exchange",
+  expiry_date: "Expiry Date",
+  days_to_expiration: "DTE",
+  current_price: "Current Price",
+  strike_price: "Strike Price",
+  highest_price: "Highest Price",
+  avg_price: "Avg. Price",
+  lowest_price: "Lowest Price",
+  coeff_variation: "Coeff Variation %",
+  bid_per_share: "Bid per Share ($)",
+  premium_per_contract: "Premium per Contract ($)",
+  option_yield: "Option Yield %",
+  max_profit: "Max Profit ($)",
+  max_profit_per_contract: "Max Profit per Contract ($)",
+  otm: "OTM ($)",
+  moneyness: "Moneyness %",
+  sigma_distance: "Sigma Distance",
+  break_even: "Break-Even ($)",
+  roc: "ROC %",
+  tot_return: "Tot Return %",
+  delta: "Delta %",
+  spread_bid_ask: "Spread Bid - Ask",
+  open_interest: "Open Interest",
+  impl_volatility: "Implied Volatility",
+  sector: "Sector",
+  industry: "Industry",
+  main_trend: "Trend",
+  beta: "Beta",
+};
+
+type MetricKey = keyof typeof metricGlossary;
+
+function getMetricEntry(metricKey: string) {
+  return metricGlossary[metricKey as MetricKey];
+}
+
+function getMetricTooltip(metricKey: string) {
+  const metric = getMetricEntry(metricKey);
+
+  if (!metric) {
+    return undefined;
+  }
+
+  return [
+    metric.shortDefinition,
+    metric.interpretation ? `\n\nHow to read it: ${metric.interpretation}` : "",
+    metric.caution ? `\n\nCaution: ${metric.caution}` : "",
+  ].join("");
+}
+
+function HeaderCell({ metricKey }: { metricKey: string }) {
+  const metric = getMetricEntry(metricKey);
+  const label = HEADER_LABELS[metricKey] ?? metric?.label ?? metricKey;
+  const tooltip = getMetricTooltip(metricKey);
 
   return (
     <th>
       <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-        {metric.label}
-        <span
-          title={metric.description}
-          aria-label={`Explanation for ${metric.label}`}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 16,
-            height: 16,
-            borderRadius: "50%",
-            border: "1px solid #94a3b8",
-            color: "#475569",
-            fontSize: 11,
-            lineHeight: 1,
-            cursor: "help",
-          }}
-        >
-          ?
-        </span>
+        {label}
+        {tooltip && (
+          <span
+            title={tooltip}
+            aria-label={`Explanation for ${label}`}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 16,
+              height: 16,
+              borderRadius: "50%",
+              border: "1px solid #94a3b8",
+              color: "#475569",
+              fontSize: 11,
+              lineHeight: 1,
+              cursor: "help",
+            }}
+          >
+            ?
+          </span>
+        )}
       </span>
     </th>
   );
