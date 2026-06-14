@@ -1,6 +1,9 @@
 import type { MetricGlossaryEntry } from "../types/metrics";
+import type { OptionContractField } from "./optionContractFields";
 
-export const metricGlossary: Record<string, MetricGlossaryEntry> = {
+export const metricGlossary: Partial<
+  Record<OptionContractField, MetricGlossaryEntry>
+> = {
   ticker: {
     key: "ticker",
     label: "Ticker",
@@ -68,14 +71,15 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
   coeff_variation: {
     key: "coeff_variation",
     label: "Coefficient of variation",
-    shortDefinition: "A relative volatility or dispersion measure. Also known as relative standard deviation.",
+    shortDefinition:
+      "A relative volatility or dispersion measure. Also known as relative standard deviation.",
     interpretation:
       "Can help compare variability across instruments with different price levels.",
     appliesTo: ["covered_calls", "put_options", "spread_options"],
     importance: "advanced",
   },
 
-    max_profit: {
+  max_profit: {
     key: "max_profit",
     label: "Max profit",
     shortDefinition: "Estimated maximum profit for the trade.",
@@ -88,7 +92,8 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
   max_profit_per_contract: {
     key: "max_profit_per_contract",
     label: "Max profit / contract",
-    shortDefinition: "Estimated maximum profit for one option contract: max_profit * 100.",
+    shortDefinition:
+      "Estimated maximum profit for one option contract: max_profit * 100.",
     appliesTo: ["covered_calls", "put_options", "spread_options"],
     importance: "supporting",
   },
@@ -106,9 +111,10 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
   moneyness: {
     key: "moneyness",
     label: "Moneyness",
-    shortDefinition: "Relationship between the stock price and the option strike price.",
+    shortDefinition:
+      "Relationship between the stock price and the option strike price.",
     interpretation:
-      "The % the stock needs to rise (for calls) or to drop (for puts) to reach the strike price.",
+      "The percentage the stock needs to rise for calls, or drop for puts, to reach the strike price.",
     appliesTo: ["covered_calls", "put_options", "spread_options"],
     importance: "core",
   },
@@ -116,7 +122,8 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
   sigma_distance: {
     key: "sigma_distance",
     label: "Sigma distance",
-    shortDefinition: "Distance from current price expressed in volatility-adjusted terms.",
+    shortDefinition:
+      "Distance from current price expressed in volatility-adjusted terms.",
     interpretation:
       "Useful for comparing strike distance across stocks with different volatility levels.",
     appliesTo: ["covered_calls", "put_options", "spread_options"],
@@ -126,7 +133,8 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
   break_even: {
     key: "break_even",
     label: "Break-even",
-    shortDefinition: "The underlying price level where the trade approximately breaks even.",
+    shortDefinition:
+      "The underlying price level where the trade approximately breaks even.",
     interpretation:
       "A break-even farther from the current price can indicate a larger margin of safety.",
     appliesTo: ["covered_calls", "put_options", "spread_options"],
@@ -136,7 +144,8 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
   option_yield: {
     key: "option_yield",
     label: "Option yield",
-    shortDefinition: "The option premium expressed as a yield against the relevant capital base.",
+    shortDefinition:
+      "The option premium expressed as a yield against the relevant capital base.",
     interpretation:
       "Useful for comparing income opportunities across contracts with different prices or strikes. It is calculated differently for covered calls and puts, so be sure to check the definition for each strategy.",
     caution:
@@ -148,9 +157,9 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
   roc: {
     key: "roc",
     label: "ROC",
-    shortDefinition: "Return On Capital.",
+    shortDefinition: "Return on capital.",
     interpretation:
-      "Shows the expected return relative to the capital required for the trade. It is the annuallized option_yield",
+      "Shows the expected return relative to the capital required for the trade. It is the annualized option yield.",
     caution:
       "ROC should be compared with DTE and downside risk, not viewed alone.",
     appliesTo: ["covered_calls", "put_options", "spread_options"],
@@ -170,9 +179,10 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
   delta: {
     key: "delta",
     label: "Delta",
-    shortDefinition: "An estimate % of the chance of the option finishing in the money.",
+    shortDefinition:
+      "An approximate percentage estimate of the chance of the option finishing in the money.",
     interpretation:
-      "The probability that the option will be assigned at the expiration date.",
+      "For income strategies, delta can be used as a rough proxy for assignment risk at expiration.",
     caution:
       "Delta changes as price, volatility, and time to expiration change.",
     appliesTo: ["covered_calls", "put_options", "spread_options"],
@@ -194,7 +204,8 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
   open_interest: {
     key: "open_interest",
     label: "Open interest",
-    shortDefinition: "The number of outstanding option contracts currently open.",
+    shortDefinition:
+      "The number of outstanding option contracts currently open.",
     interpretation:
       "Higher open interest can indicate better market participation and potentially better liquidity.",
     caution:
@@ -206,7 +217,8 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
   impl_volatility: {
     key: "impl_volatility",
     label: "Implied volatility",
-    shortDefinition: "The market-implied expectation of future price movement.",
+    shortDefinition:
+      "The market-implied expectation of future price movement.",
     interpretation:
       "Higher implied volatility often increases option premiums, but it can also signal greater expected risk.",
     appliesTo: ["covered_calls", "put_options", "spread_options"],
@@ -226,7 +238,8 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
   premium_per_contract: {
     key: "premium_per_contract",
     label: "Premium",
-    shortDefinition: "Estimated option premium per contract in $: bid_per_share * 100.",
+    shortDefinition:
+      "Estimated option premium per contract in dollars: bid_per_share * 100.",
     interpretation:
       "Higher premium can improve income, but it may also reflect higher risk, volatility, or less favorable moneyness.",
     caution:
@@ -248,7 +261,52 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
   industry: {
     key: "industry",
     label: "Industry",
-    shortDefinition: "The more specific industry group of the underlying company.",
+    shortDefinition:
+      "The more specific industry group of the underlying company.",
+    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    importance: "supporting",
+  },
+
+  highest_price: {
+    key: "highest_price",
+    label: "Highest price",
+    shortDefinition:
+      "The highest observed price of the underlying in the scanner lookback period.",
+    interpretation:
+      "Useful for understanding whether the current price is near the top of its recent range.",
+    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    importance: "supporting",
+  },
+
+  avg_price: {
+    key: "avg_price",
+    label: "Average price",
+    shortDefinition:
+      "The average observed price of the underlying in the scanner lookback period.",
+    interpretation:
+      "Useful as a simple reference point for where the current price sits relative to recent trading history.",
+    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    importance: "supporting",
+  },
+
+  lowest_price: {
+    key: "lowest_price",
+    label: "Lowest price",
+    shortDefinition:
+      "The lowest observed price of the underlying in the scanner lookback period.",
+    interpretation:
+      "Useful for understanding downside range and recent support-like areas.",
+    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    importance: "supporting",
+  },
+
+  main_trend: {
+    key: "main_trend",
+    label: "Trend",
+    shortDefinition:
+      "Scanner-derived trend value for the underlying stock or ETF.",
+    interpretation:
+      "Useful as a quick directional context indicator, but it should not be used alone.",
     appliesTo: ["covered_calls", "put_options", "spread_options"],
     importance: "supporting",
   },
@@ -256,15 +314,15 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
   beta: {
     key: "beta",
     label: "Beta",
-    shortDefinition: "A measure of how much the underlying stock tends to move relative to the broader market.",
+    shortDefinition:
+      "A measure of how much the underlying stock tends to move relative to the broader market.",
     interpretation:
       "Higher beta usually means the stock is more sensitive to market moves.",
     appliesTo: ["covered_calls", "put_options", "spread_options"],
     importance: "supporting",
   },
-
 };
 
 export function getMetricGlossaryEntry(metricKey: string) {
-  return metricGlossary[metricKey];
+  return metricGlossary[metricKey as OptionContractField];
 }

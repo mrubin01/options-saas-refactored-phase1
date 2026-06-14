@@ -1,10 +1,12 @@
 import PageHeader from "../components/PageHeader";
-import { metricGlossary } from "../constants/metricGlossary";
+import { getMetricGlossaryEntry } from "../constants/metricGlossary";
+import type { OptionContractField } from "../constants/optionContractFields";
+import type { StrategyType } from "../types/metrics";
 
 type GlossaryGroup = {
   title: string;
   description: string;
-  metricKeys: string[];
+  metricKeys: OptionContractField[];
 };
 
 const GROUPS: GlossaryGroup[] = [
@@ -68,8 +70,8 @@ const GROUPS: GlossaryGroup[] = [
   },
 ];
 
-function getMetric(key: string) {
-  return metricGlossary[key];
+function getMetric(key: OptionContractField) {
+  return getMetricGlossaryEntry(key);
 }
 
 export default function GlossaryPage() {
@@ -208,7 +210,7 @@ export default function GlossaryPage() {
                           marginTop: "0.65rem",
                         }}
                       >
-                        {metric.appliesTo.map((strategy) => (
+                        {metric.appliesTo.map((strategy: StrategyType) => (
                           <span
                             key={strategy}
                             style={{
