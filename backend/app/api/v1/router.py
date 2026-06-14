@@ -8,6 +8,7 @@ from app.api.v1.spread_options import router as spread_options_router
 from app.api.v1 import metrics, health
 from app.api.v1.saved_screeners import router as saved_screeners_router
 from app.api.v1.watchlist import router as watchlist_router
+from app.api.v1.ingestion_status import router as ingestion_status_router
 
 router = APIRouter()
 
@@ -20,3 +21,4 @@ router.include_router(metrics.router)
 router.include_router(health.router)
 router.include_router(saved_screeners_router)
 router.include_router(watchlist_router)
+router.include_router(ingestion_status_router)
