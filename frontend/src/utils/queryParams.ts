@@ -1,13 +1,21 @@
+import {
+  isOptionContractField,
+  type OptionContractField,
+} from "../constants/optionContractFields";
 import type {
-  CoveredCallSortField,
   CoveredCallsDiscoveryFilters,
-  PutOptionSortField,
   PutOptionsDiscoveryFilters,
-  SpreadOptionSortField,
   SpreadOptionsDiscoveryFilters,
   SortDirection,
 } from "../types/discovery";
 
+type DiscoveryFilters =
+  | CoveredCallsDiscoveryFilters
+  | PutOptionsDiscoveryFilters
+  | SpreadOptionsDiscoveryFilters;
+
+type NumberFilterKey = (typeof NUMBER_FILTER_KEYS)[number];
+type StringFilterKey = (typeof STRING_FILTER_KEYS)[number];
 
 const NUMBER_FILTER_KEYS = [
   "exchange",
@@ -75,119 +83,19 @@ const STRING_FILTER_KEYS = [
   "sort_dir",
 ] as const;
 
-const COVERED_CALL_SORT_FIELDS: CoveredCallSortField[] = [
-  "ticker",
-  "exchange",
-  "contract",
-  "expiry_date",
-  "current_price",
-  "strike_price",
-  "days_to_expiration",
-  "coeff_variation",
-  "max_profit",
-  "max_profit_per_contract",
-  "otm",
-  "moneyness",
-  "sigma_distance",
-  "break_even",
-  "option_yield",
-  "roc",
-  "tot_return",
-  "delta",
-  "spread_bid_ask",
-  "open_interest",
-  "impl_volatility",
-  "bid_per_share",
-  "premium_per_contract",
-  "sector",
-  "industry",
-  "highest_price",
-  "avg_price",
-  "lowest_price",
-  "main_trend",
-  "beta",
-];
-
-const PUT_OPTION_SORT_FIELDS: PutOptionSortField[] = [
-  "ticker",
-  "exchange",
-  "contract",
-  "expiry_date",
-  "current_price",
-  "strike_price",
-  "days_to_expiration",
-  "coeff_variation",
-  "max_profit",
-  "max_profit_per_contract",
-  "otm",
-  "moneyness",
-  "sigma_distance",
-  "break_even",
-  "option_yield",
-  "roc",
-  "tot_return",
-  "delta",
-  "spread_bid_ask",
-  "open_interest",
-  "impl_volatility",
-  "bid_per_share",
-  "premium_per_contract",
-  "sector",
-  "industry",
-  "highest_price",
-  "avg_price",
-  "lowest_price",
-  "main_trend",
-  "beta",
-];
-
-const SPREAD_OPTION_SORT_FIELDS: SpreadOptionSortField[] = [
-  "ticker",
-  "exchange",
-  "contract",
-  "expiry_date",
-  "current_price",
-  "strike_price",
-  "days_to_expiration",
-  "coeff_variation",
-  "max_profit",
-  "max_profit_per_contract",
-  "otm",
-  "moneyness",
-  "sigma_distance",
-  "break_even",
-  "option_yield",
-  "roc",
-  "tot_return",
-  "delta",
-  "spread_bid_ask",
-  "open_interest",
-  "impl_volatility",
-  "bid_per_share",
-  "premium_per_contract",
-  "sector",
-  "industry",
-  "highest_price",
-  "avg_price",
-  "lowest_price",
-  "main_trend",
-  "beta",
-];
-
 function isSortDirection(value: string): value is SortDirection {
   return value === "asc" || value === "desc";
 }
 
-
-// covered calls
-function isCoveredCallSortField(value: string): value is CoveredCallSortField {
-  return COVERED_CALL_SORT_FIELDS.includes(value as CoveredCallSortField);
+function isSortField(value: string): value is OptionContractField {
+  return isOptionContractField(value);
 }
 
-export function parseCoveredCallsFiltersFromSearchParams(
+function parseDiscoveryFiltersFromSearchParams<TFilters extends DiscoveryFilters>(
   searchParams: URLSearchParams,
-): CoveredCallsDiscoveryFilters {
-  const filters: CoveredCallsDiscoveryFilters = {};
+): TFilters {
+  const filters: Partial<Record<NumberFilterKey | StringFilterKey, string | number>> =
+    {};
 
   NUMBER_FILTER_KEYS.forEach((key) => {
     const value = searchParams.get(key);
@@ -199,7 +107,7 @@ export function parseCoveredCallsFiltersFromSearchParams(
     const numericValue = Number(value);
 
     if (!Number.isNaN(numericValue)) {
-      filters[key] = numericValue as never;
+      filters[key] = numericValue;
     }
   });
 
@@ -211,7 +119,7 @@ export function parseCoveredCallsFiltersFromSearchParams(
     }
 
     if (key === "sort_by") {
-      if (isCoveredCallSortField(value)) {
+      if (isSortField(value)) {
         filters.sort_by = value;
       }
       return;
@@ -224,14 +132,14 @@ export function parseCoveredCallsFiltersFromSearchParams(
       return;
     }
 
-    filters[key] = value as never;
+    filters[key] = value;
   });
 
-  return filters;
+  return filters as TFilters;
 }
 
-export function coveredCallsFiltersToSearchParams(
-  filters: CoveredCallsDiscoveryFilters,
+function discoveryFiltersToSearchParams(
+  filters: DiscoveryFilters,
 ): URLSearchParams {
   const searchParams = new URLSearchParams();
 
@@ -246,9 +154,7 @@ export function coveredCallsFiltersToSearchParams(
   return searchParams;
 }
 
-export function hasActiveCoveredCallsDiscoveryFilters(
-  filters: CoveredCallsDiscoveryFilters,
-): boolean {
+function hasActiveDiscoveryFilters(filters: DiscoveryFilters): boolean {
   return Object.entries(filters).some(([key, value]) => {
     if (key === "limit" || key === "offset") {
       return false;
@@ -256,6 +162,26 @@ export function hasActiveCoveredCallsDiscoveryFilters(
 
     return value !== undefined && value !== null && value !== "";
   });
+}
+
+export function parseCoveredCallsFiltersFromSearchParams(
+  searchParams: URLSearchParams,
+): CoveredCallsDiscoveryFilters {
+  return parseDiscoveryFiltersFromSearchParams<CoveredCallsDiscoveryFilters>(
+    searchParams,
+  );
+}
+
+export function coveredCallsFiltersToSearchParams(
+  filters: CoveredCallsDiscoveryFilters,
+): URLSearchParams {
+  return discoveryFiltersToSearchParams(filters);
+}
+
+export function hasActiveCoveredCallsDiscoveryFilters(
+  filters: CoveredCallsDiscoveryFilters,
+): boolean {
+  return hasActiveDiscoveryFilters(filters);
 }
 
 export function buildCoveredCallsPathFromFilters(
@@ -267,85 +193,24 @@ export function buildCoveredCallsPathFromFilters(
   return qs ? `/covered-calls?${qs}` : "/covered-calls";
 }
 
-
-
-// put options
-function isPutOptionSortField(value: string): value is PutOptionSortField {
-  return PUT_OPTION_SORT_FIELDS.includes(value as PutOptionSortField);
-}
-
 export function parsePutOptionsFiltersFromSearchParams(
   searchParams: URLSearchParams,
 ): PutOptionsDiscoveryFilters {
-  const filters: PutOptionsDiscoveryFilters = {};
-
-  NUMBER_FILTER_KEYS.forEach((key) => {
-    const value = searchParams.get(key);
-
-    if (value === null || value === "") {
-      return;
-    }
-
-    const numericValue = Number(value);
-
-    if (!Number.isNaN(numericValue)) {
-      filters[key] = numericValue as never;
-    }
-  });
-
-  STRING_FILTER_KEYS.forEach((key) => {
-    const value = searchParams.get(key);
-
-    if (value === null || value === "") {
-      return;
-    }
-
-    if (key === "sort_by") {
-      if (isPutOptionSortField(value)) {
-        filters.sort_by = value;
-      }
-      return;
-    }
-
-    if (key === "sort_dir") {
-      if (isSortDirection(value)) {
-        filters.sort_dir = value;
-      }
-      return;
-    }
-
-    filters[key] = value as never;
-  });
-
-  return filters;
+  return parseDiscoveryFiltersFromSearchParams<PutOptionsDiscoveryFilters>(
+    searchParams,
+  );
 }
 
 export function putOptionsFiltersToSearchParams(
   filters: PutOptionsDiscoveryFilters,
 ): URLSearchParams {
-  const searchParams = new URLSearchParams();
-
-  Object.entries(filters).forEach(([key, value]) => {
-    if (value === undefined || value === null || value === "") {
-      return;
-    }
-
-    searchParams.set(key, String(value));
-  });
-
-  return searchParams;
+  return discoveryFiltersToSearchParams(filters);
 }
 
 export function hasActivePutOptionsDiscoveryFilters(
   filters: PutOptionsDiscoveryFilters,
 ): boolean {
-  return Object.entries(filters).some(([key, value]) => {
-    if (key === "limit" || key === "offset") {
-      return false;
-    }
-
-    return value !== undefined && value !== null && value !== "";
-  });
+  return hasActiveDiscoveryFilters(filters);
 }
 
 export function buildPutOptionsPathFromFilters(
@@ -357,84 +222,24 @@ export function buildPutOptionsPathFromFilters(
   return qs ? `/put-options?${qs}` : "/put-options";
 }
 
-
-// spread options
-function isSpreadOptionSortField(value: string): value is SpreadOptionSortField {
-  return SPREAD_OPTION_SORT_FIELDS.includes(value as SpreadOptionSortField);
-}
-
 export function parseSpreadOptionsFiltersFromSearchParams(
   searchParams: URLSearchParams,
 ): SpreadOptionsDiscoveryFilters {
-  const filters: SpreadOptionsDiscoveryFilters = {};
-
-  NUMBER_FILTER_KEYS.forEach((key) => {
-    const value = searchParams.get(key);
-
-    if (value === null || value === "") {
-      return;
-    }
-
-    const numericValue = Number(value);
-
-    if (!Number.isNaN(numericValue)) {
-      filters[key] = numericValue as never;
-    }
-  });
-
-  STRING_FILTER_KEYS.forEach((key) => {
-    const value = searchParams.get(key);
-
-    if (value === null || value === "") {
-      return;
-    }
-
-    if (key === "sort_by") {
-      if (isSpreadOptionSortField(value)) {
-        filters.sort_by = value;
-      }
-      return;
-    }
-
-    if (key === "sort_dir") {
-      if (isSortDirection(value)) {
-        filters.sort_dir = value;
-      }
-      return;
-    }
-
-    filters[key] = value as never;
-  });
-
-  return filters;
+  return parseDiscoveryFiltersFromSearchParams<SpreadOptionsDiscoveryFilters>(
+    searchParams,
+  );
 }
 
 export function spreadOptionsFiltersToSearchParams(
   filters: SpreadOptionsDiscoveryFilters,
 ): URLSearchParams {
-  const searchParams = new URLSearchParams();
-
-  Object.entries(filters).forEach(([key, value]) => {
-    if (value === undefined || value === null || value === "") {
-      return;
-    }
-
-    searchParams.set(key, String(value));
-  });
-
-  return searchParams;
+  return discoveryFiltersToSearchParams(filters);
 }
 
 export function hasActiveSpreadOptionsDiscoveryFilters(
   filters: SpreadOptionsDiscoveryFilters,
 ): boolean {
-  return Object.entries(filters).some(([key, value]) => {
-    if (key === "limit" || key === "offset") {
-      return false;
-    }
-
-    return value !== undefined && value !== null && value !== "";
-  });
+  return hasActiveDiscoveryFilters(filters);
 }
 
 export function buildSpreadOptionsPathFromFilters(
