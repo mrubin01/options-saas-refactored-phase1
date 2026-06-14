@@ -31,6 +31,7 @@ import {
   parseSpreadOptionsFiltersFromSearchParams,
 } from "../utils/queryParams";
 import StrategyHelpPanel from "../components/StrategyHelpPanel";
+import DataFreshnessBanner from "../components/DataFreshnessBanner";
 
 const exchangeMap: Record<number, string> = Object.fromEntries(
   EXCHANGES.map((e) => [e.id, e.name])
@@ -247,6 +248,8 @@ export default function SpreadOptionsPage() {
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
       <PageHeader title="Best Spread Options" lastUpdated={lastUpdated} />
+
+      <DataFreshnessBanner strategyKey="spread_options" />
 
       <StrategyHelpPanel title="How to read spreads">
         <p>

@@ -31,6 +31,7 @@ import {
   parseCoveredCallsFiltersFromSearchParams,
 } from "../utils/queryParams";
 import StrategyHelpPanel from "../components/StrategyHelpPanel";
+import DataFreshnessBanner from "../components/DataFreshnessBanner";
 
 const exchangeMap: Record<number, string> = Object.fromEntries(
   EXCHANGES.map((e) => [e.id, e.name]),
@@ -247,6 +248,8 @@ export default function CoveredCallsPage() {
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
       <PageHeader title="Best Covered Calls" lastUpdated={lastUpdated} />
+
+      <DataFreshnessBanner strategyKey="covered_calls" />
 
       <StrategyHelpPanel title="How to read covered calls">
         <p>

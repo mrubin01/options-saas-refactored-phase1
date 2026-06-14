@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import { listSavedScreeners } from "../api/savedScreeners";
 import { listWatchlistItems } from "../api/watchlist";
+import DataFreshnessBanner from "../components/DataFreshnessBanner";
 import PageHeader from "../components/PageHeader";
 import type { CoveredCallsDiscoveryFilters } from "../types/discovery";
 import type { SavedScreener } from "../types/savedScreener";
@@ -148,6 +149,8 @@ export default function DashboardPage() {
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
       <PageHeader title="Dashboard" />
+
+      <DataFreshnessBanner />
 
       {error && <div className="text-sm text-red-600 py-2">{error}</div>}
 

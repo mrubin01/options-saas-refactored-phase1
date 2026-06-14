@@ -31,6 +31,7 @@ import {
   parsePutOptionsFiltersFromSearchParams,
 } from "../utils/queryParams";
 import StrategyHelpPanel from "../components/StrategyHelpPanel";
+import DataFreshnessBanner from "../components/DataFreshnessBanner";
 
 const exchangeMap: Record<number, string> = Object.fromEntries(
   EXCHANGES.map((e) => [e.id, e.name])
@@ -247,6 +248,8 @@ export default function PutOptionsPage() {
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
       <PageHeader title="Best Put Options" lastUpdated={lastUpdated} />
+
+      <DataFreshnessBanner strategyKey="put_options" />
 
       <StrategyHelpPanel title="How to read cash-secured puts">
         <p>
