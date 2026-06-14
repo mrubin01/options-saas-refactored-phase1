@@ -10,6 +10,7 @@ import type { SavedScreener } from "../types/savedScreener";
 import type { WatchlistItem } from "../types/watchlistItem";
 import { coveredCallsFiltersToSearchParams } from "../utils/queryParams";
 import { strategyLabelMap, strategyPathMap } from "../utils/strategyLabels";
+import IngestionStatusBanner from "../components/IngestionStatusBanner";
 
 function formatDateTime(value: string) {
   const date = new Date(value);
@@ -151,6 +152,7 @@ export default function DashboardPage() {
       <PageHeader title="Dashboard" />
 
       <DataFreshnessBanner />
+      <IngestionStatusBanner />
 
       {error && <div className="text-sm text-red-600 py-2">{error}</div>}
 
