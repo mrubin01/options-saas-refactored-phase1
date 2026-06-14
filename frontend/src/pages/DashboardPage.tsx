@@ -151,7 +151,6 @@ export default function DashboardPage() {
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
       <PageHeader title="Dashboard" />
 
-      <DataFreshnessBanner />
       <IngestionStatusBanner />
 
       {error && <div className="text-sm text-red-600 py-2">{error}</div>}
