@@ -9,6 +9,14 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
     importance: "core",
   },
 
+  exchange: {
+    key: "exchange",
+    label: "Exchange",
+    shortDefinition: "The stock exchange where the underlying company is listed.",
+    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    importance: "supporting",
+  },
+
   contract: {
     key: "contract",
     label: "Contract",
@@ -25,16 +33,6 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
     shortDefinition: "The date when the option contract expires.",
     interpretation:
       "Shorter expirations usually mean faster time decay and more sensitivity to near-term price movement.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
-    importance: "core",
-  },
-
-  days_to_expiration: {
-    key: "days_to_expiration",
-    label: "DTE",
-    shortDefinition: "Days to expiration.",
-    interpretation:
-      "Lower DTE means the contract expires sooner. Higher DTE gives the trade more time but may reduce annualized efficiency.",
     appliesTo: ["covered_calls", "put_options", "spread_options"],
     importance: "core",
   },
@@ -57,26 +55,82 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
     importance: "core",
   },
 
-  premium_per_contract: {
-    key: "premium_per_contract",
-    label: "Premium",
-    shortDefinition: "Estimated option premium per contract in $: bid_per_share * 100.",
+  days_to_expiration: {
+    key: "days_to_expiration",
+    label: "DTE",
+    shortDefinition: "Days to expiration.",
     interpretation:
-      "Higher premium can improve income, but it may also reflect higher risk, volatility, or less favorable moneyness.",
-    caution:
-      "Premium alone is not enough to judge quality. Compare it with DTE, liquidity, strike distance, and risk.",
+      "Lower DTE means the contract expires sooner. Higher DTE gives the trade more time but may reduce annualized efficiency.",
     appliesTo: ["covered_calls", "put_options", "spread_options"],
     importance: "core",
   },
 
-  bid_per_share: {
-    key: "bid_per_share",
-    label: "Bid per share",
-    shortDefinition: "The quoted bid price per option share.",
+  coeff_variation: {
+    key: "coeff_variation",
+    label: "Coefficient of variation",
+    shortDefinition: "A relative volatility or dispersion measure. Also known as relative standard deviation.",
     interpretation:
-      "This is often used as a conservative estimate of what a seller may receive.",
+      "Can help compare variability across instruments with different price levels.",
+    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    importance: "advanced",
+  },
+
+    max_profit: {
+    key: "max_profit",
+    label: "Max profit",
+    shortDefinition: "Estimated maximum profit for the trade.",
+    interpretation:
+      "This is the upper bound of the modeled payoff, assuming the trade reaches its best-case outcome.",
+    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    importance: "core",
+  },
+
+  max_profit_per_contract: {
+    key: "max_profit_per_contract",
+    label: "Max profit / contract",
+    shortDefinition: "Estimated maximum profit for one option contract: max_profit * 100.",
     appliesTo: ["covered_calls", "put_options", "spread_options"],
     importance: "supporting",
+  },
+
+  otm: {
+    key: "otm",
+    label: "OTM",
+    shortDefinition: "Out-of-the-money distance.",
+    interpretation:
+      "For income strategies, farther OTM contracts may offer more cushion but usually lower premium.",
+    appliesTo: ["covered_calls", "put_options"],
+    importance: "supporting",
+  },
+
+  moneyness: {
+    key: "moneyness",
+    label: "Moneyness",
+    shortDefinition: "Relationship between the stock price and the option strike price.",
+    interpretation:
+      "The % the stock needs to rise (for calls) or to drop (for puts) to reach the strike price.",
+    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    importance: "core",
+  },
+
+  sigma_distance: {
+    key: "sigma_distance",
+    label: "Sigma distance",
+    shortDefinition: "Distance from current price expressed in volatility-adjusted terms.",
+    interpretation:
+      "Useful for comparing strike distance across stocks with different volatility levels.",
+    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    importance: "advanced",
+  },
+
+  break_even: {
+    key: "break_even",
+    label: "Break-even",
+    shortDefinition: "The underlying price level where the trade approximately breaks even.",
+    interpretation:
+      "A break-even farther from the current price can indicate a larger margin of safety.",
+    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    importance: "core",
   },
 
   option_yield: {
@@ -113,30 +167,26 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
     importance: "core",
   },
 
-  max_profit: {
-    key: "max_profit",
-    label: "Max profit",
-    shortDefinition: "Estimated maximum profit for the trade.",
+  delta: {
+    key: "delta",
+    label: "Delta",
+    shortDefinition: "An estimate % of the chance of the option finishing in the money.",
     interpretation:
-      "This is the upper bound of the modeled payoff, assuming the trade reaches its best-case outcome.",
+      "The probability that the option will be assigned at the expiration date.",
+    caution:
+      "Delta changes as price, volatility, and time to expiration change.",
     appliesTo: ["covered_calls", "put_options", "spread_options"],
-    importance: "core",
+    importance: "advanced",
   },
 
-  max_profit_per_contract: {
-    key: "max_profit_per_contract",
-    label: "Max profit / contract",
-    shortDefinition: "Estimated maximum profit for one option contract: max_profit * 100.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
-    importance: "supporting",
-  },
-
-  break_even: {
-    key: "break_even",
-    label: "Break-even",
-    shortDefinition: "The underlying price level where the trade approximately breaks even.",
+  spread_bid_ask: {
+    key: "spread_bid_ask",
+    label: "Bid/ask spread",
+    shortDefinition: "The difference between the option bid and ask prices.",
     interpretation:
-      "A break-even farther from the current price can indicate a larger margin of safety.",
+      "A narrower spread usually indicates better liquidity and lower execution friction.",
+    caution:
+      "Wide spreads can make attractive-looking opportunities harder to execute at the displayed price.",
     appliesTo: ["covered_calls", "put_options", "spread_options"],
     importance: "core",
   },
@@ -153,18 +203,6 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
     importance: "core",
   },
 
-  spread_bid_ask: {
-    key: "spread_bid_ask",
-    label: "Bid/ask spread",
-    shortDefinition: "The difference between the option bid and ask prices.",
-    interpretation:
-      "A narrower spread usually indicates better liquidity and lower execution friction.",
-    caution:
-      "Wide spreads can make attractive-looking opportunities harder to execute at the displayed price.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
-    importance: "core",
-  },
-
   impl_volatility: {
     key: "impl_volatility",
     label: "Implied volatility",
@@ -175,66 +213,26 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
     importance: "core",
   },
 
-  delta: {
-    key: "delta",
-    label: "Delta",
-    shortDefinition: "An estimate % of the chance of the option finishing in the money.",
+  bid_per_share: {
+    key: "bid_per_share",
+    label: "Bid per share",
+    shortDefinition: "The quoted bid price per option share.",
     interpretation:
-      "The probability that the option will be assigned at the expiration date.",
-    caution:
-      "Delta changes as price, volatility, and time to expiration change.",
+      "This is often used as a conservative estimate of what a seller may receive.",
     appliesTo: ["covered_calls", "put_options", "spread_options"],
-    importance: "advanced",
+    importance: "supporting",
   },
 
-  moneyness: {
-    key: "moneyness",
-    label: "Moneyness",
-    shortDefinition: "Relationship between the stock price and the option strike price.",
+  premium_per_contract: {
+    key: "premium_per_contract",
+    label: "Premium",
+    shortDefinition: "Estimated option premium per contract in $: bid_per_share * 100.",
     interpretation:
-      "The % the stock needs to rise (for calls) or to drop (for puts) to reach the strike price.",
+      "Higher premium can improve income, but it may also reflect higher risk, volatility, or less favorable moneyness.",
+    caution:
+      "Premium alone is not enough to judge quality. Compare it with DTE, liquidity, strike distance, and risk.",
     appliesTo: ["covered_calls", "put_options", "spread_options"],
     importance: "core",
-  },
-
-  otm: {
-    key: "otm",
-    label: "OTM",
-    shortDefinition: "Out-of-the-money distance.",
-    interpretation:
-      "For income strategies, farther OTM contracts may offer more cushion but usually lower premium.",
-    appliesTo: ["covered_calls", "put_options"],
-    importance: "supporting",
-  },
-
-  sigma_distance: {
-    key: "sigma_distance",
-    label: "Sigma distance",
-    shortDefinition: "Distance from current price expressed in volatility-adjusted terms.",
-    interpretation:
-      "Useful for comparing strike distance across stocks with different volatility levels.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
-    importance: "advanced",
-  },
-
-  coeff_variation: {
-    key: "coeff_variation",
-    label: "Coefficient of variation",
-    shortDefinition: "A relative volatility or dispersion measure. Also known as relative standard deviation.",
-    interpretation:
-      "Can help compare variability across instruments with different price levels.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
-    importance: "advanced",
-  },
-
-  beta: {
-    key: "beta",
-    label: "Beta",
-    shortDefinition: "A measure of how much the underlying stock tends to move relative to the broader market.",
-    interpretation:
-      "Higher beta usually means the stock is more sensitive to market moves.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
-    importance: "supporting",
   },
 
   sector: {
@@ -254,6 +252,17 @@ export const metricGlossary: Record<string, MetricGlossaryEntry> = {
     appliesTo: ["covered_calls", "put_options", "spread_options"],
     importance: "supporting",
   },
+
+  beta: {
+    key: "beta",
+    label: "Beta",
+    shortDefinition: "A measure of how much the underlying stock tends to move relative to the broader market.",
+    interpretation:
+      "Higher beta usually means the stock is more sensitive to market moves.",
+    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    importance: "supporting",
+  },
+
 };
 
 export function getMetricGlossaryEntry(metricKey: string) {
