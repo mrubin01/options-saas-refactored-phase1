@@ -126,12 +126,15 @@ The Hetzner server must have:
 - deploy directories present
 
 Verified directories:
-- ~/options-saas/deploy
-- ~/options-saas/shared
+- /root/options-saas/deploy
+- /root/options-saas/shared
+- /root/options-saas/shared/data
+- /root/options-saas/.env
 
 For current staging:
 - deploy user is root
-- paths therefore resolve under /root/options-saas/
+- remote app directory is `/root/options-saas`
+- avoid using `~/options-saas` in local scripts because `~` may expand on the local machine before SSH runs
 
 ## Standard Staging Deployment Procedure
 
@@ -182,26 +185,22 @@ Open:
 ### 6A. Refresh staging data files when strategy data changed
 
 Important:
-- application images do not automatically guarantee fresh staged options JSON files
-- if `shared/data` is host-mounted on the server, old files may survive redeploys
-- when market data files changed, copy the new JSON files to the staging server before or after deploy, then rerun ingestion
 
-Typical manual sync from a local machine:
+- application images do not automatically refresh staged options JSON files
+- `shared/data` is host-mounted on the server
+- old JSON files may survive redeploys
+- if local scanner output changed, sync the new JSON files and rerun ingestion
 
-```bash
-scp -i ~/.ssh/<your-key> shared/data/*.json root@135.181.109.67:~/options-saas/shared/data/
-```
-
-Then on the server:
+Preferred method from local project root:
 
 ```bash
-cd ~/options-saas
-docker compose --env-file .env -f deploy/docker-compose.remote.yml exec backend python -m ingestion.covered_calls
-docker compose --env-file .env -f deploy/docker-compose.remote.yml exec backend python -m ingestion.put_options
-docker compose --env-file .env -f deploy/docker-compose.remote.yml exec backend python -m ingestion.spread_options
-```
-
-Use this step whenever staging appears healthy but the strategy tables are empty, outdated, or still based on older JSON inputs.
+STAGING_HOST=135.181.109.67 \
+SSH_KEY=~/.ssh/key_rsa \
+REMOTE_APP_DIR=/root/options-saas \
+LOCAL_DATA_DIR=shared/data \
+COMPOSE_FILE=deploy/docker-compose.remote.yml \
+ENV_FILE=.env \
+./scripts/staging-ingest-options-data.sh
 
 
 ### 7. Verify external health
@@ -221,12 +220,38 @@ Expected:
 
 ## Post-Deploy Product Verification
 
-After infrastructure health checks, verify the current Stage 4 product surface in staging:
+After infrastructure health checks, verify the product surface currently deployed to staging.
+
+Currently deployed staging checks:
+
 - Dashboard loads
-- Covered Calls / Put Options / Spread Options load
+- Covered Calls loads
+- Put Options loads
+- Spread Options loads
 - Saved screeners can be created, applied, renamed, updated, and deleted
+- Saved screeners restore filters and strategy page state correctly
 - Watchlist add/remove works from strategy pages
 - Watchlist page loads and filters correctly
+- Logout works
+- protected routes require authentication
+
+After the latest Stage 5 code is deployed to staging, also verify:
+
+- advanced discovery filters
+- active filter chips
+- sort presets
+- metric tooltips
+- glossary page
+- data freshness cards on strategy pages
+- ingestion status banner on dashboard
+- `/v1/data-freshness`
+- `/v1/ingestion-status`
+
+The detailed checklist is maintained in:
+
+```text
+staging-smoke-test-checklist.md
+```
 
 ## Manual Server Checks
 
@@ -241,7 +266,7 @@ Common checks:
 ```bash
 docker --version
 docker compose version
-cd ~/options-saas
+cd /root/options-saas
 docker compose --env-file .env -f deploy/docker-compose.remote.yml ps
 docker compose --env-file .env -f deploy/docker-compose.remote.yml logs --tail=200 backend
 docker compose --env-file .env -f deploy/docker-compose.remote.yml logs --tail=200 frontend
@@ -258,7 +283,7 @@ Cause:
 
 Fix:
 ```bash
-cd ~/options-saas
+cd /root/options-saas
 docker compose --env-file .env -f deploy/docker-compose.remote.yml down
 docker ps
 ```
@@ -276,7 +301,7 @@ Common causes:
 
 Fix:
 ```bash
-cd ~/options-saas
+cd /root/options-saas
 docker compose --env-file .env -f deploy/docker-compose.remote.yml logs --tail=200 backend
 ```
 
