@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 
 import { listSavedScreeners } from "../api/savedScreeners";
 import { listWatchlistItems } from "../api/watchlist";
-import DataFreshnessBanner from "../components/DataFreshnessBanner";
 import PageHeader from "../components/PageHeader";
 import type { CoveredCallsDiscoveryFilters } from "../types/discovery";
 import type { SavedScreener } from "../types/savedScreener";
