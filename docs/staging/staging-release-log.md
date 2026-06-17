@@ -45,8 +45,8 @@ Newest entries should go at the top.
 
 ### Images
 - This entry was created before the next formal staging deploy log was captured.
-- Backend image: not recorded yet
-- Frontend image: not recorded yet
+- Backend image: ghcr.io/mrubin01/options-saas-refactored-phase1/backend:0fc949a4dcefa735cd1e5482a162f773ede8eefc
+- Frontend image: ghcr.io/mrubin01/options-saas-refactored-phase1/frontend:0fc949a4dcefa735cd1e5482a162f773ede8eefc
 
 ### Deployment
 - Deployment status: Passed / Failed / Rolled back
