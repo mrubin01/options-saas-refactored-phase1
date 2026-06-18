@@ -26,7 +26,7 @@ jobs:
             mkdir -p ~/options-saas/shared
 
             cat > ~/options-saas/deploy/docker-compose.remote.yml <<'EOF'
-            name: options-saas-production
+            name: optionstacker-production
 
             services:
               db:

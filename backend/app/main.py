@@ -18,7 +18,7 @@ validate_security_settings()
 
 app = configure_app(
     FastAPI(
-        title="Options Analytics API",
+        title="OptionStacker API",
         version="1.0.0",
     )
 )
