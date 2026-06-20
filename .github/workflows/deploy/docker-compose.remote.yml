@@ -41,8 +41,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    ports:
-      - "8000:8000"
     volumes:
       - ./shared:/shared
 
@@ -51,10 +49,23 @@ services:
     restart: unless-stopped
     depends_on:
       - backend
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
 
 volumes:
   postgres_data:
   redis_data:
-  
+  caddy_data:
+  caddy_config:
