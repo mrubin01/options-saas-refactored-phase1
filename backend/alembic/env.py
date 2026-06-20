@@ -14,9 +14,9 @@ load_dotenv()
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-DATABASE_URL = settings.DATABASE_URL_ADMIN
+DATABASE_URL = settings.DATABASE_URL_APP
 if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL_ADMIN is not set")
+    raise RuntimeError("DATABASE_URL_APP is not set")
 
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 

@@ -16,14 +16,14 @@ DB_READY_DELAY_SECONDS = float(os.environ.get("DB_READY_DELAY_SECONDS", "2"))
 REDIS_READY_RETRIES = int(os.environ.get("REDIS_READY_RETRIES", "30"))
 REDIS_READY_DELAY_SECONDS = float(os.environ.get("REDIS_READY_DELAY_SECONDS", "2"))
 
-db_url = os.environ.get("DATABASE_URL_ADMIN")
+db_url = os.environ.get("DATABASE_URL_APP")
 redis_url = os.environ.get("REDIS_URL")
 
 if db_url:
     db_url = db_url.replace("postgresql+psycopg://", "postgresql://", 1)
 
 if not db_url:
-    print("DATABASE_URL_ADMIN is missing", file=sys.stderr)
+    print("DATABASE_URL_APP is missing", file=sys.stderr)
     sys.exit(1)
 
 if not redis_url:
