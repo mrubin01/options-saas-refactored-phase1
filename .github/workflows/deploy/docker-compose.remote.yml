@@ -41,20 +41,36 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    ports:
-      - "8000:8000"
     volumes:
       - ./shared:/shared
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/v1/internal/health')\" 2>/dev/null"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
 
   frontend:
     image: ${FRONTEND_IMAGE}
     restart: unless-stopped
     depends_on:
       - backend
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
 
 volumes:
   postgres_data:
   redis_data:
-  
+  caddy_data:
+  caddy_config:

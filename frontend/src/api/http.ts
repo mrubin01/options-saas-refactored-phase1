@@ -1,3 +1,5 @@
+import { clearAccessToken, getAccessToken, setAccessToken } from "../auth/tokenStore";
+
 function getRequestId(): string {
   if (
     typeof globalThis !== "undefined" &&
@@ -10,22 +12,42 @@ function getRequestId(): string {
   return `req-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-const API_HOST = import.meta.env.VITE_API_URL || "http://135.181.109.67:8000";
-const API_VERSION = import.meta.env.VITE_API_VERSION || "v1";
-const API_URL = `${API_HOST.replace(/\/$/, "")}/${API_VERSION}`;
+function getApiHost(): string {
+  const envApiUrl = String(import.meta.env.VITE_API_URL ?? "").trim();
 
+  if (envApiUrl) {
+    return envApiUrl.replace(/\/+$/, "");
+  }
+
+  if (typeof window !== "undefined") {
+    const { protocol, hostname } = window.location;
+    const isLocalHost = hostname === "localhost" || hostname === "127.0.0.1";
+
+    if (isLocalHost) {
+      return "http://localhost:8000";
+    }
+
+    return `${protocol}//${hostname}:8000`;
+  }
+
+  return "http://localhost:8000";
+}
+
+const API_HOST = getApiHost();
+const API_VERSION = String(import.meta.env.VITE_API_VERSION ?? "v1").trim() || "v1";
+const API_URL = `${API_HOST.replace(/\/+$/, "")}/${API_VERSION}`;
 
 export interface ApiErrorPayload {
   code: string;
   message: string;
-  details?: any;
+  details?: unknown;
   request_id?: string;
 }
 
 export interface ApiMeta {
   request_id?: string;
   version?: string;
-  pagination?: any;
+  pagination?: unknown;
   timestamp?: string;
 }
 
@@ -38,11 +60,11 @@ export interface ApiResponse<T> {
 
 export class ApiClientError extends Error {
   code: string;
-  details?: any;
+  details?: unknown;
   requestId?: string;
   status: number;
 
-  constructor(message: string, code: string, status: number, details?: any, requestId?: string) {
+  constructor(message: string, code: string, status: number, details?: unknown, requestId?: string) {
     super(message);
     this.code = code;
     this.status = status;
@@ -51,40 +73,46 @@ export class ApiClientError extends Error {
   }
 }
 
-function authHeaders(): Record<string, string> {
-  const token = localStorage.getItem("access_token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
+type ApiFetchOptions = RequestInit & {
+  skipAuthRetry?: boolean;
+};
 
-function generateRequestId() {
+let refreshPromise: Promise<string | null> | null = null;
+
+function generateRequestId(): string {
   return getRequestId();
 }
 
-export async function apiFetch<T>(
-  path: string,
-  options: RequestInit = {}
-): Promise<T> {
-  const requestId = generateRequestId();
+function buildHeaders(options: ApiFetchOptions): Record<string, string> {
+  const headers = new Headers(options.headers ?? {});
 
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    "X-Request-ID": requestId,
-    ...authHeaders(),
-    ...(options.headers as Record<string, string> | undefined),
-  };
-
-  const res = await fetch(`${API_URL}${path}`, { ...options, headers });
-
-  if (res.status === 401) {
-    localStorage.removeItem("access_token");
-    window.location.href = "/login?expired=1";
-    throw new Error("Unauthorized");
+  if (!headers.has("X-Request-ID")) {
+    headers.set("X-Request-ID", generateRequestId());
   }
 
+  const token = getAccessToken();
+  if (token && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  const hasBody = options.body !== undefined && options.body !== null;
+  const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
+  const isUrlEncoded = options.body instanceof URLSearchParams;
+
+  if (hasBody && !isFormData && !isUrlEncoded && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  return Object.fromEntries(headers.entries());
+}
+
+async function parseResponse<T>(res: Response): Promise<T> {
   const contentType = res.headers.get("content-type") || "";
+
   if (!contentType.includes("application/json")) {
-    // fallback for non-JSON responses
-    if (!res.ok) throw new Error(await res.text());
+    if (!res.ok) {
+      throw new Error(await res.text());
+    }
     return (await res.text()) as unknown as T;
   }
 
@@ -102,4 +130,99 @@ export async function apiFetch<T>(
   }
 
   return payload.data as T;
+}
+
+async function requestNewAccessToken(): Promise<string | null> {
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      const res = await fetch(`${API_URL}/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "X-Request-ID": generateRequestId(),
+        },
+      });
+
+      if (!res.ok) {
+        clearAccessToken();
+        return null;
+      }
+
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        clearAccessToken();
+        return null;
+      }
+
+      const payload: ApiResponse<{ access_token: string }> = await res.json();
+      const newToken = payload?.data?.access_token ?? null;
+
+      if (!res.ok || !payload.success || !newToken) {
+        clearAccessToken();
+        return null;
+      }
+
+      setAccessToken(newToken);
+      return newToken;
+    })().finally(() => {
+      refreshPromise = null;
+    });
+  }
+
+  return refreshPromise;
+}
+
+function handleAuthFailure() {
+  clearAccessToken();
+  if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+    window.location.href = "/login?expired=1";
+  }
+}
+
+export async function apiFetch<T>(
+  path: string,
+  options: ApiFetchOptions = {}
+): Promise<T> {
+  const headers = buildHeaders(options);
+
+  const execute = () =>
+    fetch(`${API_URL}${path}`, {
+      ...options,
+      headers,
+      credentials: "include",
+    });
+
+  let res = await execute();
+
+  if (res.status === 401 && !options.skipAuthRetry) {
+    const refreshedToken = await requestNewAccessToken();
+
+    if (refreshedToken) {
+      const retryHeaders = buildHeaders({
+        ...options,
+        headers: {
+          ...(options.headers ?? {}),
+          Authorization: `Bearer ${refreshedToken}`,
+        },
+      });
+
+      res = await fetch(`${API_URL}${path}`, {
+        ...options,
+        headers: retryHeaders,
+        credentials: "include",
+      });
+    } else {
+      handleAuthFailure();
+      throw new ApiClientError("Unauthorized", "UNAUTHORIZED", 401);
+    }
+  }
+
+  if (res.status === 401) {
+    if (!options.skipAuthRetry) {
+      handleAuthFailure();
+    }
+    throw new ApiClientError("Unauthorized", "UNAUTHORIZED", 401);
+  }
+
+  return parseResponse<T>(res);
 }

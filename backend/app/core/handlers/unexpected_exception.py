@@ -1,56 +1,42 @@
-import logging
-from fastapi import Request
+from fastapi import Request, status
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
+from app.core.config import settings
+from app.core.middleware.logging import get_logger
+from app.core.response import fail
 from app.core.error_codes import ErrorCode
-from app.schemas.api import ApiResponse, ApiError, ApiMeta
-from app.core.middleware.request_context import get_request_id
-from app.core.error_codes import ErrorCode  # your registry
-from typing import cast
-from fastapi.encoders import jsonable_encoder
 
-logger = logging.getLogger("app.crash")
-
-
-def _unwrap_exception(exc: BaseException) -> BaseException:
-    # Python 3.11: ExceptionGroup / BaseExceptionGroup
-    sub = getattr(exc, "exceptions", None)
-    if sub and isinstance(sub, list) and len(sub) > 0:
-        return cast(BaseException, sub[0])
-    return exc
+logger = get_logger(__name__)
 
 
 async def unexpected_exception_handler(request: Request, exc: Exception):
-    root = _unwrap_exception(exc)
-
     request_id = getattr(request.state, "request_id", None)
-    version = getattr(request.state, "api_version", None)
 
     logger.exception(
-        "UNHANDLED_EXCEPTION",
+        "Unhandled exception",
         extra={
             "request_id": request_id,
-            "path": request.url.path,
+            "path": str(request.url.path),
             "method": request.method,
-            "exc_type": type(root).__name__,
         },
     )
 
-    resp = ApiResponse(
-        success=False,
-        data=None,
-        error=ApiError(
-            code=str(ErrorCode.INTERNAL_ERROR),
-            message="Unexpected server error",
-            details={"type": type(root).__name__, "message": str(root)},
-            request_id=request_id,
-        ),
-        meta=ApiMeta(
-            request_id=request_id,
-            version=version or ("v1" if request.url.path.startswith("/v1") else "v2" if request.url.path.startswith("/v2") else "unknown"),
-        ),
+    if settings.ENVIRONMENT == "local":
+        message = f"{exc.__class__.__name__}: {str(exc)}"
+        details = {"exception_type": exc.__class__.__name__}
+    else:
+        message = "An unexpected error occurred."
+        details = None
+
+    body = fail(
+        request=request,
+        code=ErrorCode.INTERNAL_ERROR,
+        message=message,
+        details=details,
     )
 
-    return JSONResponse(status_code=500, content=jsonable_encoder(resp))
-
-
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content=jsonable_encoder(body),
+    )

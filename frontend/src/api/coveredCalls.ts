@@ -1,14 +1,19 @@
 import { apiGet } from "./client";
-import { buildOptionsQuery } from "./optionsQuery";
+
 import type { CoveredCall } from "../types/coveredCall";
-import type { OptionsFilters } from "../types/filters";
+import type { CoveredCallsDiscoveryFilters } from "../types/discovery";
+import { coveredCallsFiltersToSearchParams } from "../utils/queryParams";
 
-export type CoveredCallsQuery = OptionsFilters & {
-  limit?: number;
-  offset?: number;
-};
+function buildCoveredCallsQuery(params: CoveredCallsDiscoveryFilters = {}) {
+  const searchParams = coveredCallsFiltersToSearchParams(params);
+  const queryString = searchParams.toString();
 
-export function fetchCoveredCalls(params: CoveredCallsQuery = {}): Promise<CoveredCall[]> {
-  const qs = buildOptionsQuery(params);
+  return queryString ? `?${queryString}` : "";
+}
+
+export function fetchCoveredCalls(
+  params: CoveredCallsDiscoveryFilters = {},
+): Promise<CoveredCall[]> {
+  const qs = buildCoveredCallsQuery(params);
   return apiGet<CoveredCall[]>(qs ? `/covered-calls${qs}` : "/covered-calls");
 }

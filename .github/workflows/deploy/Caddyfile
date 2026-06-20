@@ -1,0 +1,11 @@
+{
+    email mi.rubino@protonmail.com
+}
+
+optionstacker.com {
+    reverse_proxy frontend:80
+}
+
+www.optionstacker.com {
+    redir https://optionstacker.com{uri} permanent
+}

@@ -1,16 +1,31 @@
 # serializer version: 1
 # name: test_v1_covered_calls_contract
   dict({
-    'detail': 'Not Found',
+    'data_is_list': True,
+    'error_is_none': True,
+    'meta': dict({
+      'version': 'v1',
+    }),
+    'success': True,
   })
 # ---
 # name: test_v1_put_options_contract
   dict({
-    'detail': 'Not Found',
+    'data_is_list': True,
+    'error_is_none': True,
+    'meta': dict({
+      'version': 'v1',
+    }),
+    'success': True,
   })
 # ---
 # name: test_v1_spread_options_contract
   dict({
-    'detail': 'Not Found',
+    'data_is_list': True,
+    'error_is_none': True,
+    'meta': dict({
+      'version': 'v1',
+    }),
+    'success': True,
   })
 # ---

@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
+from typing import Any
 
 from app.bootstrap import configure_app
 from app.core.config import settings
@@ -9,13 +10,15 @@ from app.core.middleware.request_logging import logging_middleware
 from app.core.middleware.metrics import metrics_middleware
 from app.core.middleware.version import version_middleware
 from app.core.sentry import init_sentry
+from app.core.security.env_validation import validate_security_settings
 
 setup_logging()
 init_sentry()
+validate_security_settings()
 
 app = configure_app(
     FastAPI(
-        title="Options Analytics API",
+        title="OptionStacker API",
         version="1.0.0",
     )
 )
@@ -43,7 +46,11 @@ async def startup_cache():
         import redis.asyncio as redis
         from fastapi_cache.backends.redis import RedisBackend
 
-        client = redis.from_url(settings.REDIS_URL, encoding="utf-8", decode_responses=False)
+        client: Any = redis.from_url(
+            settings.REDIS_URL,
+            encoding="utf-8",
+            decode_responses=False,
+        )
         await client.ping()
         FastAPICache.init(RedisBackend(client), prefix="options-saas")
     except Exception:

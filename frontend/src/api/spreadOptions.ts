@@ -1,14 +1,21 @@
 import { apiGet } from "./client";
-import { buildOptionsQuery } from "./optionsQuery";
+
 import type { SpreadOption } from "../types/spreadOption";
-import type { OptionsFilters } from "../types/filters";
+import type { SpreadOptionsDiscoveryFilters } from "../types/discovery";
+import { spreadOptionsFiltersToSearchParams } from "../utils/queryParams";
 
-export type SpreadOptionsQuery = OptionsFilters & {
-  limit?: number;
-  offset?: number;
-};
+function buildSpreadOptionsQuery(params: SpreadOptionsDiscoveryFilters = {}) {
+  const searchParams = spreadOptionsFiltersToSearchParams(params);
+  const queryString = searchParams.toString();
 
-export function fetchSpreadOptions(params: SpreadOptionsQuery = {}): Promise<SpreadOption[]> {
-  const qs = buildOptionsQuery(params);
-  return apiGet<SpreadOption[]>(qs ? `/spread-options${qs}` : "/spread-options");
+  return queryString ? `?${queryString}` : "";
+}
+
+export function fetchSpreadOptions(
+  params: SpreadOptionsDiscoveryFilters = {},
+): Promise<SpreadOption[]> {
+  const qs = buildSpreadOptionsQuery(params);
+  return apiGet<SpreadOption[]>(
+    qs ? `/spread-options${qs}` : "/spread-options",
+  );
 }

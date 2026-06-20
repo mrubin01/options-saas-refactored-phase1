@@ -1,31 +1,71 @@
-import { Link } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 
 export default function Navigation() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
-  if (!user) return null;
+  async function handleLogout() {
+    await logout();
+    navigate("/login", { replace: true });
+  }
+
+  const linkStyle = ({ isActive }: { isActive: boolean }) => ({
+    marginRight: 16,
+    textDecoration: "none",
+    fontWeight: isActive ? 700 : 400,
+  });
 
   return (
-    <nav className="bg-white border-b mb-6">
-      <div className="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
-        <div className="flex gap-6 text-sm font-medium">
-          <Link to="/covered-calls">Covered Calls</Link>
-          <Link to="/put-options">Put Options</Link>
-          <Link to="/spread-options">Spread Options</Link>
-        </div>
+    <nav
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 16,
+        padding: "12px 16px",
+        borderBottom: "1px solid #ddd",
+        marginBottom: 24,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <Link to="/dashboard" style={{ fontWeight: 700, textDecoration: "none" }}>
+          Options SaaS
+        </Link>
 
-        <div className="flex items-center gap-4 text-sm">
-          {user && <span className="text-gray-600">{user.email}</span>}
-          {user && (
-            <button
-              onClick={logout}
-              className="text-red-600 hover:underline"
-            >
-              Logout
-            </button>
-          )}
-        </div>
+        <NavLink to="/dashboard" style={linkStyle}>
+          Dashboard
+        </NavLink>
+
+        <NavLink to="/covered-calls" style={linkStyle}>
+          Covered Calls
+        </NavLink>
+
+        <NavLink to="/put-options" style={linkStyle}>
+          Put Options
+        </NavLink>
+
+        <NavLink to="/spread-options" style={linkStyle}>
+          Spread Options
+        </NavLink>
+
+        <NavLink to="/watchlist" style={linkStyle}>
+          Watchlist
+        </NavLink>
+
+        <NavLink to="/glossary" style={linkStyle}>
+          Glossary
+        </NavLink>
+
+        <NavLink to="/account" style={linkStyle}>
+          Account
+        </NavLink>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        {user?.email && <span style={{ fontSize: 14, color: "#555" }}>{user.email}</span>}
+
+        <button onClick={handleLogout}>Logout</button>
       </div>
     </nav>
   );

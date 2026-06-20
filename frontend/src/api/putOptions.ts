@@ -1,14 +1,19 @@
 import { apiGet } from "./client";
-import { buildOptionsQuery } from "./optionsQuery";
+
 import type { PutOption } from "../types/putOption";
-import type { OptionsFilters } from "../types/filters";
+import type { PutOptionsDiscoveryFilters } from "../types/discovery";
+import { putOptionsFiltersToSearchParams } from "../utils/queryParams";
 
-export type PutOptionsQuery = OptionsFilters & {
-  limit?: number;
-  offset?: number;
-};
+function buildPutOptionsQuery(params: PutOptionsDiscoveryFilters = {}) {
+  const searchParams = putOptionsFiltersToSearchParams(params);
+  const queryString = searchParams.toString();
 
-export function fetchPutOptions(params: PutOptionsQuery = {}): Promise<PutOption[]> {
-  const qs = buildOptionsQuery(params);
+  return queryString ? `?${queryString}` : "";
+}
+
+export function fetchPutOptions(
+  params: PutOptionsDiscoveryFilters = {},
+): Promise<PutOption[]> {
+  const qs = buildPutOptionsQuery(params);
   return apiGet<PutOption[]>(qs ? `/put-options${qs}` : "/put-options");
 }

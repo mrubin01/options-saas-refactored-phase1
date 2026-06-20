@@ -1,7 +1,13 @@
 import type { OptionsFilters } from "../types/filters";
+import type { CoveredCallsDiscoveryFilters } from "../types/discovery";
 
 export const queryKeys = {
-  coveredCalls: (filters: OptionsFilters) => ["coveredCalls", filters] as const,
-  putOptions: (filters: OptionsFilters) => ["putOptions", filters] as const,
-  spreadOptions: (filters: OptionsFilters) => ["spreadOptions", filters] as const,
+  coveredCalls: (filters: CoveredCallsDiscoveryFilters) =>
+    ["coveredCalls", filters] as const,
+
+  putOptions: (filters: OptionsFilters) =>
+    ["putOptions", filters] as const,
+
+  spreadOptions: (filters: OptionsFilters) =>
+    ["spreadOptions", filters] as const,
 };

@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchCoveredCalls } from "../coveredCalls";
-import type { OptionsFilters } from "../../types/filters";
-import type { CoveredCall } from "../../types/coveredCall";
 import { queryKeys } from "../queryKeys";
+import type { CoveredCall } from "../../types/coveredCall";
+import type { CoveredCallsDiscoveryFilters } from "../../types/discovery";
 
-export function useCoveredCalls(filters: OptionsFilters) {
+export function useCoveredCalls(filters: CoveredCallsDiscoveryFilters) {
   return useQuery<CoveredCall[], Error>({
     queryKey: queryKeys.coveredCalls(filters),
     queryFn: () => fetchCoveredCalls(filters),

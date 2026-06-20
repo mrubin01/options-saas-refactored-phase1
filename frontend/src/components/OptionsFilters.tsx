@@ -52,7 +52,7 @@ export default function OptionsFilters({
         ))}
       </select>
 
-      {/* Expiry Date */}
+      {/* Minimum Expiry Date */}
       <input
         type="date"
         value={filters.expiry_date || ""}

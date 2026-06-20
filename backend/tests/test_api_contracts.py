@@ -1,28 +1,12 @@
-import pytest
-from fastapi.testclient import TestClient
-from app.main import app
-
-client = TestClient(app)
-
-
-# ---- CONFIG ----
-TEST_EMAIL = "test@example.com"
-TEST_PASSWORD = "testpassword"
-
-
-# ---- HELPERS ----
-
 def assert_api_response_shape(resp_json):
     assert isinstance(resp_json, dict)
 
-    # Must always have these 3 keys
     assert "success" in resp_json
     assert "data" in resp_json
     assert "error" in resp_json
 
     assert isinstance(resp_json["success"], bool)
 
-    # Exactly one of data / error must be non-null
     if resp_json["success"]:
         assert resp_json["error"] is None
     else:
@@ -32,56 +16,19 @@ def assert_api_response_shape(resp_json):
         assert "message" in resp_json["error"]
 
 
-# ---- FIXTURES ----
-
-@pytest.fixture(scope="session")
-def auth_token():
-    """
-    Logs in once and returns a valid JWT token
-    """
-
-    res = client.post(
-        "/v1/auth/login",
-        data={
-            "username": TEST_EMAIL,
-            "password": TEST_PASSWORD,
-        },
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
-    )
-
-    assert res.status_code == 200
-
-    payload = res.json()
-
-    assert payload["success"] is True
-    assert payload["data"] is not None
-    assert "access_token" in payload["data"]
-
-    return payload["data"]["access_token"]
-
-@pytest.fixture
-def auth_headers(auth_token):
-    return {
-        "Authorization": f"Bearer {auth_token}"
-    }
-
-
-# ---- CONTRACT TESTS ----
-
-def test_auth_me_contract(auth_headers):
+def test_auth_me_contract(client, auth_headers):
     res = client.get("/v1/auth/me", headers=auth_headers)
     assert res.status_code == 200
 
     data = res.json()
     assert_api_response_shape(data)
 
-    # Extra sanity check
     assert data["success"] is True
     assert "id" in data["data"]
     assert "email" in data["data"]
 
 
-def test_covered_calls_contract(auth_headers):
+def test_covered_calls_contract(client, auth_headers):
     res = client.get("/v1/covered-calls", headers=auth_headers)
     assert res.status_code == 200
 
@@ -90,21 +37,43 @@ def test_covered_calls_contract(auth_headers):
 
     if data["success"]:
         payload = data["data"]
-        assert "items" in payload
-        assert "limit" in payload
-        assert "offset" in payload
+        assert isinstance(payload, list)
 
-        if payload["items"]:
-            row = payload["items"][0]
+        if payload:
+            row = payload[0]
             assert "contract" in row
             assert "ticker" in row
             assert "exchange" in row
             assert "expiry_date" in row
             assert "current_price" in row
             assert "strike_price" in row
+            assert "days_to_expiration" in row
+            assert "coeff_variation" in row
+            assert "max_profit" in row
+            assert "max_profit_per_contract" in row
+            assert "otm" in row
+            assert "moneyness" in row
+            assert "sigma_distance" in row
+            assert "break_even" in row
+            assert "option_yield" in row
+            assert "roc" in row
+            assert "tot_return" in row
+            assert "delta" in row
+            assert "spread_bid_ask" in row
+            assert "open_interest" in row
+            assert "impl_volatility" in row
+            assert "bid_per_share" in row
+            assert "premium_per_contract" in row
+            assert "sector" in row
+            assert "industry" in row
+            assert "highest_price" in row
+            assert "avg_price" in row
+            assert "lowest_price" in row
+            assert "main_trend" in row
+            assert "beta" in row
 
 
-def test_put_options_contract(auth_headers):
+def test_put_options_contract(client, auth_headers):
     res = client.get("/v1/put-options", headers=auth_headers)
     assert res.status_code == 200
 
@@ -113,12 +82,43 @@ def test_put_options_contract(auth_headers):
 
     if data["success"]:
         payload = data["data"]
-        assert "items" in payload
-        assert "limit" in payload
-        assert "offset" in payload
+        assert isinstance(payload, list)
+
+        if payload:
+            row = payload[0]
+            assert "contract" in row
+            assert "ticker" in row
+            assert "exchange" in row
+            assert "expiry_date" in row
+            assert "current_price" in row
+            assert "strike_price" in row
+            assert "days_to_expiration" in row
+            assert "coeff_variation" in row
+            assert "max_profit" in row
+            assert "max_profit_per_contract" in row
+            assert "otm" in row
+            assert "moneyness" in row
+            assert "sigma_distance" in row
+            assert "break_even" in row
+            assert "option_yield" in row
+            assert "roc" in row
+            assert "tot_return" in row
+            assert "delta" in row
+            assert "spread_bid_ask" in row
+            assert "open_interest" in row
+            assert "impl_volatility" in row
+            assert "bid_per_share" in row
+            assert "premium_per_contract" in row
+            assert "sector" in row
+            assert "industry" in row
+            assert "highest_price" in row
+            assert "avg_price" in row
+            assert "lowest_price" in row
+            assert "main_trend" in row
+            assert "beta" in row
 
 
-def test_spread_options_contract(auth_headers):
+def test_spread_options_contract(client, auth_headers):
     res = client.get("/v1/spread-options", headers=auth_headers)
     assert res.status_code == 200
 
@@ -127,15 +127,19 @@ def test_spread_options_contract(auth_headers):
 
     if data["success"]:
         payload = data["data"]
-        assert "items" in payload
-        assert "limit" in payload
-        assert "offset" in payload
+        assert isinstance(payload, list)
+
+        if payload:
+            row = payload[0]
+            assert "contract" in row
+            assert "ticker" in row
+            assert "exchange" in row
+            assert "expiry_date" in row
+            assert "current_price" in row
+            assert "strike_price" in row
 
 
-def test_unauthorized_contract():
-    """
-    Verify unauthorized responses are ALSO wrapped correctly
-    """
+def test_unauthorized_contract(client):
     res = client.get("/v1/covered-calls")
     assert res.status_code == 401
 
@@ -144,3 +148,4 @@ def test_unauthorized_contract():
 
     assert data["success"] is False
     assert data["error"]["code"] is not None
+    

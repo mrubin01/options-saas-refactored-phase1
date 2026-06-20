@@ -1,10 +1,11 @@
-// src/components/Layout.tsx
-export default function Layout({ children }: { children: React.ReactNode }) {
+import type { PropsWithChildren } from "react";
+import Navigation from "./Navigation";
+
+export default function Layout({ children }: PropsWithChildren) {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        {children}
-      </div>
+    <div>
+      <Navigation />
+      <main style={{ padding: "0 16px 24px" }}>{children}</main>
     </div>
   );
 }

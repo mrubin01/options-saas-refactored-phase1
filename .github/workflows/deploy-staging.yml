@@ -11,6 +11,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: staging
+
     steps:
       - uses: actions/checkout@v4
 
@@ -22,9 +23,11 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             mkdir -p ~/options-saas/deploy
-            mkdir -p ~/options-saas/shared/data
+            mkdir -p ~/options-saas/shared
 
             cat > ~/options-saas/deploy/docker-compose.remote.yml <<'EOF'
+            name: optionstacker-staging
+
             services:
               db:
                 image: postgres:16-alpine
@@ -44,6 +47,7 @@ jobs:
               redis:
                 image: redis:7-alpine
                 restart: unless-stopped
+                command: ["redis-server", "--appendonly", "yes"]
                 volumes:
                   - redis_data:/data
                 healthcheck:
@@ -56,13 +60,27 @@ jobs:
                 image: ${BACKEND_IMAGE}
                 restart: unless-stopped
                 environment:
+                  ENVIRONMENT: staging
                   DATABASE_URL_ADMIN: ${DATABASE_URL_ADMIN}
                   DATABASE_URL_APP: ${DATABASE_URL_APP}
                   REDIS_URL: ${REDIS_URL}
-                  APP_ENV: ${APP_ENV}
                   SECRET_KEY: ${SECRET_KEY}
+                  ALGORITHM: ${ALGORITHM}
                   ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
+                  REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS}
+                  REFRESH_COOKIE_NAME: ${REFRESH_COOKIE_NAME}
+                  REFRESH_COOKIE_SECURE: ${REFRESH_COOKIE_SECURE}
+                  REFRESH_COOKIE_SAMESITE: ${REFRESH_COOKIE_SAMESITE}
+                  REFRESH_COOKIE_DOMAIN: ${REFRESH_COOKIE_DOMAIN}
+                  REFRESH_COOKIE_PATH: ${REFRESH_COOKIE_PATH}
+                  FRONTEND_URL: ${FRONTEND_URL}
                   CORS_ORIGINS: ${CORS_ORIGINS}
+                  RESET_PASSWORD_TOKEN_EXPIRE_MINUTES: ${RESET_PASSWORD_TOKEN_EXPIRE_MINUTES}
+                  VERIFY_EMAIL_TOKEN_EXPIRE_MINUTES: ${VERIFY_EMAIL_TOKEN_EXPIRE_MINUTES}
+                  SENTRY_DSN: ${SENTRY_DSN}
+                  SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE}
+                  BACKEND_PORT: 8000
+                  RUN_MIGRATIONS: true
                 depends_on:
                   db:
                     condition: service_healthy
@@ -72,14 +90,25 @@ jobs:
                   - "8000:8000"
                 volumes:
                   - ~/options-saas/shared:/shared
+                healthcheck:
+                  test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8000/v1/internal/health || exit 1"]
+                  interval: 15s
+                  timeout: 5s
+                  retries: 10
 
               frontend:
                 image: ${FRONTEND_IMAGE}
                 restart: unless-stopped
                 depends_on:
-                  - backend
+                  backend:
+                    condition: service_healthy
                 ports:
                   - "80:80"
+                healthcheck:
+                  test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/health || exit 1"]
+                  interval: 15s
+                  timeout: 5s
+                  retries: 10
 
             volumes:
               postgres_data:
@@ -90,13 +119,31 @@ jobs:
             POSTGRES_DB=${{ secrets.POSTGRES_DB }}
             POSTGRES_USER=${{ secrets.POSTGRES_USER }}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+
             DATABASE_URL_ADMIN=${{ secrets.DATABASE_URL_ADMIN }}
             DATABASE_URL_APP=${{ secrets.DATABASE_URL_APP }}
             REDIS_URL=${{ secrets.REDIS_URL }}
-            APP_ENV=staging
+
             SECRET_KEY=${{ secrets.SECRET_KEY }}
+            ALGORITHM=${{ secrets.ALGORITHM }}
             ACCESS_TOKEN_EXPIRE_MINUTES=${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+            REFRESH_TOKEN_EXPIRE_DAYS=${{ secrets.REFRESH_TOKEN_EXPIRE_DAYS }}
+
+            REFRESH_COOKIE_NAME=${{ secrets.REFRESH_COOKIE_NAME }}
+            REFRESH_COOKIE_SECURE=${{ secrets.REFRESH_COOKIE_SECURE }}
+            REFRESH_COOKIE_SAMESITE=${{ secrets.REFRESH_COOKIE_SAMESITE }}
+            REFRESH_COOKIE_DOMAIN=${{ secrets.REFRESH_COOKIE_DOMAIN }}
+            REFRESH_COOKIE_PATH=${{ secrets.REFRESH_COOKIE_PATH }}
+
+            FRONTEND_URL=${{ secrets.FRONTEND_URL }}
             CORS_ORIGINS=${{ secrets.CORS_ORIGINS }}
+
+            RESET_PASSWORD_TOKEN_EXPIRE_MINUTES=${{ secrets.RESET_PASSWORD_TOKEN_EXPIRE_MINUTES }}
+            VERIFY_EMAIL_TOKEN_EXPIRE_MINUTES=${{ secrets.VERIFY_EMAIL_TOKEN_EXPIRE_MINUTES }}
+
+            SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+            SENTRY_TRACES_SAMPLE_RATE=${{ secrets.SENTRY_TRACES_SAMPLE_RATE }}
+
             BACKEND_IMAGE=${{ secrets.BACKEND_IMAGE }}
             FRONTEND_IMAGE=${{ secrets.FRONTEND_IMAGE }}
             EOF
