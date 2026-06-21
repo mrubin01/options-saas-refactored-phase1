@@ -178,6 +178,29 @@ jobs:
             }
             CADDYEOF
 
+            mkdir -p ~/options-saas/scripts
+
+            cat > ~/options-saas/scripts/prod-ingest.sh <<'INGESTEOF'
+            #!/bin/bash
+            set -euo pipefail
+
+            APP_DIR="$HOME/options-saas"
+            COMPOSE="docker compose --env-file $APP_DIR/.env -f $APP_DIR/deploy/docker-compose.remote.yml"
+            LOG_DIR="$APP_DIR/logs"
+
+            mkdir -p "$LOG_DIR"
+
+            echo "[$(date)] Starting ingestion"
+
+            $COMPOSE exec -T backend python -m ingestion.covered_calls
+            $COMPOSE exec -T backend python -m ingestion.put_options
+            $COMPOSE exec -T backend python -m ingestion.spread_options
+
+            echo "[$(date)] Ingestion completed"
+            INGESTEOF
+
+            chmod +x ~/options-saas/scripts/prod-ingest.sh
+
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
 
             cd ~/options-saas
