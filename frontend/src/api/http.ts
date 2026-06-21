@@ -20,17 +20,18 @@ function getApiHost(): string {
   }
 
   if (typeof window !== "undefined") {
-    const { protocol, hostname } = window.location;
+    const { hostname } = window.location;
     const isLocalHost = hostname === "localhost" || hostname === "127.0.0.1";
 
     if (isLocalHost) {
       return "http://localhost:8000";
     }
 
-    return `${protocol}//${hostname}:8000`;
+    // In production, API requests are relative (proxied by nginx)
+    return "";
   }
 
-  return "http://localhost:8000";
+  return "";
 }
 
 const API_HOST = getApiHost();
