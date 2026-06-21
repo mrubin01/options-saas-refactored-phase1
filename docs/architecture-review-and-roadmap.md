@@ -186,30 +186,15 @@ The `PaginationMeta` model already exists in `backend/app/schemas/api.py` — it
 
 ---
 
-#### 14. `_parse_date` defined separately in every service file
+#### ~~14. `_parse_date` defined separately in every service file~~ ✅ Fixed
 
-**Location:** `services/covered_calls.py`, `put_options.py`, `spread_options.py`, `ingestion/base.py`  
-**What:** `_parse_date` / `parse_date` is defined at least 4 times across the codebase.
-
-**Fix:** Move to `app/core/utils.py` or `app/core/dates.py` and import from there.
+**Fixed:** `parse_date` moved to `app/core/utils.py`. The three service files now import from there via `options_query.py`. The ingestion version (`ingestion/base.py`) intentionally keeps its own — it handles two date formats (ISO + European) and serves a different purpose.
 
 ---
 
-#### 15. No email sending implementation
+#### ~~15. No email sending implementation~~ ✅ Fixed
 
-**Location:** `backend/app/api/v1/auth.py` — `register`, `forgot_password`, `resend_verification`  
-**What:** These endpoints generate verification/reset links but only `log` them (`log_email_link` writes the URL to the application logs). No email is actually sent. This is fine for development but means the entire password reset and email verification flow is broken for real users in production.
-
-**Fix:** Integrate a transactional email provider before launch if you intend to use email verification/reset. Options: SendGrid, Resend, Mailgun, AWS SES. Create an `email_service.py` abstraction and call it from the auth endpoints.
-
-Example abstraction:
-```python
-# backend/app/services/email_service.py
-async def send_verification_email(to_email: str, link: str) -> None: ...
-async def send_password_reset_email(to_email: str, link: str) -> None: ...
-```
-
-> ⚠️ **This may be a launch blocker depending on your registration model.** If users register themselves and must verify email before accessing the app, and no emails are sent, registration is effectively broken. If you're manually managing users for now (no self-registration), it's not blocking.
+**Fixed:** `backend/app/services/email_service.py` created with `send_verification_email` and `send_password_reset_email`. Integrated with Resend API (`resend` package). `RESEND_API_KEY` and `EMAIL_FROM` added to config and production secrets. Auth endpoints (`register`, `forgot_password`, `resend_verification`) now call the email service after logging the link. Gracefully no-ops with a warning log if `RESEND_API_KEY` is not set.
 
 ---
 
@@ -230,15 +215,15 @@ async def send_password_reset_email(to_email: str, link: str) -> None: ...
 | 9 | Silent Redis fallback | ✅ Fixed — critical log added |
 | 10 | `on_event` deprecated | ✅ Fixed — lifespan context manager |
 
-### After Launch (Stage 5 Prep)
+### After Launch (Stage 5 Prep) — All Resolved ✅
 
-| # | Issue | Severity | Effort |
-|---|---|---|---|
-| 11 | Service-layer 3x duplication | 🟠 High | Medium (query builder) |
-| 12 | Exchange hardcoded in frontend | 🟠 Medium | Low |
-| 13 | No total-count in pagination | 🟠 Medium | Low |
-| 14 | `_parse_date` defined 4 times | 🟠 Low | Trivial |
-| 15 | No email sending | ⚠️ Context-dependent | Medium |
+| # | Issue | Status |
+|---|---|---|
+| 11 | Service-layer 3x duplication | ✅ Fixed — shared `OptionsQueryBuilder` in `options_query.py` |
+| 12 | Exchange hardcoded in frontend | ✅ Fixed — `/v1/exchanges` endpoint + `useExchanges()` hook |
+| 13 | No total-count in pagination | ✅ Fixed — `total` and `has_next` populated in all list endpoints |
+| 14 | `_parse_date` defined 4 times | ✅ Fixed — consolidated in `app/core/utils.py` |
+| 15 | No email sending | ✅ Fixed — Resend integrated via `email_service.py` |
 
 ---
 
