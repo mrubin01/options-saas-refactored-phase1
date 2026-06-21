@@ -1,13 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { deleteWatchlistItem, listWatchlistItems } from "../api/watchlist";
-import { EXCHANGES } from "../constants/exchanges";
+import { useExchanges } from "../api/hooks/useExchanges";
 import type { WatchlistItem, WatchlistStrategyType } from "../types/watchlistItem";
 import PageHeader from "../components/PageHeader";
 
-const exchangeMap: Record<number, string> = Object.fromEntries(
-  EXCHANGES.map((e) => [e.id, e.name])
-);
 
 const strategyOptions: Array<{ value: "all" | WatchlistStrategyType; label: string }> = [
   { value: "all", label: "All" },
@@ -33,6 +30,9 @@ function formatDateTime(value: string) {
 }
 
 export default function WatchlistPage() {
+  const { data: exchanges = [] } = useExchanges();
+  const exchangeMap: Record<number, string> = Object.fromEntries(exchanges.map((e) => [e.id, e.name]));
+
   const [items, setItems] = useState<WatchlistItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

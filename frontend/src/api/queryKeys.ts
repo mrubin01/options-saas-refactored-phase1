@@ -10,4 +10,6 @@ export const queryKeys = {
 
   spreadOptions: (filters: OptionsFilters) =>
     ["spreadOptions", filters] as const,
+
+  exchanges: () => ["exchanges"] as const,
 };

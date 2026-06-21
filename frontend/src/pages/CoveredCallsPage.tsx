@@ -15,7 +15,7 @@ import PageHeader from "../components/PageHeader";
 import SavedScreenersPanel from "../components/SavedScreenersPanel";
 import ActiveFilterChips from "../components/ActiveFilterChips";
 import AdvancedFiltersPanel from "../components/AdvancedFiltersPanel";
-import { EXCHANGES } from "../constants/exchanges";
+import { useExchanges } from "../api/hooks/useExchanges";
 import type { CoveredCall } from "../types/coveredCall";
 import type {
   CoveredCallSortField,
@@ -33,9 +33,6 @@ import {
 import StrategyHelpPanel from "../components/StrategyHelpPanel";
 import DataFreshnessBanner from "../components/DataFreshnessBanner";
 
-const exchangeMap: Record<number, string> = Object.fromEntries(
-  EXCHANGES.map((e) => [e.id, e.name]),
-);
 
 function toLegacyFilters(
   filters: CoveredCallsDiscoveryFilters,
@@ -95,6 +92,9 @@ function normalizeSavedScreenerFilters(
 }
 
 export default function CoveredCallsPage() {
+  const { data: exchanges = [] } = useExchanges();
+  const exchangeMap: Record<number, string> = Object.fromEntries(exchanges.map((e) => [e.id, e.name]));
+
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [filters, setFilters] = useState<CoveredCallsDiscoveryFilters>(() =>
@@ -275,7 +275,7 @@ export default function CoveredCallsPage() {
       <OptionsFilters
         filters={legacyFilters}
         onChange={handleLegacyFiltersChange}
-        exchanges={EXCHANGES}
+        exchanges={exchanges}
       />
 
       <AdvancedFiltersPanel
