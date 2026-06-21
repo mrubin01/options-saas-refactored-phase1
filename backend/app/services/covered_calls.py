@@ -8,7 +8,7 @@ from app.services.options_query import OptionsSortField, build_options_query
 CoveredCallSortField = OptionsSortField
 
 
-def get_covered_calls(
+def get_covered_calls(  # returns (data, total)
     db: Session,
     exchange: int | None = None,
     ticker: str | None = None,

@@ -8,7 +8,7 @@ from app.auth.deps import get_current_user
 from app.models.user import User
 from app.schemas.v1.spread_option import SpreadOptionOut, SpreadOptionList
 from app.services.spread_options import get_spread_options
-from app.schemas.api import ApiResponse
+from app.schemas.api import ApiResponse, PaginationMeta
 from app.core.rate_limit import limiter
 from fastapi_cache.decorator import cache
 from app.core.cache import cache_key_builder
@@ -212,7 +212,7 @@ async def list_spread_options(
     - safe allowlisted sorting
     - pagination
     """
-    spread_options = get_spread_options(
+    spread_options, total = get_spread_options(
         db=db,
         exchange=exchange,
         ticker=ticker,
@@ -249,4 +249,10 @@ async def list_spread_options(
     return ok(
         data=spread_options,
         request=request,
+        pagination=PaginationMeta(
+            limit=limit,
+            offset=offset,
+            total=total,
+            has_next=(offset + limit) < total,
+        ),
     )

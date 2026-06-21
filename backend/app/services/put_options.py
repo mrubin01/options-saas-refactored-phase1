@@ -8,7 +8,7 @@ from app.services.options_query import OptionsSortField, build_options_query
 PutOptionSortField = OptionsSortField
 
 
-def get_put_options(
+def get_put_options(  # returns (data, total)
     db: Session,
     exchange: int | None = None,
     ticker: str | None = None,

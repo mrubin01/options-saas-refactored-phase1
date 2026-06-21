@@ -8,7 +8,7 @@ from app.auth.deps import get_current_user
 from app.models.user import User
 from app.schemas.v1.put_option import PutOptionOut, PutOptionList
 from app.services.put_options import get_put_options
-from app.schemas.api import ApiResponse
+from app.schemas.api import ApiResponse, PaginationMeta
 from app.core.rate_limit import limiter
 from fastapi_cache.decorator import cache
 from app.core.cache import cache_key_builder
@@ -212,7 +212,7 @@ async def list_put_options(
     - safe allowlisted sorting
     - pagination
     """
-    put_options = get_put_options(
+    put_options, total = get_put_options(
         db=db,
         exchange=exchange,
         ticker=ticker,
@@ -249,6 +249,12 @@ async def list_put_options(
     return ok(
         data=put_options,
         request=request,
+        pagination=PaginationMeta(
+            limit=limit,
+            offset=offset,
+            total=total,
+            has_next=(offset + limit) < total,
+        ),
     )
 
 

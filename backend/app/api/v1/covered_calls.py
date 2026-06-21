@@ -10,7 +10,7 @@ from app.core.rate_limit import limiter
 from app.core.response import ok
 from app.db.database import get_db
 from app.models.user import User
-from app.schemas.api import ApiResponse
+from app.schemas.api import ApiResponse, PaginationMeta
 from app.schemas.v1.covered_call import CoveredCallOut
 from app.services.covered_calls import get_covered_calls
 
@@ -215,7 +215,7 @@ async def list_covered_calls(
     - safe allowlisted sorting
     - pagination
     """
-    covered_calls = get_covered_calls(
+    covered_calls, total = get_covered_calls(
         db=db,
         exchange=exchange,
         ticker=ticker,
@@ -252,4 +252,10 @@ async def list_covered_calls(
     return ok(
         data=covered_calls,
         request=request,
+        pagination=PaginationMeta(
+            limit=limit,
+            offset=offset,
+            total=total,
+            has_next=(offset + limit) < total,
+        ),
     )

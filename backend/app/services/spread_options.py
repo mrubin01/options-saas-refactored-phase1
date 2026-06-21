@@ -8,7 +8,7 @@ from app.services.options_query import OptionsSortField, build_options_query
 SpreadOptionSortField = OptionsSortField
 
 
-def get_spread_options(
+def get_spread_options(  # returns (data, total)
     db: Session,
     exchange: int | None = None,
     ticker: str | None = None,
