@@ -5,7 +5,6 @@ from fastapi.middleware.gzip import GZipMiddleware
 from slowapi.errors import RateLimitExceeded
 
 from app.api.v1.router import router as v1_router
-from app.api.v2.router import router as v2_router
 from app.core.config import settings
 from app.core.exceptions import app_exception_handler, validation_exception_handler, AppException
 from app.core.handlers.rate_limit import rate_limit_exceeded_handler
@@ -42,7 +41,6 @@ def register_middleware(app: FastAPI) -> None:
 
 def register_routers(app: FastAPI) -> None:
     app.include_router(v1_router, prefix="/v1")
-    app.include_router(v2_router, prefix="/v2")
 
 
 def configure_app(app: FastAPI) -> FastAPI:
