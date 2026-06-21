@@ -4,7 +4,6 @@ from sqlalchemy.engine import Engine
 
 from app.core.config import settings
 
-# DATABASE_URL_ADMIN = settings.DATABASE_URL_ADMIN
 DATABASE_URL_APP = settings.DATABASE_URL_APP
 
 if not DATABASE_URL_APP:

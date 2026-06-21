@@ -21,7 +21,6 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = "http://localhost:4173"
 
     # --- database ---
-    DATABASE_URL_ADMIN: str = "postgresql+psycopg://options_user:change_me_db_password@localhost:5432/options_saas"
     DATABASE_URL_APP: str = "postgresql+psycopg://options_user:change_me_db_password@localhost:5432/options_saas"
 
     # --- cors ---

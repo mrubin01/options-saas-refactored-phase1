@@ -11,10 +11,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL_ADMIN = settings.DATABASE_URL_ADMIN
-if not DATABASE_URL_ADMIN:
-    raise RuntimeError("DATABASE_URL_ADMIN is not set")
-
 engine = create_engine(settings.DATABASE_URL_APP,
     pool_size=10,
     max_overflow=20,

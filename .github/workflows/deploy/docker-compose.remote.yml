@@ -29,7 +29,6 @@ services:
     image: ${BACKEND_IMAGE}
     restart: unless-stopped
     environment:
-      DATABASE_URL_ADMIN: ${DATABASE_URL_ADMIN}
       DATABASE_URL_APP: ${DATABASE_URL_APP}
       REDIS_URL: ${REDIS_URL}
       APP_ENV: ${APP_ENV}

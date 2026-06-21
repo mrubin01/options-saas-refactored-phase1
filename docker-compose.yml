@@ -44,7 +44,6 @@ services:
       - ./backend/.env.docker
     environment:
       ENVIRONMENT: ${ENVIRONMENT:-docker}
-      DATABASE_URL_ADMIN: ${DATABASE_URL_ADMIN}
       DATABASE_URL_APP: ${DATABASE_URL_APP}
       REDIS_URL: ${REDIS_URL}
       SECRET_KEY: ${SECRET_KEY}

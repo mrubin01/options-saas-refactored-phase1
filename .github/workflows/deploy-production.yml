@@ -61,7 +61,6 @@ jobs:
                 restart: unless-stopped
                 environment:
                   ENVIRONMENT: production
-                  DATABASE_URL_ADMIN: ${DATABASE_URL_ADMIN}
                   DATABASE_URL_APP: ${DATABASE_URL_APP}
                   REDIS_URL: ${REDIS_URL}
                   SECRET_KEY: ${SECRET_KEY}
@@ -133,7 +132,6 @@ jobs:
             POSTGRES_USER=${{ secrets.POSTGRES_USER }}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
 
-            DATABASE_URL_ADMIN=${{ secrets.DATABASE_URL_ADMIN }}
             DATABASE_URL_APP=${{ secrets.DATABASE_URL_APP }}
             REDIS_URL=${{ secrets.REDIS_URL }}
 
