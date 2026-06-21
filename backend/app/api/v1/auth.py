@@ -28,6 +28,7 @@ from app.services.auth_sessions import (
     rotate_refresh_session,
 )
 from app.services.auth_tokens import create_one_time_token, consume_one_time_token
+from app.services.email_service import send_verification_email, send_password_reset_email
 from app.schemas.user import (
     ForgotPasswordRequest,
     ResetPasswordRequest,
@@ -108,6 +109,7 @@ async def register(request: Request, user_in: UserCreate, db: Session = Depends(
     )
     verification_link = build_frontend_url(f"/verify-email?token={verification_token}")
     log_email_link("verify_email", user.email, verification_link)
+    send_verification_email(user.email, verification_link)
 
     logger.info("New user registered", extra={"email": user.email})
 
@@ -315,6 +317,7 @@ async def forgot_password(
         )
         reset_link = build_frontend_url(f"/reset-password?token={token}")
         log_email_link("reset_password", user.email, reset_link)
+        send_password_reset_email(user.email, reset_link)
 
     return ok(
         request=request,
@@ -422,6 +425,7 @@ async def resend_verification(
         )
         verification_link = build_frontend_url(f"/verify-email?token={token}")
         log_email_link("verify_email_resend", user.email, verification_link)
+        send_verification_email(user.email, verification_link)
 
     return ok(
         request=request,

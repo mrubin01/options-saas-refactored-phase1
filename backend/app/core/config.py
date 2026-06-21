@@ -31,6 +31,10 @@ class Settings(BaseSettings):
         "http://127.0.0.1:4173"
     )
 
+    # --- email ---
+    RESEND_API_KEY: str | None = None
+    EMAIL_FROM: str = "noreply@optionstacker.com"
+
     # --- sentry ---
     SENTRY_DSN: str | None = None
     SENTRY_TRACES_SAMPLE_RATE: float = 0.0
