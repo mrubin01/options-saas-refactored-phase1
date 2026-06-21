@@ -5,12 +5,14 @@ from typing import Any
 
 from app.bootstrap import configure_app
 from app.core.config import settings
-from app.core.middleware.logging import setup_logging
+from app.core.middleware.logging import setup_logging, get_logger
 from app.core.middleware.request_logging import logging_middleware
 from app.core.middleware.metrics import metrics_middleware
 from app.core.middleware.version import version_middleware
 from app.core.sentry import init_sentry
 from app.core.security.env_validation import validate_security_settings
+
+logger = get_logger(__name__)
 
 setup_logging()
 init_sentry()
@@ -53,5 +55,10 @@ async def startup_cache():
         )
         await client.ping()
         FastAPICache.init(RedisBackend(client), prefix="options-saas")
-    except Exception:
+    except Exception as e:
+        logger.critical(
+            "Redis unavailable at startup — falling back to InMemoryBackend. "
+            "Rate limiting and cache consistency may be degraded.",
+            extra={"error": str(e)},
+        )
         FastAPICache.init(InMemoryBackend(), prefix="options-saas")
