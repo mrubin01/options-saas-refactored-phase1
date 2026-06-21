@@ -1,7 +1,9 @@
+from contextlib import asynccontextmanager
+from typing import Any
+
 from fastapi import FastAPI
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
-from typing import Any
 
 from app.bootstrap import configure_app
 from app.core.config import settings
@@ -18,32 +20,13 @@ setup_logging()
 init_sentry()
 validate_security_settings()
 
-app = configure_app(
-    FastAPI(
-        title="OptionStacker API",
-        version="1.0.0",
-    )
-)
 
-app.middleware("http")(logging_middleware)
-app.middleware("http")(metrics_middleware)
-app.middleware("http")(version_middleware)
-
-
-@app.on_event("startup")
-def startup_checks():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     import app.api.v1.auth  # noqa: F401
     import app.core.middleware.logging  # noqa: F401
     import app.core.middleware.metrics  # noqa: F401
 
-
-@app.get("/", include_in_schema=False)
-def root():
-    return {"status": "backend is running"}
-
-
-@app.on_event("startup")
-async def startup_cache():
     try:
         import redis.asyncio as redis
         from fastapi_cache.backends.redis import RedisBackend
@@ -62,3 +45,23 @@ async def startup_cache():
             extra={"error": str(e)},
         )
         FastAPICache.init(InMemoryBackend(), prefix="options-saas")
+
+    yield
+
+
+app = configure_app(
+    FastAPI(
+        title="OptionStacker API",
+        version="1.0.0",
+        lifespan=lifespan,
+    )
+)
+
+app.middleware("http")(logging_middleware)
+app.middleware("http")(metrics_middleware)
+app.middleware("http")(version_middleware)
+
+
+@app.get("/", include_in_schema=False)
+def root():
+    return {"status": "backend is running"}
