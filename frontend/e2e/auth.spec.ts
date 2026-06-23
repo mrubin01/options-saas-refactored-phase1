@@ -21,7 +21,7 @@ test.describe("authentication", () => {
     await page.getByPlaceholder("Email").fill(TEST_EMAIL);
     await page.getByPlaceholder("Password").fill("wrongpassword");
     await page.getByRole("button", { name: "Login" }).click();
-    await expect(page.getByText(/invalid/i)).toBeVisible();
+    await expect(page.getByText(/unauthorized/i)).toBeVisible();
   });
 
   test("logout redirects to login", async ({ page }) => {
