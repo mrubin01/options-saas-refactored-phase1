@@ -11,7 +11,7 @@ setup("create test user", async ({ request }) => {
   if (!reg.ok()) {
     const body = await reg.json().catch(() => ({}));
     const code = (body as { error?: { code?: string } })?.error?.code;
-    if (code !== "EMAIL_ALREADY_REGISTERED") {
+    if (code !== "EMAIL_EXISTS") {
       throw new Error(`Registration failed: ${JSON.stringify(body)}`);
     }
   }
