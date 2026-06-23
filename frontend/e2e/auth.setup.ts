@@ -8,10 +8,17 @@ setup("authenticate", async ({ page, request }) => {
 
   fs.mkdirSync(path.dirname(AUTH_FILE), { recursive: true });
 
-  // Register test user — ignore error if already exists
-  await request.post(`${apiUrl}/v1/auth/register`, {
+  // Register test user — 200 = created, 400/409 = already exists (both fine)
+  const reg = await request.post(`${apiUrl}/v1/auth/register`, {
     data: { email: TEST_EMAIL, password: TEST_PASSWORD },
   });
+  if (!reg.ok()) {
+    const body = await reg.json().catch(() => ({}));
+    const code = (body as { error?: { code?: string } })?.error?.code;
+    if (code !== "EMAIL_ALREADY_REGISTERED") {
+      throw new Error(`Registration failed: ${JSON.stringify(body)}`);
+    }
+  }
 
   // Login via UI so the refresh cookie is set in the browser context
   await page.goto("/login");
