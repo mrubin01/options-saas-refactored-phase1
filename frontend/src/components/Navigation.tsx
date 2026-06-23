@@ -10,63 +10,59 @@ export default function Navigation() {
     navigate("/login", { replace: true });
   }
 
-  const linkStyle = ({ isActive }: { isActive: boolean }) => ({
-    marginRight: 16,
-    textDecoration: "none",
-    fontWeight: isActive ? 700 : 400,
-  });
-
   return (
-    <nav
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 16,
-        padding: "12px 16px",
-        borderBottom: "1px solid #ddd",
-        marginBottom: 24,
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <Link to="/dashboard" style={{ fontWeight: 700, textDecoration: "none" }}>
-          Options SaaS
-        </Link>
+    <header className="bg-navy sticky top-0 z-40 border-b border-white/10 shadow-sm">
+      <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-6 h-14">
+        <div className="flex items-center gap-6">
+          <Link
+            to="/dashboard"
+            className="text-base font-semibold text-white tracking-tight hover:text-white/90 transition-colors"
+          >
+            OptionStacker
+          </Link>
 
-        <NavLink to="/dashboard" style={linkStyle}>
-          Dashboard
-        </NavLink>
+          <nav className="flex items-center gap-1">
+            {[
+              { to: "/dashboard", label: "Dashboard" },
+              { to: "/covered-calls", label: "Covered Calls" },
+              { to: "/put-options", label: "Put Options" },
+              { to: "/spread-options", label: "Spread Options" },
+              { to: "/watchlist", label: "Watchlist" },
+              { to: "/glossary", label: "Glossary" },
+              { to: "/account", label: "Account" },
+            ].map(({ to, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) =>
+                  `rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-white/15 text-white"
+                      : "text-white/70 hover:bg-white/10 hover:text-white"
+                  }`
+                }
+              >
+                {label}
+              </NavLink>
+            ))}
+          </nav>
+        </div>
 
-        <NavLink to="/covered-calls" style={linkStyle}>
-          Covered Calls
-        </NavLink>
-
-        <NavLink to="/put-options" style={linkStyle}>
-          Put Options
-        </NavLink>
-
-        <NavLink to="/spread-options" style={linkStyle}>
-          Spread Options
-        </NavLink>
-
-        <NavLink to="/watchlist" style={linkStyle}>
-          Watchlist
-        </NavLink>
-
-        <NavLink to="/glossary" style={linkStyle}>
-          Glossary
-        </NavLink>
-
-        <NavLink to="/account" style={linkStyle}>
-          Account
-        </NavLink>
+        <div className="flex items-center gap-3">
+          {user?.email && (
+            <span className="text-sm text-white/60 hidden sm:block">
+              {user.email}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="rounded-md border border-white/25 px-3 py-1.5 text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+          >
+            Logout
+          </button>
+        </div>
       </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        {user?.email && <span style={{ fontSize: 14, color: "#555" }}>{user.email}</span>}
-
-        <button onClick={handleLogout}>Logout</button>
-      </div>
-    </nav>
+    </header>
   );
 }

@@ -7,6 +7,7 @@ import type {
   StrategyIngestionStatus,
   StrategyIngestionStatusKey,
 } from "../types/ingestionStatus";
+import { cn } from "../lib/utils";
 
 const STRATEGY_LABELS: Record<StrategyIngestionStatusKey, string> = {
   covered_calls: "Covered Calls",
@@ -22,101 +23,47 @@ const STATUS_LABELS: Record<IngestionStatusValue, string> = {
   unknown: "Unknown",
 };
 
-const STATUS_STYLES: Record<
-  IngestionStatusValue,
-  {
-    background: string;
-    border: string;
-    text: string;
-  }
-> = {
-  fresh: {
-    background: "#ecfdf5",
-    border: "#86efac",
-    text: "#166534",
-  },
-  aging: {
-    background: "#fffbeb",
-    border: "#fcd34d",
-    text: "#92400e",
-  },
-  stale: {
-    background: "#fef2f2",
-    border: "#fca5a5",
-    text: "#991b1b",
-  },
-  empty: {
-    background: "#f8fafc",
-    border: "#cbd5e1",
-    text: "#475569",
-  },
-  unknown: {
-    background: "#f8fafc",
-    border: "#cbd5e1",
-    text: "#475569",
-  },
+const STATUS_BADGE: Record<IngestionStatusValue, string> = {
+  fresh: "bg-green-100 text-green-800 border border-green-200",
+  aging: "bg-amber-100 text-amber-800 border border-amber-200",
+  stale: "bg-red-100 text-red-800 border border-red-200",
+  empty: "bg-slate-100 text-slate-600 border border-slate-200",
+  unknown: "bg-slate-100 text-slate-600 border border-slate-200",
+};
+
+const STATUS_CARD: Record<IngestionStatusValue, string> = {
+  fresh: "bg-green-50 border-green-200",
+  aging: "bg-amber-50 border-amber-200",
+  stale: "bg-red-50 border-red-200",
+  empty: "bg-slate-50 border-slate-200",
+  unknown: "bg-slate-50 border-slate-200",
 };
 
 function formatDateTime(value: string | null) {
-  if (!value) {
-    return "Never";
-  }
-
+  if (!value) return "Never";
   const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return date.toLocaleString();
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
 }
 
 function formatAge(minutes: number | null) {
-  if (minutes === null) {
-    return "unknown age";
-  }
-
-  if (minutes < 1) {
-    return "just now";
-  }
-
-  if (minutes < 60) {
-    return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
-  }
-
+  if (minutes === null) return "unknown age";
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
   const hours = Math.floor(minutes / 60);
-
-  if (hours < 24) {
-    return `${hours} hour${hours === 1 ? "" : "s"} ago`;
-  }
-
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
   const days = Math.floor(hours / 24);
-
   return `${days} day${days === 1 ? "" : "s"} ago`;
 }
 
 function formatThresholds(data: IngestionStatus) {
   const freshHours = Math.round(data.thresholds.fresh_minutes / 60);
   const agingHours = Math.round(data.thresholds.aging_minutes / 60);
-
-  return `Fresh ≤ ${freshHours}h, aging ≤ ${agingHours}h, stale after that.`;
+  return `Fresh ≤ ${freshHours}h · Aging ≤ ${agingHours}h · Stale after that`;
 }
 
 function StatusBadge({ status }: { status: IngestionStatusValue }) {
-  const style = STATUS_STYLES[status];
-
   return (
-    <span
-      style={{
-        color: style.text,
-        background: style.background,
-        border: `1px solid ${style.border}`,
-        borderRadius: "999px",
-        padding: "0.15rem 0.55rem",
-        fontSize: "0.8rem",
-        fontWeight: 700,
-      }}
-    >
+    <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-semibold", STATUS_BADGE[status])}>
       {STATUS_LABELS[status]}
     </span>
   );
@@ -129,38 +76,18 @@ function StrategyStatusItem({
   label: string;
   status: StrategyIngestionStatus;
 }) {
-  const style = STATUS_STYLES[status.status];
-
   return (
-    <div
-      style={{
-        border: `1px solid ${style.border}`,
-        borderRadius: "0.65rem",
-        padding: "0.75rem",
-        background: style.background,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "1rem",
-          flexWrap: "wrap",
-        }}
-      >
-        <strong>{label}</strong>
+    <div className={cn("rounded-xl border p-3", STATUS_CARD[status.status])}>
+      <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
+        <span className="text-sm font-semibold text-navy">{label}</span>
         <StatusBadge status={status.status} />
       </div>
-
-      <div style={{ marginTop: "0.35rem", color: "#475569", fontSize: "0.9rem" }}>
-        Last updated: {formatDateTime(status.last_updated)} (
-        {formatAge(status.age_minutes)})
-      </div>
-
-      <div style={{ marginTop: "0.25rem", color: "#64748b", fontSize: "0.85rem" }}>
-        Rows available: {status.row_count.toLocaleString()}
-      </div>
+      <p className="text-xs text-muted">
+        Last updated: {formatDateTime(status.last_updated)} ({formatAge(status.age_minutes)})
+      </p>
+      <p className="text-xs text-subtle">
+        Rows: {status.row_count.toLocaleString()}
+      </p>
     </div>
   );
 }
@@ -177,58 +104,29 @@ export default function IngestionStatusBanner() {
       try {
         setIsLoading(true);
         setError(null);
-
         const result = await fetchIngestionStatus();
-
-        if (!cancelled) {
-          setData(result);
-        }
+        if (!cancelled) setData(result);
       } catch (err) {
         if (!cancelled) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Failed to load ingestion status",
-          );
+          setError(err instanceof Error ? err.message : "Failed to load ingestion status");
         }
       } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
+        if (!cancelled) setIsLoading(false);
       }
     }
 
     void loadIngestionStatus();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   const strategyEntries = useMemo(() => {
-    if (!data) {
-      return [];
-    }
-
-    return Object.entries(data.strategies) as [
-      StrategyIngestionStatusKey,
-      StrategyIngestionStatus,
-    ][];
+    if (!data) return [];
+    return Object.entries(data.strategies) as [StrategyIngestionStatusKey, StrategyIngestionStatus][];
   }, [data]);
 
   if (isLoading) {
     return (
-      <div
-        style={{
-          border: "1px solid #e5e7eb",
-          borderRadius: "0.75rem",
-          padding: "0.75rem 1rem",
-          margin: "1rem 0",
-          background: "#f8fafc",
-          color: "#64748b",
-          fontSize: "0.9rem",
-        }}
-      >
+      <div className="my-4 rounded-xl border border-border bg-bg px-4 py-3 text-sm text-muted">
         Checking ingestion status…
       </div>
     );
@@ -236,85 +134,29 @@ export default function IngestionStatusBanner() {
 
   if (error) {
     return (
-      <div
-        style={{
-          border: "1px solid #fecaca",
-          borderRadius: "0.75rem",
-          padding: "0.75rem 1rem",
-          margin: "1rem 0",
-          background: "#fef2f2",
-          color: "#991b1b",
-          fontSize: "0.9rem",
-        }}
-      >
+      <div className="my-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
         {error}
       </div>
     );
   }
 
-  if (!data) {
-    return null;
-  }
+  if (!data) return null;
 
   return (
-    <section
-      style={{
-        border: "1px solid #e5e7eb",
-        borderRadius: "0.75rem",
-        padding: "1rem",
-        margin: "1rem 0",
-        background: "#ffffff",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          gap: "1rem",
-          flexWrap: "wrap",
-          marginBottom: "0.75rem",
-        }}
-      >
+    <section className="my-4 rounded-xl border border-border bg-white p-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
         <div>
-          <h2 style={{ margin: 0, fontSize: "1rem" }}>Ingestion status</h2>
-          <p
-            style={{
-              margin: "0.25rem 0 0",
-              color: "#64748b",
-              fontSize: "0.9rem",
-            }}
-          >
-            Shows whether the latest scanner ingestion looks healthy across all
-            strategy datasets.
-          </p>
-          <p
-            style={{
-              margin: "0.25rem 0 0",
-              color: "#64748b",
-              fontSize: "0.8rem",
-            }}
-          >
+          <h2 className="text-sm font-semibold text-navy">Ingestion status</h2>
+          <p className="mt-0.5 text-xs text-muted">
             {formatThresholds(data)}
           </p>
         </div>
-
         <StatusBadge status={data.overall_status} />
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: "0.75rem",
-        }}
-      >
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
         {strategyEntries.map(([key, status]) => (
-          <StrategyStatusItem
-            key={key}
-            label={STRATEGY_LABELS[key]}
-            status={status}
-          />
+          <StrategyStatusItem key={key} label={STRATEGY_LABELS[key]} status={status} />
         ))}
       </div>
     </section>

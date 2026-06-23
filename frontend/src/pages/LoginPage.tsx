@@ -45,42 +45,82 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ maxWidth: 360, margin: "48px auto" }}>
-      <form onSubmit={handleSubmit}>
-        <h2>Login</h2>
+    <div className="flex min-h-screen items-center justify-center bg-bg px-4">
+      <div className="w-full max-w-sm">
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-bold text-navy tracking-tight">OptionStacker</h1>
+          <p className="mt-1 text-sm text-muted">Sign in to your account</p>
+        </div>
 
-        {expired && (
-          <p style={{ color: "#b45309" }}>Your session expired. Please sign in again.</p>
-        )}
+        <div className="rounded-xl border border-border bg-white p-8 shadow-sm">
+          {expired && (
+            <div className="mb-4 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+              Your session expired. Please sign in again.
+            </div>
+          )}
 
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-        />
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-navy mb-1.5">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                required
+                className="w-full rounded-md border border-border-dark bg-white px-3 py-2 text-sm text-navy placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
-        />
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-navy mb-1.5">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                required
+                className="w-full rounded-md border border-border-dark bg-white px-3 py-2 text-sm text-navy placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
 
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Signing in…" : "Login"}
-        </button>
+            {error && (
+              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
 
-        <p>
-          <Link to="/forgot-password">Forgot password?</Link>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60 transition-colors"
+            >
+              {isSubmitting ? "Signing in…" : "Sign in"}
+            </button>
+          </form>
+
+          <div className="mt-4 text-center text-sm text-muted">
+            <Link to="/forgot-password" className="text-primary hover:underline">
+              Forgot password?
+            </Link>
+          </div>
+        </div>
+
+        <p className="mt-4 text-center text-sm text-muted">
+          Don&apos;t have an account?{" "}
+          <Link to="/register" className="font-medium text-primary hover:underline">
+            Create one
+          </Link>
         </p>
-        <p>
-          Don&apos;t have an account? <Link to="/register">Register</Link>
-        </p>
-
-        {error && <p style={{ color: "red" }}>{error}</p>}
-      </form>
+      </div>
     </div>
   );
 }

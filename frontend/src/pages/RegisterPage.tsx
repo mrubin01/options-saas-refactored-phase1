@@ -33,8 +33,8 @@ export default function RegisterPage() {
 
     try {
       await register(email, password);
-      setSuccess("Account created. You can now log in. Check backend logs for the verification link.");
-      setTimeout(() => navigate("/login"), 1000);
+      setSuccess("Account created. Check your email for a verification link.");
+      setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
       setError(getApiErrorMessage(err, "Unable to register."));
     } finally {
@@ -42,45 +42,87 @@ export default function RegisterPage() {
     }
   }
 
+  const inputClass =
+    "w-full rounded-md border border-border-dark bg-white px-3 py-2 text-sm text-navy placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
+
   return (
-    <div style={{ maxWidth: 420, margin: "48px auto" }}>
-      <form onSubmit={handleSubmit}>
-        <h2>Create account</h2>
+    <div className="flex min-h-screen items-center justify-center bg-bg px-4">
+      <div className="w-full max-w-sm">
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-bold text-navy tracking-tight">OptionStacker</h1>
+          <p className="mt-1 text-sm text-muted">Create your account</p>
+        </div>
 
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-        />
+        <div className="rounded-xl border border-border bg-white p-8 shadow-sm">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-navy mb-1.5">Email</label>
+              <input
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                required
+                className={inputClass}
+              />
+            </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="new-password"
-        />
+            <div>
+              <label className="block text-sm font-medium text-navy mb-1.5">Password</label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
+                required
+                className={inputClass}
+              />
+            </div>
 
-        <input
-          type="password"
-          placeholder="Confirm password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          autoComplete="new-password"
-        />
+            <div>
+              <label className="block text-sm font-medium text-navy mb-1.5">Confirm password</label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                autoComplete="new-password"
+                required
+                className={inputClass}
+              />
+            </div>
 
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Creating..." : "Register"}
-        </button>
+            {error && (
+              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        {success && <p style={{ color: "green" }}>{success}</p>}
+            {success && (
+              <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+                {success}
+              </div>
+            )}
 
-        <p>
-          Already have an account? <Link to="/login">Log in</Link>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60 transition-colors"
+            >
+              {isSubmitting ? "Creating account…" : "Create account"}
+            </button>
+          </form>
+        </div>
+
+        <p className="mt-4 text-center text-sm text-muted">
+          Already have an account?{" "}
+          <Link to="/login" className="font-medium text-primary hover:underline">
+            Sign in
+          </Link>
         </p>
-      </form>
+      </div>
     </div>
   );
 }

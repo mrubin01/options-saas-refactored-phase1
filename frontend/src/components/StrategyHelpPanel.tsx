@@ -5,32 +5,12 @@ type Props = {
 
 export default function StrategyHelpPanel({ title, children }: Props) {
   return (
-    <details
-      style={{
-        border: "1px solid #e5e7eb",
-        borderRadius: "0.75rem",
-        padding: "0.75rem 1rem",
-        margin: "1rem 0",
-        background: "#f8fafc",
-      }}
-    >
-      <summary
-        style={{
-          cursor: "pointer",
-          fontWeight: 600,
-        }}
-      >
+    <details className="group my-4 rounded-xl border border-border bg-bg overflow-hidden">
+      <summary className="flex cursor-pointer select-none items-center gap-2 px-4 py-3 text-sm font-semibold text-navy hover:bg-border/50 transition-colors">
+        <span className="text-muted group-open:rotate-90 transition-transform">▶</span>
         {title}
       </summary>
-
-      <div
-        style={{
-          marginTop: "0.75rem",
-          color: "#475569",
-          fontSize: "0.9rem",
-          lineHeight: 1.5,
-        }}
-      >
+      <div className="border-t border-border px-4 py-4 text-sm text-muted leading-relaxed space-y-2">
         {children}
       </div>
     </details>

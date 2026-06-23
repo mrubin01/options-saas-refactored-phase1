@@ -1,6 +1,7 @@
 import type { OptionRow } from "../types/optionRow";
 import type { WatchlistItem, WatchlistStrategyType } from "../types/watchlistItem";
 import { metricGlossary } from "../constants/metricGlossary";
+import { cn } from "../lib/utils";
 
 type OptionsTableProps = {
   data: OptionRow[];
@@ -13,10 +14,7 @@ type OptionsTableProps = {
 };
 
 function formatValue(value: string | number | null | undefined) {
-  if (value === null || value === undefined || value === "") {
-    return "—";
-  }
-
+  if (value === null || value === undefined || value === "") return "—";
   return value;
 }
 
@@ -24,29 +22,29 @@ const HEADER_LABELS: Record<string, string> = {
   ticker: "Ticker",
   contract: "Contract",
   exchange: "Exchange",
-  expiry_date: "Expiry Date",
+  expiry_date: "Expiry",
   days_to_expiration: "DTE",
-  current_price: "Current Price",
-  strike_price: "Strike Price",
-  highest_price: "Highest Price",
-  avg_price: "Avg. Price",
-  lowest_price: "Lowest Price",
-  coeff_variation: "Coeff Variation %",
-  bid_per_share: "Bid per Share ($)",
-  premium_per_contract: "Premium per Contract ($)",
-  option_yield: "Option Yield %",
-  max_profit: "Max Profit ($)",
-  max_profit_per_contract: "Max Profit per Contract ($)",
-  otm: "OTM ($)",
-  moneyness: "Moneyness %",
-  sigma_distance: "Sigma Distance",
-  break_even: "Break-Even ($)",
-  roc: "ROC %",
-  tot_return: "Tot Return %",
-  delta: "Delta %",
-  spread_bid_ask: "Spread Bid - Ask",
-  open_interest: "Open Interest",
-  impl_volatility: "Implied Volatility",
+  current_price: "Price",
+  strike_price: "Strike",
+  highest_price: "High",
+  avg_price: "Avg",
+  lowest_price: "Low",
+  coeff_variation: "CV%",
+  bid_per_share: "Bid/Share",
+  premium_per_contract: "Premium",
+  option_yield: "Yield%",
+  max_profit: "Max Profit",
+  max_profit_per_contract: "Max P/C",
+  otm: "OTM",
+  moneyness: "Moneyness%",
+  sigma_distance: "Sigma Dist",
+  break_even: "Break-Even",
+  roc: "ROC%",
+  tot_return: "Tot Return%",
+  delta: "Delta%",
+  spread_bid_ask: "Spread",
+  open_interest: "OI",
+  impl_volatility: "IV",
   sector: "Sector",
   industry: "Industry",
   main_trend: "Trend",
@@ -55,17 +53,9 @@ const HEADER_LABELS: Record<string, string> = {
 
 type MetricKey = keyof typeof metricGlossary;
 
-function getMetricEntry(metricKey: string) {
-  return metricGlossary[metricKey as MetricKey];
-}
-
 function getMetricTooltip(metricKey: string) {
-  const metric = getMetricEntry(metricKey);
-
-  if (!metric) {
-    return undefined;
-  }
-
+  const metric = metricGlossary[metricKey as MetricKey];
+  if (!metric) return undefined;
   return [
     metric.shortDefinition,
     metric.interpretation ? `\n\nHow to read it: ${metric.interpretation}` : "",
@@ -74,31 +64,19 @@ function getMetricTooltip(metricKey: string) {
 }
 
 function HeaderCell({ metricKey }: { metricKey: string }) {
-  const metric = getMetricEntry(metricKey);
-  const label = HEADER_LABELS[metricKey] ?? metric?.label ?? metricKey;
+  const label = HEADER_LABELS[metricKey] ?? metricKey;
   const tooltip = getMetricTooltip(metricKey);
 
   return (
-    <th>
-      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+    <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted whitespace-nowrap">
+      <span className="inline-flex items-center gap-1">
         {label}
         {tooltip && (
           <span
             title={tooltip}
             aria-label={`Explanation for ${label}`}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 16,
-              height: 16,
-              borderRadius: "50%",
-              border: "1px solid #94a3b8",
-              color: "#475569",
-              fontSize: 11,
-              lineHeight: 1,
-              cursor: "help",
-            }}
+            className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border border-slate-300 text-subtle cursor-help shrink-0"
+            style={{ fontSize: 9 }}
           >
             ?
           </span>
@@ -107,6 +85,14 @@ function HeaderCell({ metricKey }: { metricKey: string }) {
     </th>
   );
 }
+
+const COLUMNS: string[] = [
+  "ticker", "contract", "exchange", "expiry_date", "days_to_expiration", "current_price",
+  "strike_price", "highest_price", "avg_price", "lowest_price", "coeff_variation",
+  "bid_per_share", "premium_per_contract", "option_yield", "max_profit", "max_profit_per_contract",
+  "otm", "moneyness", "sigma_distance", "break_even", "roc", "tot_return", "delta",
+  "spread_bid_ask", "open_interest", "impl_volatility", "sector", "industry", "main_trend", "beta",
+];
 
 export default function OptionsTable({
   data,
@@ -118,14 +104,11 @@ export default function OptionsTable({
   onRemoveFromWatchlist,
 }: OptionsTableProps) {
   if (data.length === 0) {
-    return <p>No results found.</p>;
+    return <p className="py-10 text-center text-sm text-muted">No results found.</p>;
   }
 
   function getWatchlistItemForRow(row: OptionRow) {
-    if (!strategyType) {
-      return null;
-    }
-
+    if (!strategyType) return null;
     return (
       watchlistItems.find(
         (item) => item.contract === row.contract && item.strategy_type === strategyType,
@@ -138,121 +121,92 @@ export default function OptionsTable({
   }
 
   return (
-    <table border={1} cellPadding={6} cellSpacing={0}>
-      <thead>
-        <tr>
-          <th>Watchlist</th>
-          <HeaderCell metricKey="ticker" />
-          <HeaderCell metricKey="contract" />
-          <HeaderCell metricKey="exchange" />
+    <div className="overflow-x-auto rounded-xl border border-border shadow-sm">
+      <table className="w-full border-collapse text-sm">
+        <thead>
+          <tr className="border-b border-border bg-bg">
+            <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted whitespace-nowrap">
+              Watchlist
+            </th>
+            {COLUMNS.map((col) => (
+              <HeaderCell key={col} metricKey={col} />
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((row, idx) => {
+            const savedItem = getWatchlistItemForRow(row);
+            const rowPending = isPending(row.contract);
 
-          <HeaderCell metricKey="expiry_date" />
-          <HeaderCell metricKey="days_to_expiration" />
-          <HeaderCell metricKey="current_price" />
-
-          <HeaderCell metricKey="strike_price" />
-          <HeaderCell metricKey="highest_price" />
-          <HeaderCell metricKey="avg_price" />
-
-          <HeaderCell metricKey="lowest_price" />
-          <HeaderCell metricKey="coeff_variation" />
-          <HeaderCell metricKey="bid_per_share" />
-
-          <HeaderCell metricKey="premium_per_contract" />
-          <HeaderCell metricKey="option_yield" />
-          <HeaderCell metricKey="max_profit" />
-
-          <HeaderCell metricKey="max_profit_per_contract" />
-          <HeaderCell metricKey="otm" />
-          <HeaderCell metricKey="moneyness" />
-
-          <HeaderCell metricKey="sigma_distance" />
-          <HeaderCell metricKey="break_even" />
-          <HeaderCell metricKey="roc" />
-
-          <HeaderCell metricKey="tot_return" />
-          <HeaderCell metricKey="delta" />
-          <HeaderCell metricKey="spread_bid_ask" />
-
-          <HeaderCell metricKey="open_interest" />
-          <HeaderCell metricKey="impl_volatility" />
-          <HeaderCell metricKey="sector" />
-
-          <HeaderCell metricKey="industry" />
-          <HeaderCell metricKey="main_trend" />
-          <HeaderCell metricKey="beta" />
-        </tr>
-      </thead>
-      <tbody>
-        {data.map((row) => {
-          const savedItem = getWatchlistItemForRow(row);
-          const rowPending = isPending(row.contract);
-
-          return (
-            <tr key={row.contract}>
-              <td>
-                {savedItem ? (
-                  <button
-                    type="button"
-                    disabled={rowPending}
-                    onClick={() => onRemoveFromWatchlist?.(savedItem.id, row.contract)}
-                  >
-                    {rowPending ? "Removing..." : "Remove"}
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    disabled={rowPending}
-                    onClick={() => onAddToWatchlist?.(row)}
-                  >
-                    {rowPending ? "Saving..." : "Add to watchlist"}
-                  </button>
+            return (
+              <tr
+                key={row.contract}
+                className={cn(
+                  "border-b border-border last:border-0 hover:bg-bg/80 transition-colors",
+                  idx % 2 === 0 ? "bg-white" : "bg-bg/40",
                 )}
-              </td>
+              >
+                <td className="px-3 py-2 whitespace-nowrap">
+                  {savedItem ? (
+                    <button
+                      type="button"
+                      disabled={rowPending}
+                      onClick={() => onRemoveFromWatchlist?.(savedItem.id, row.contract)}
+                      className="rounded border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 hover:bg-red-100 disabled:opacity-50 transition-colors"
+                    >
+                      {rowPending ? "…" : "Remove"}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={rowPending}
+                      onClick={() => onAddToWatchlist?.(row)}
+                      className="rounded border border-border bg-white px-2 py-0.5 text-xs font-medium text-navy hover:bg-bg disabled:opacity-50 transition-colors"
+                    >
+                      {rowPending ? "…" : "+ Watch"}
+                    </button>
+                  )}
+                </td>
 
-              <td>{formatValue(row.ticker)}</td>
-              <td>{formatValue(row.contract)}</td>
-              <td>{formatValue(exchangeMap[row.exchange] ?? row.exchange)}</td>
-
-              <td>{formatValue(row.expiry_date)}</td>
-              <td>{formatValue(row.days_to_expiration)}</td>
-              <td>{formatValue(row.current_price)}</td>
-
-              <td>{formatValue(row.strike_price)}</td>
-              <td>{formatValue(row.highest_price)}</td>
-              <td>{formatValue(row.avg_price)}</td>
-
-              <td>{formatValue(row.lowest_price)}</td>
-              <td>{formatValue(row.coeff_variation)}</td>
-              <td>{formatValue(row.bid_per_share)}</td>
-
-              <td>{formatValue(row.premium_per_contract)}</td>
-              <td>{formatValue(row.option_yield)}</td>
-              <td>{formatValue(row.max_profit)}</td>
-
-              <td>{formatValue(row.max_profit_per_contract)}</td>
-              <td>{formatValue(row.otm)}</td>
-              <td>{formatValue(row.moneyness)}</td>
-
-              <td>{formatValue(row.sigma_distance)}</td>
-              <td>{formatValue(row.break_even)}</td>
-              <td>{formatValue(row.roc)}</td>
-
-              <td>{formatValue(row.tot_return)}</td>
-              <td>{formatValue(row.delta)}</td>
-              <td>{formatValue(row.spread_bid_ask)}</td>
-
-              <td>{formatValue(row.open_interest)}</td>
-              <td>{formatValue(row.impl_volatility)}</td>
-              <td>{formatValue(row.sector)}</td>
-
-              <td>{formatValue(row.industry)}</td>
-              <td>{formatValue(row.main_trend)}</td>
-              <td>{formatValue(row.beta)}</td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+                <td className="px-3 py-2 font-semibold text-navy whitespace-nowrap">
+                  {formatValue(row.ticker)}
+                </td>
+                <td className="px-3 py-2 font-mono text-xs text-muted whitespace-nowrap">
+                  {formatValue(row.contract)}
+                </td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(exchangeMap[row.exchange] ?? row.exchange)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.expiry_date)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.days_to_expiration)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.current_price)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.strike_price)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.highest_price)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.avg_price)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.lowest_price)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.coeff_variation)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.bid_per_share)}</td>
+                <td className="px-3 py-2 font-medium whitespace-nowrap">{formatValue(row.premium_per_contract)}</td>
+                <td className="px-3 py-2 font-medium text-primary whitespace-nowrap">{formatValue(row.option_yield)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.max_profit)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.max_profit_per_contract)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.otm)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.moneyness)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.sigma_distance)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.break_even)}</td>
+                <td className="px-3 py-2 font-medium whitespace-nowrap">{formatValue(row.roc)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.tot_return)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.delta)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.spread_bid_ask)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.open_interest)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.impl_volatility)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.sector)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.industry)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.main_trend)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.beta)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 }

@@ -10,7 +10,7 @@ export default function MetricLabel({ metricKey, label }: Props) {
   const entry = getMetricGlossaryEntry(metricKey);
 
   return (
-    <span style={{ display: "inline-flex", alignItems: "center" }}>
+    <span className="inline-flex items-center">
       {label ?? entry?.label ?? metricKey}
       <MetricTooltip entry={entry} metricKey={metricKey} />
     </span>

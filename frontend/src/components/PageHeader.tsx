@@ -5,11 +5,11 @@ type PageHeaderProps = {
 
 export default function PageHeader({ title, lastUpdated }: PageHeaderProps) {
   return (
-    <>
-      <h2 className="text-xl font-semibold mb-4">{title}</h2>
+    <div className="mb-5">
+      <h1 className="text-xl font-semibold text-navy">{title}</h1>
       {lastUpdated && (
-        <div className="text-sm text-gray-500 mb-2">Last updated: {lastUpdated}</div>
+        <p className="mt-1 text-xs text-muted">Last updated: {lastUpdated}</p>
       )}
-    </>
+    </div>
   );
 }
