@@ -1,10 +1,7 @@
 import { test as setup } from "@playwright/test";
 import * as fs from "fs";
 import * as path from "path";
-
-export const AUTH_FILE = "e2e/.auth/user.json";
-export const TEST_EMAIL = "e2e@playwright.local";
-export const TEST_PASSWORD = "PlaywrightE2E123!";
+import { AUTH_FILE, TEST_EMAIL, TEST_PASSWORD } from "./constants";
 
 setup("authenticate", async ({ page, request }) => {
   const apiUrl = process.env.VITE_API_URL || "http://localhost:8000";

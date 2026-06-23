@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { AUTH_FILE } from "./auth.setup";
+import { AUTH_FILE } from "./constants";
 
 test.use({ storageState: AUTH_FILE });
 

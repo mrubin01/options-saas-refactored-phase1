@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { TEST_EMAIL, TEST_PASSWORD } from "./auth.setup";
+import { TEST_EMAIL, TEST_PASSWORD } from "./constants";
 
 test.describe("authentication", () => {
   test("unauthenticated user is redirected to login", async ({ page }) => {
