@@ -31,22 +31,11 @@ function DashboardCard({
   subtitle?: string;
 }) {
   return (
-    <div
-      style={{
-        border: "1px solid #ddd",
-        borderRadius: 8,
-        padding: 16,
-        background: "#fff",
-      }}
-    >
-      <div style={{ fontSize: 14, color: "#666", marginBottom: 6 }}>
-        {title}
-      </div>
-      <div style={{ fontSize: 28, fontWeight: 700 }}>{value}</div>
+    <div className="rounded-xl border border-border bg-white p-4">
+      <div className="text-xs font-medium text-muted mb-1.5">{title}</div>
+      <div className="text-3xl font-bold text-navy">{value}</div>
       {subtitle && (
-        <div style={{ fontSize: 13, color: "#777", marginTop: 6 }}>
-          {subtitle}
-        </div>
+        <div className="mt-1.5 text-xs text-subtle">{subtitle}</div>
       )}
     </div>
   );
@@ -147,32 +136,30 @@ export default function DashboardPage() {
   );
 
   return (
-    <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+    <div>
       <PageHeader title="Dashboard" />
 
       <IngestionStatusBanner />
 
-      {error && <div className="text-sm text-red-600 py-2">{error}</div>}
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       {isLoading ? (
-        <div className="text-sm text-gray-500 py-3">Loading dashboard…</div>
+        <div className="py-10 text-center text-sm text-muted">Loading dashboard…</div>
       ) : (
         <>
-          <div className="text-sm text-gray-600" style={{ marginBottom: 20 }}>
-            You currently have {screenerCounts.total} saved screener
+          <p className="mb-5 text-sm text-muted">
+            You have{" "}
+            <span className="font-medium text-navy">{screenerCounts.total}</span> saved screener
             {screenerCounts.total === 1 ? "" : "s"} and{" "}
-            {watchlistCounts.total} watchlist item
+            <span className="font-medium text-navy">{watchlistCounts.total}</span> watchlist item
             {watchlistCounts.total === 1 ? "" : "s"}.
-          </div>
+          </p>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-              gap: 16,
-              marginBottom: 24,
-            }}
-          >
+          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <DashboardCard
               title="Saved Screeners"
               value={screenerCounts.total}
@@ -209,120 +196,65 @@ export default function DashboardPage() {
             />
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-              gap: 24,
-              marginBottom: 24,
-            }}
-          >
-            <div
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                padding: 16,
-                background: "#fff",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginBottom: 12,
-                }}
-              >
-                <h2 style={{ margin: 0, fontSize: 18 }}>
-                  Recent Saved Screeners
-                </h2>
-                <Link to="/covered-calls">Open strategies</Link>
+          <div className="mb-6 grid gap-5 md:grid-cols-2">
+            <div className="rounded-xl border border-border bg-white p-5">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-base font-semibold text-navy">Recent Saved Screeners</h2>
+                <Link to="/covered-calls" className="text-xs font-medium text-primary hover:underline">
+                  Open strategies
+                </Link>
               </div>
 
               {recentScreeners.length === 0 ? (
-                <div className="text-sm text-gray-500">
-                  You have not saved any screeners yet. Start from one of the
-                  strategy pages.
-                </div>
+                <p className="text-sm text-muted">
+                  You have not saved any screeners yet. Start from one of the strategy pages.
+                </p>
               ) : (
-                <div style={{ display: "grid", gap: 10 }}>
+                <div className="grid gap-2.5">
                   {recentScreeners.map((item) => (
-                    <div
-                      key={item.id}
-                      style={{
-                        border: "1px solid #eee",
-                        borderRadius: 6,
-                        padding: 12,
-                      }}
-                    >
-                      <div style={{ fontWeight: 600 }}>{item.name}</div>
-                      <div style={{ fontSize: 13, color: "#666" }}>
-                        {strategyLabelMap[item.strategy_type]}
-                      </div>
-                      <div style={{ fontSize: 12, color: "#777", marginTop: 4 }}>
-                        Updated {formatDateTime(item.updated_at)}
-                      </div>
-                      <div style={{ marginTop: 8 }}>
-                        <Link to={getSavedScreenerPath(item)}>
-                          Open screener
-                        </Link>
-                      </div>
+                    <div key={item.id} className="rounded-lg border border-border bg-bg p-3">
+                      <div className="font-medium text-navy text-sm">{item.name}</div>
+                      <div className="mt-0.5 text-xs text-muted">{strategyLabelMap[item.strategy_type]}</div>
+                      <div className="mt-1 text-xs text-subtle">Updated {formatDateTime(item.updated_at)}</div>
+                      <Link
+                        to={getSavedScreenerPath(item)}
+                        className="mt-2 inline-block text-xs font-medium text-primary hover:underline"
+                      >
+                        Open screener →
+                      </Link>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            <div
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                padding: 16,
-                background: "#fff",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginBottom: 12,
-                }}
-              >
-                <h2 style={{ margin: 0, fontSize: 18 }}>
-                  Recent Watchlist Items
-                </h2>
-                <Link to="/watchlist">Open watchlist</Link>
+            <div className="rounded-xl border border-border bg-white p-5">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-base font-semibold text-navy">Recent Watchlist Items</h2>
+                <Link to="/watchlist" className="text-xs font-medium text-primary hover:underline">
+                  Open watchlist
+                </Link>
               </div>
 
               {recentWatchlist.length === 0 ? (
-                <div className="text-sm text-gray-500">
-                  Your watchlist is empty. Add opportunities from Covered Calls,
-                  Put Options, or Spread Options.
-                </div>
+                <p className="text-sm text-muted">
+                  Your watchlist is empty. Add opportunities from Covered Calls, Put Options, or Spread Options.
+                </p>
               ) : (
-                <div style={{ display: "grid", gap: 10 }}>
+                <div className="grid gap-2.5">
                   {recentWatchlist.map((item) => (
-                    <div
-                      key={item.id}
-                      style={{
-                        border: "1px solid #eee",
-                        borderRadius: 6,
-                        padding: 12,
-                      }}
-                    >
-                      <div style={{ fontWeight: 600 }}>
+                    <div key={item.id} className="rounded-lg border border-border bg-bg p-3">
+                      <div className="font-medium text-navy text-sm">
                         {item.ticker} — {item.contract}
                       </div>
-                      <div style={{ fontSize: 13, color: "#666" }}>
-                        {strategyLabelMap[item.strategy_type]}
-                      </div>
-                      <div style={{ fontSize: 12, color: "#777", marginTop: 4 }}>
-                        Added {formatDateTime(item.created_at)}
-                      </div>
-                      <div style={{ marginTop: 8 }}>
-                        <Link to={strategyPathMap[item.strategy_type]}>
-                          Open strategy
-                        </Link>
-                      </div>
+                      <div className="mt-0.5 text-xs text-muted">{strategyLabelMap[item.strategy_type]}</div>
+                      <div className="mt-1 text-xs text-subtle">Added {formatDateTime(item.created_at)}</div>
+                      <Link
+                        to={strategyPathMap[item.strategy_type]}
+                        className="mt-2 inline-block text-xs font-medium text-primary hover:underline"
+                      >
+                        Open strategy →
+                      </Link>
                     </div>
                   ))}
                 </div>
@@ -330,22 +262,25 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: 8,
-              padding: 16,
-              background: "#fff",
-            }}
-          >
-            <h2 style={{ marginTop: 0, fontSize: 18 }}>Quick Links</h2>
-            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-              <Link to="/covered-calls">Covered Calls</Link>
-              <Link to="/put-options">Put Options</Link>
-              <Link to="/spread-options">Spread Options</Link>
-              <Link to="/watchlist">Watchlist</Link>
-              <Link to="/glossary">Glossary</Link>
-              <Link to="/account">Account</Link>
+          <div className="rounded-xl border border-border bg-white p-5">
+            <h2 className="mb-3 text-base font-semibold text-navy">Quick Links</h2>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { to: "/covered-calls", label: "Covered Calls" },
+                { to: "/put-options", label: "Put Options" },
+                { to: "/spread-options", label: "Spread Options" },
+                { to: "/watchlist", label: "Watchlist" },
+                { to: "/glossary", label: "Glossary" },
+                { to: "/account", label: "Account" },
+              ].map(({ to, label }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className="rounded-md border border-border bg-bg px-3 py-1.5 text-sm font-medium text-navy hover:bg-border transition-colors"
+                >
+                  {label}
+                </Link>
+              ))}
             </div>
           </div>
         </>

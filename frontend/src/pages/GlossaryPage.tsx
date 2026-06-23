@@ -76,150 +76,56 @@ function getMetric(key: OptionContractField) {
 
 export default function GlossaryPage() {
   return (
-    <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
+    <div className="max-w-4xl">
       <PageHeader title="Metric Glossary" />
 
-      <p
-        style={{
-          color: "#475569",
-          lineHeight: 1.6,
-          marginBottom: "1.5rem",
-        }}
-      >
-        This glossary explains the main metrics used across Covered Calls, Put
-        Options, and Spread Options. Use it as a reference when reading tables,
-        filters, saved screeners, and watchlist items.
+      <p className="mb-6 text-sm leading-relaxed text-muted">
+        This glossary explains the main metrics used across Covered Calls, Put Options, and Spread
+        Options. Use it as a reference when reading tables, filters, saved screeners, and watchlist
+        items.
       </p>
 
-      <div style={{ display: "grid", gap: "1.25rem" }}>
+      <div className="grid gap-4">
         {GROUPS.map((group) => (
-          <section
-            key={group.title}
-            style={{
-              border: "1px solid #e5e7eb",
-              borderRadius: "0.75rem",
-              padding: "1rem",
-              background: "#ffffff",
-            }}
-          >
-            <h2 style={{ marginTop: 0, marginBottom: "0.25rem", fontSize: "1.15rem" }}>
-              {group.title}
-            </h2>
+          <section key={group.title} className="rounded-xl border border-border bg-white p-5">
+            <h2 className="text-base font-semibold text-navy mb-0.5">{group.title}</h2>
+            <p className="mb-4 text-xs text-muted leading-relaxed">{group.description}</p>
 
-            <p
-              style={{
-                marginTop: 0,
-                marginBottom: "1rem",
-                color: "#64748b",
-                fontSize: "0.9rem",
-                lineHeight: 1.5,
-              }}
-            >
-              {group.description}
-            </p>
-
-            <div style={{ display: "grid", gap: "0.75rem" }}>
+            <div className="grid gap-3">
               {group.metricKeys.map((key) => {
                 const metric = getMetric(key);
-
-                if (!metric) {
-                  return null;
-                }
+                if (!metric) return null;
 
                 return (
-                  <article
-                    key={metric.key}
-                    style={{
-                      border: "1px solid #f1f5f9",
-                      borderRadius: "0.5rem",
-                      padding: "0.75rem",
-                      background: "#f8fafc",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "baseline",
-                        justifyContent: "space-between",
-                        gap: "1rem",
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      <h3
-                        style={{
-                          margin: 0,
-                          fontSize: "1rem",
-                        }}
-                      >
-                        {metric.label}
-                      </h3>
-
-                      <code
-                        style={{
-                          fontSize: "0.75rem",
-                          color: "#64748b",
-                          background: "#e2e8f0",
-                          borderRadius: "999px",
-                          padding: "0.15rem 0.5rem",
-                        }}
-                      >
+                  <article key={metric.key} className="rounded-lg border border-border bg-bg p-3.5">
+                    <div className="flex flex-wrap items-baseline justify-between gap-3 mb-2">
+                      <h3 className="text-sm font-semibold text-navy">{metric.label}</h3>
+                      <code className="rounded-full bg-border px-2 py-0.5 text-xs text-muted font-mono">
                         {metric.key}
                       </code>
                     </div>
 
-                    <p
-                      style={{
-                        margin: "0.5rem 0 0",
-                        color: "#334155",
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {metric.shortDefinition}
-                    </p>
+                    <p className="text-sm text-text leading-relaxed">{metric.shortDefinition}</p>
 
                     {metric.interpretation && (
-                      <p
-                        style={{
-                          margin: "0.5rem 0 0",
-                          color: "#475569",
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        <strong>How to read it:</strong> {metric.interpretation}
+                      <p className="mt-2 text-sm text-muted leading-relaxed">
+                        <span className="font-medium text-navy">How to read it:</span>{" "}
+                        {metric.interpretation}
                       </p>
                     )}
 
                     {metric.caution && (
-                      <p
-                        style={{
-                          margin: "0.5rem 0 0",
-                          color: "#92400e",
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        <strong>Caution:</strong> {metric.caution}
+                      <p className="mt-2 text-sm leading-relaxed text-amber-800">
+                        <span className="font-medium">Caution:</span> {metric.caution}
                       </p>
                     )}
 
                     {metric.appliesTo && metric.appliesTo.length > 0 && (
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "0.4rem",
-                          flexWrap: "wrap",
-                          marginTop: "0.65rem",
-                        }}
-                      >
+                      <div className="mt-3 flex flex-wrap gap-1.5">
                         {metric.appliesTo.map((strategy: StrategyType) => (
                           <span
                             key={strategy}
-                            style={{
-                              fontSize: "0.75rem",
-                              color: "#475569",
-                              background: "#e2e8f0",
-                              borderRadius: "999px",
-                              padding: "0.15rem 0.5rem",
-                            }}
+                            className="rounded-full border border-border bg-white px-2 py-0.5 text-xs text-muted"
                           >
                             {strategy.replaceAll("_", " ")}
                           </span>

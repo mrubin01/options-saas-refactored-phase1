@@ -62,6 +62,7 @@ jobs:
                 environment:
                   ENVIRONMENT: staging
                   DATABASE_URL_APP: ${DATABASE_URL_APP}
+                  DATABASE_URL_ADMIN: ${DATABASE_URL_ADMIN}
                   REDIS_URL: ${REDIS_URL}
                   SECRET_KEY: ${SECRET_KEY}
                   ALGORITHM: ${ALGORITHM}
@@ -120,6 +121,7 @@ jobs:
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
 
             DATABASE_URL_APP=${{ secrets.DATABASE_URL_APP }}
+            DATABASE_URL_ADMIN=${{ secrets.DATABASE_URL_ADMIN }}
             REDIS_URL=${{ secrets.REDIS_URL }}
 
             SECRET_KEY=${{ secrets.SECRET_KEY }}

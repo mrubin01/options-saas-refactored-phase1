@@ -256,7 +256,7 @@ The `PaginationMeta` model already exists in `backend/app/schemas/api.py` — it
 6. **Exchange endpoint** (issue #12) — small cleanup, do during 5.1 or 5.2
 7. **Ingestion automation hardening** (Stage 5.3) — go beyond cron (scheduled workflow or Celery Beat)
 8. **Data-contract hardening** (Stage 5.3) — generate Pydantic + TS types from one canonical source to prevent field drift
-9. **E2E test coverage** (Stage 5.4) — add Playwright for login → screener → watchlist → dashboard smoke flow
+9. ~~**E2E test coverage** (Stage 5.4)~~ ✅ Done — Playwright added (`frontend/e2e/`): auth flow (login, logout, wrong password, redirect), all three screener pages, watchlist empty state. CI e2e job runs on every push with postgres + redis services.
 
 ---
 

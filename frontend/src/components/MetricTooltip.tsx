@@ -12,12 +12,7 @@ export default function MetricTooltip({ entry, metricKey }: Props) {
 
   return (
     <span
-      style={{
-        position: "relative",
-        display: "inline-flex",
-        alignItems: "center",
-        marginLeft: 4,
-      }}
+      className="relative inline-flex items-center ml-1"
       title={[
         entry.shortDefinition,
         entry.interpretation ? `\n\n${entry.interpretation}` : "",
@@ -27,19 +22,8 @@ export default function MetricTooltip({ entry, metricKey }: Props) {
       data-metric-key={metricKey ?? entry.key}
     >
       <span
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: 16,
-          height: 16,
-          borderRadius: "50%",
-          border: "1px solid #94a3b8",
-          color: "#475569",
-          fontSize: 11,
-          lineHeight: 1,
-          cursor: "help",
-        }}
+        className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border border-slate-300 text-subtle cursor-help"
+        style={{ fontSize: 9 }}
       >
         ?
       </span>

@@ -86,16 +86,16 @@ export default function WatchlistPage() {
   }
 
   return (
-    <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+    <div>
       <PageHeader title="Watchlist" />
 
-      <div className="mb-4 flex items-center gap-4">
-        <div>
-          <label className="mr-2 text-sm font-medium">Strategy:</label>
+      <div className="mb-4 flex items-center gap-4 flex-wrap">
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-muted">Strategy</label>
           <select
             value={filterStrategy}
             onChange={(e) => setFilterStrategy(e.target.value as "all" | WatchlistStrategyType)}
-            className="border rounded px-3 py-2 text-sm"
+            className="rounded-md border border-border-dark bg-white px-3 py-2 text-sm text-navy focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             {strategyOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -105,62 +105,78 @@ export default function WatchlistPage() {
           </select>
         </div>
 
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-muted mt-4">
           {filteredItems.length} item{filteredItems.length === 1 ? "" : "s"} shown
         </div>
       </div>
 
       {error && (
-        <div className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="mb-3 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
+        <div className="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
           {success}
         </div>
       )}
 
       {isLoading ? (
-        <div className="text-sm text-gray-500 py-3">Loading watchlist…</div>
+        <div className="py-10 text-center text-sm text-muted">Loading watchlist…</div>
       ) : filteredItems.length === 0 ? (
-        <div className="text-sm text-gray-500 py-3">
+        <div className="py-10 text-center text-sm text-muted">
           Your watchlist is empty. Add opportunities from Covered Calls, Put Options, or Spread Options.
         </div>
       ) : (
-        <table border={1} cellPadding={6} cellSpacing={0}>
-          <thead>
-            <tr>
-              <th>Strategy</th>
-              <th>Ticker</th>
-              <th>Contract</th>
-              <th>Exchange</th>
-              <th>Added At</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredItems.map((item) => (
-              <tr key={item.id}>
-                <td>{strategyLabelMap[item.strategy_type]}</td>
-                <td>{item.ticker}</td>
-                <td>{item.contract}</td>
-                <td>{exchangeMap[item.exchange] ?? item.exchange}</td>
-                <td>{formatDateTime(item.created_at)}</td>
-                <td>
-                  <button
-                    type="button"
-                    disabled={isPending(item.id)}
-                    onClick={() => void handleRemove(item.id)}
-                  >
-                    {isPending(item.id) ? "Removing..." : "Remove"}
-                  </button>
-                </td>
+        <div className="overflow-x-auto rounded-xl border border-border shadow-sm">
+          <table className="w-full border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-border bg-bg">
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-muted whitespace-nowrap">Strategy</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-muted whitespace-nowrap">Ticker</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-muted whitespace-nowrap">Contract</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-muted whitespace-nowrap">Exchange</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-muted whitespace-nowrap">Added At</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-muted whitespace-nowrap">Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredItems.map((item, idx) => (
+                <tr
+                  key={item.id}
+                  className={`border-b border-border last:border-0 hover:bg-bg/80 transition-colors ${idx % 2 === 0 ? "bg-white" : "bg-bg/40"}`}
+                >
+                  <td className="px-4 py-2.5 whitespace-nowrap text-muted text-xs">
+                    {strategyLabelMap[item.strategy_type]}
+                  </td>
+                  <td className="px-4 py-2.5 font-semibold text-navy whitespace-nowrap">
+                    {item.ticker}
+                  </td>
+                  <td className="px-4 py-2.5 font-mono text-xs text-muted whitespace-nowrap">
+                    {item.contract}
+                  </td>
+                  <td className="px-4 py-2.5 whitespace-nowrap">
+                    {exchangeMap[item.exchange] ?? item.exchange}
+                  </td>
+                  <td className="px-4 py-2.5 whitespace-nowrap text-muted text-xs">
+                    {formatDateTime(item.created_at)}
+                  </td>
+                  <td className="px-4 py-2.5 whitespace-nowrap">
+                    <button
+                      type="button"
+                      disabled={isPending(item.id)}
+                      onClick={() => void handleRemove(item.id)}
+                      className="rounded border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-100 disabled:opacity-50 transition-colors"
+                    >
+                      {isPending(item.id) ? "Removing…" : "Remove"}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

@@ -10,7 +10,6 @@ interface Props {
 }
 
 type DiscoveryFilterKey = keyof CoveredCallsDiscoveryFilters;
-
 type MetricKey = keyof typeof metricGlossary;
 
 function getMetricEntry(metricKey: string) {
@@ -19,11 +18,7 @@ function getMetricEntry(metricKey: string) {
 
 function getMetricTooltip(metricKey: string) {
   const metric = getMetricEntry(metricKey);
-
-  if (!metric) {
-    return undefined;
-  }
-
+  if (!metric) return undefined;
   return [
     metric.shortDefinition,
     metric.interpretation ? `\n\nHow to read it: ${metric.interpretation}` : "",
@@ -32,53 +27,29 @@ function getMetricTooltip(metricKey: string) {
 }
 
 function toOptionalNumber(value: string) {
-  if (value === "") {
-    return undefined;
-  }
-
+  if (value === "") return undefined;
   const numericValue = Number(value);
-
   return Number.isNaN(numericValue) ? undefined : numericValue;
 }
-function FieldLabel({
-  label,
-  metricKey,
-}: {
-  label: string;
-  metricKey?: string;
-}) {
+
+const labelClass = "flex items-center gap-1 text-xs font-medium text-muted mb-1";
+const inputClass =
+  "w-full rounded-md border border-border-dark bg-white px-2.5 py-1.5 text-sm text-navy focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20";
+
+function FieldLabel({ label, metricKey }: { label: string; metricKey?: string }) {
   const metric = metricKey ? getMetricEntry(metricKey) : undefined;
   const tooltip = metricKey ? getMetricTooltip(metricKey) : undefined;
   const accessibleLabel = metric?.label ?? label;
 
   return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 4,
-        fontSize: "0.85rem",
-        fontWeight: 600,
-      }}
-    >
+    <span className={labelClass}>
       {label}
       {tooltip && (
         <span
           title={tooltip}
           aria-label={`Explanation for ${accessibleLabel}`}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 16,
-            height: 16,
-            borderRadius: "50%",
-            border: "1px solid #94a3b8",
-            color: "#475569",
-            fontSize: 11,
-            lineHeight: 1,
-            cursor: "help",
-          }}
+          className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border border-slate-300 text-subtle cursor-help"
+          style={{ fontSize: 9 }}
         >
           ?
         </span>
@@ -103,7 +74,7 @@ function NumberInput({
   step?: number;
 }) {
   return (
-    <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+    <label className="flex flex-col">
       <FieldLabel label={label} metricKey={metricKey} />
       <input
         type="number"
@@ -111,6 +82,7 @@ function NumberInput({
         min={min}
         step={step}
         onChange={(event) => onChange(toOptionalNumber(event.target.value))}
+        className={inputClass}
       />
     </label>
   );
@@ -128,12 +100,13 @@ function DateInput({
   onChange: (value: string | undefined) => void;
 }) {
   return (
-    <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+    <label className="flex flex-col">
       <FieldLabel label={label} metricKey={metricKey} />
       <input
         type="date"
         value={value ?? ""}
         onChange={(event) => onChange(event.target.value || undefined)}
+        className={inputClass}
       />
     </label>
   );
@@ -153,17 +126,16 @@ function SelectInput({
   onChange: (value: string | undefined) => void;
 }) {
   return (
-    <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+    <label className="flex flex-col">
       <FieldLabel label={label} metricKey={metricKey} />
       <select
         value={value ?? ""}
         onChange={(event) => onChange(event.target.value || undefined)}
+        className={inputClass}
       >
         <option value="">All</option>
         {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
+          <option key={option} value={option}>{option}</option>
         ))}
       </select>
     </label>
@@ -176,288 +148,66 @@ export default function AdvancedFiltersPanel({
   sectorOptions,
   industryOptions,
 }: Props) {
-  function setNumberFilter(
-    key: DiscoveryFilterKey,
-    value: number | undefined,
-  ) {
-    onChange({
-      ...filters,
-      [key]: value,
-      offset: 0,
-    });
+  function setNumberFilter(key: DiscoveryFilterKey, value: number | undefined) {
+    onChange({ ...filters, [key]: value, offset: 0 });
   }
 
-  function setStringFilter(
-    key: DiscoveryFilterKey,
-    value: string | undefined,
-  ) {
-    onChange({
-      ...filters,
-      [key]: value,
-      offset: 0,
-    });
+  function setStringFilter(key: DiscoveryFilterKey, value: string | undefined) {
+    onChange({ ...filters, [key]: value, offset: 0 });
   }
 
   return (
-    <section
-      style={{
-        border: "1px solid #e5e7eb",
-        borderRadius: "0.75rem",
-        padding: "1rem",
-        margin: "1rem 0",
-        background: "#ffffff",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "1rem",
-          marginBottom: "1rem",
-        }}
-      >
+    <section className="my-4 rounded-xl border border-border bg-white p-4">
+      <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
         <div>
-          <h2 style={{ margin: 0, fontSize: "1rem" }}>Advanced discovery</h2>
-          <p style={{ margin: "0.25rem 0 0", color: "#6b7280" }}>
-            Refine opportunities by expiration, return, liquidity, volatility,
-            and risk metrics.
+          <h2 className="text-sm font-semibold text-navy">Advanced filters</h2>
+          <p className="mt-0.5 text-xs text-muted">
+            Refine by expiration, return, liquidity, volatility, and risk.
           </p>
         </div>
-
         <SortPresetSelect
           sortBy={filters.sort_by}
           sortDir={filters.sort_dir}
           onChange={(sort) =>
-            onChange({
-              ...filters,
-              sort_by: sort.sort_by,
-              sort_dir: sort.sort_dir,
-              offset: 0,
-            })
+            onChange({ ...filters, sort_by: sort.sort_by, sort_dir: sort.sort_dir, offset: 0 })
           }
         />
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-          gap: "0.75rem",
-        }}
-      >
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
         <DateInput
           label="Expiry from"
           metricKey="expiry_date"
           value={filters.expiry_date_min ?? filters.min_expiry}
-          onChange={(value) => {
-            onChange({
-              ...filters,
-              expiry_date_min: value,
-              min_expiry: value,
-              offset: 0,
-            });
-          }}
+          onChange={(value) => onChange({ ...filters, expiry_date_min: value, min_expiry: value, offset: 0 })}
         />
-
         <DateInput
           label="Expiry to"
           metricKey="expiry_date"
           value={filters.expiry_date_max}
           onChange={(value) => setStringFilter("expiry_date_max", value)}
         />
-
-        <NumberInput
-          label="DTE min"
-          metricKey="days_to_expiration"
-          value={filters.days_to_expiration_min}
-          min={0}
-          step={1}
-          onChange={(value) =>
-            setNumberFilter("days_to_expiration_min", value)
-          }
-        />
-
-        <NumberInput
-          label="DTE max"
-          metricKey="days_to_expiration"
-          value={filters.days_to_expiration_max}
-          min={0}
-          step={1}
-          onChange={(value) =>
-            setNumberFilter("days_to_expiration_max", value)
-          }
-        />
-
-        <NumberInput
-          label="Option yield min"
-          metricKey="option_yield"
-          value={filters.option_yield_min}
-          step={0.01}
-          onChange={(value) => setNumberFilter("option_yield_min", value)}
-        />
-
-        <NumberInput
-          label="Option yield max"
-          metricKey="option_yield"
-          value={filters.option_yield_max}
-          step={0.01}
-          onChange={(value) => setNumberFilter("option_yield_max", value)}
-        />
-
-        <NumberInput
-          label="ROC min"
-          metricKey="roc"
-          value={filters.roc_min}
-          step={0.01}
-          onChange={(value) => setNumberFilter("roc_min", value)}
-        />
-
-        <NumberInput
-          label="ROC max"
-          metricKey="roc"
-          value={filters.roc_max}
-          step={0.01}
-          onChange={(value) => setNumberFilter("roc_max", value)}
-        />
-
-        <NumberInput
-          label="Total return min"
-          metricKey="tot_return"
-          value={filters.tot_return_min}
-          step={0.01}
-          onChange={(value) => setNumberFilter("tot_return_min", value)}
-        />
-
-        <NumberInput
-          label="Total return max"
-          metricKey="tot_return"
-          value={filters.tot_return_max}
-          step={0.01}
-          onChange={(value) => setNumberFilter("tot_return_max", value)}
-        />
-
-        <NumberInput
-          label="Premium min"
-          metricKey="premium_per_contract"
-          value={filters.premium_per_contract_min}
-          min={0}
-          step={0.01}
-          onChange={(value) =>
-            setNumberFilter("premium_per_contract_min", value)
-          }
-        />
-
-        <NumberInput
-          label="Premium max"
-          metricKey="premium_per_contract"
-          value={filters.premium_per_contract_max}
-          min={0}
-          step={0.01}
-          onChange={(value) =>
-            setNumberFilter("premium_per_contract_max", value)
-          }
-        />
-
-        <NumberInput
-          label="Open interest min"
-          metricKey="open_interest"
-          value={filters.open_interest_min}
-          min={0}
-          step={1}
-          onChange={(value) => setNumberFilter("open_interest_min", value)}
-        />
-
-        <NumberInput
-          label="Open interest max"
-          metricKey="open_interest"
-          value={filters.open_interest_max}
-          min={0}
-          step={1}
-          onChange={(value) => setNumberFilter("open_interest_max", value)}
-        />
-
-        <NumberInput
-          label="IV min"
-          metricKey="impl_volatility"
-          value={filters.impl_volatility_min}
-          min={0}
-          step={0.01}
-          onChange={(value) => setNumberFilter("impl_volatility_min", value)}
-        />
-
-        <NumberInput
-          label="IV max"
-          metricKey="impl_volatility"
-          value={filters.impl_volatility_max}
-          min={0}
-          step={0.01}
-          onChange={(value) => setNumberFilter("impl_volatility_max", value)}
-        />
-
-        <NumberInput
-          label="Delta min"
-          metricKey="delta"
-          value={filters.delta_min}
-          step={0.01}
-          onChange={(value) => setNumberFilter("delta_min", value)}
-        />
-
-        <NumberInput
-          label="Delta max"
-          metricKey="delta"
-          value={filters.delta_max}
-          step={0.01}
-          onChange={(value) => setNumberFilter("delta_max", value)}
-        />
-
-        <NumberInput
-          label="Moneyness min"
-          metricKey="moneyness"
-          value={filters.moneyness_min}
-          step={0.01}
-          onChange={(value) => setNumberFilter("moneyness_min", value)}
-        />
-
-        <NumberInput
-          label="Moneyness max"
-          metricKey="moneyness"
-          value={filters.moneyness_max}
-          step={0.01}
-          onChange={(value) => setNumberFilter("moneyness_max", value)}
-        />
-
-        <NumberInput
-          label="Bid/ask spread max"
-          metricKey="spread_bid_ask"
-          value={filters.spread_bid_ask_max}
-          min={0}
-          step={0.01}
-          onChange={(value) => setNumberFilter("spread_bid_ask_max", value)}
-        />
-
-        <SelectInput
-          label="Sector"
-          metricKey="sector"
-          value={filters.sector}
-          options={sectorOptions}
-          onChange={(value) => {
-            onChange({
-              ...filters,
-              sector: value,
-              industry: undefined,
-              offset: 0,
-            });
-          }}
-        />
-
-        <SelectInput
-          label="Industry"
-          metricKey="industry"
-          value={filters.industry}
-          options={industryOptions}
-          onChange={(value) => setStringFilter("industry", value)}
-        />
+        <NumberInput label="DTE min" metricKey="days_to_expiration" value={filters.days_to_expiration_min} min={0} step={1} onChange={(v) => setNumberFilter("days_to_expiration_min", v)} />
+        <NumberInput label="DTE max" metricKey="days_to_expiration" value={filters.days_to_expiration_max} min={0} step={1} onChange={(v) => setNumberFilter("days_to_expiration_max", v)} />
+        <NumberInput label="Yield min" metricKey="option_yield" value={filters.option_yield_min} step={0.01} onChange={(v) => setNumberFilter("option_yield_min", v)} />
+        <NumberInput label="Yield max" metricKey="option_yield" value={filters.option_yield_max} step={0.01} onChange={(v) => setNumberFilter("option_yield_max", v)} />
+        <NumberInput label="ROC min" metricKey="roc" value={filters.roc_min} step={0.01} onChange={(v) => setNumberFilter("roc_min", v)} />
+        <NumberInput label="ROC max" metricKey="roc" value={filters.roc_max} step={0.01} onChange={(v) => setNumberFilter("roc_max", v)} />
+        <NumberInput label="Total return min" metricKey="tot_return" value={filters.tot_return_min} step={0.01} onChange={(v) => setNumberFilter("tot_return_min", v)} />
+        <NumberInput label="Total return max" metricKey="tot_return" value={filters.tot_return_max} step={0.01} onChange={(v) => setNumberFilter("tot_return_max", v)} />
+        <NumberInput label="Premium min" metricKey="premium_per_contract" value={filters.premium_per_contract_min} min={0} step={0.01} onChange={(v) => setNumberFilter("premium_per_contract_min", v)} />
+        <NumberInput label="Premium max" metricKey="premium_per_contract" value={filters.premium_per_contract_max} min={0} step={0.01} onChange={(v) => setNumberFilter("premium_per_contract_max", v)} />
+        <NumberInput label="OI min" metricKey="open_interest" value={filters.open_interest_min} min={0} step={1} onChange={(v) => setNumberFilter("open_interest_min", v)} />
+        <NumberInput label="OI max" metricKey="open_interest" value={filters.open_interest_max} min={0} step={1} onChange={(v) => setNumberFilter("open_interest_max", v)} />
+        <NumberInput label="IV min" metricKey="impl_volatility" value={filters.impl_volatility_min} min={0} step={0.01} onChange={(v) => setNumberFilter("impl_volatility_min", v)} />
+        <NumberInput label="IV max" metricKey="impl_volatility" value={filters.impl_volatility_max} min={0} step={0.01} onChange={(v) => setNumberFilter("impl_volatility_max", v)} />
+        <NumberInput label="Delta min" metricKey="delta" value={filters.delta_min} step={0.01} onChange={(v) => setNumberFilter("delta_min", v)} />
+        <NumberInput label="Delta max" metricKey="delta" value={filters.delta_max} step={0.01} onChange={(v) => setNumberFilter("delta_max", v)} />
+        <NumberInput label="Moneyness min" metricKey="moneyness" value={filters.moneyness_min} step={0.01} onChange={(v) => setNumberFilter("moneyness_min", v)} />
+        <NumberInput label="Moneyness max" metricKey="moneyness" value={filters.moneyness_max} step={0.01} onChange={(v) => setNumberFilter("moneyness_max", v)} />
+        <NumberInput label="Spread max" metricKey="spread_bid_ask" value={filters.spread_bid_ask_max} min={0} step={0.01} onChange={(v) => setNumberFilter("spread_bid_ask_max", v)} />
+        <SelectInput label="Sector" metricKey="sector" value={filters.sector} options={sectorOptions} onChange={(value) => onChange({ ...filters, sector: value, industry: undefined, offset: 0 })} />
+        <SelectInput label="Industry" metricKey="industry" value={filters.industry} options={industryOptions} onChange={(value) => setStringFilter("industry", value)} />
       </div>
     </section>
   );
