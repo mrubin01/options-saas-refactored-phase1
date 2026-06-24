@@ -118,6 +118,9 @@ export default function CoveredCallsPage() {
   const rows: CoveredCall[] = data ?? [];
   const lastUpdated = getLastUpdated(rows);
 
+  const tickerOptions = useMemo(() => getUniqueSortedValues(rows.map((row) => row.ticker)), [rows]);
+  const contractOptions = useMemo(() => getUniqueSortedValues(rows.map((row) => row.contract)), [rows]);
+
   const sectorOptions = useMemo(() => {
     return getUniqueSortedValues(rows.map((row) => row.sector));
   }, [rows]);
@@ -276,6 +279,8 @@ export default function CoveredCallsPage() {
         filters={legacyFilters}
         onChange={handleLegacyFiltersChange}
         exchanges={exchanges}
+        tickerOptions={tickerOptions}
+        contractOptions={contractOptions}
       />
 
       <AdvancedFiltersPanel
