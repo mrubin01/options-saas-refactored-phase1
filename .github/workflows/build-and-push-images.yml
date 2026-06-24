@@ -62,6 +62,7 @@ jobs:
           build-args: |
             VITE_API_URL=${{ vars.VITE_API_URL }}
             VITE_API_VERSION=${{ vars.VITE_API_VERSION }}
+            VITE_REGISTRATION_ENABLED=${{ vars.VITE_REGISTRATION_ENABLED }}
           tags: |
             ghcr.io/${{ steps.repo.outputs.repo }}/frontend:${{ steps.meta.outputs.channel }}
             ghcr.io/${{ steps.repo.outputs.repo }}/frontend:${{ github.sha }}

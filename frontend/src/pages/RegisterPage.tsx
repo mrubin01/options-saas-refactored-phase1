@@ -4,6 +4,8 @@ import { register } from "../api/auth";
 import { useAuth } from "../auth/AuthContext";
 import { getApiErrorMessage } from "../api/errors";
 
+const registrationEnabled = import.meta.env.VITE_REGISTRATION_ENABLED !== "false";
+
 export default function RegisterPage() {
   const { token } = useAuth();
   const navigate = useNavigate();
@@ -44,6 +46,23 @@ export default function RegisterPage() {
 
   const inputClass =
     "w-full rounded-md border border-border-dark bg-white px-3 py-2 text-sm text-navy placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
+
+  if (!registrationEnabled) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-bg px-4">
+        <div className="w-full max-w-sm text-center">
+          <h1 className="mb-2 text-2xl font-bold text-navy tracking-tight">OptionStacker</h1>
+          <div className="rounded-xl border border-border bg-white p-8 shadow-sm">
+            <p className="text-sm font-medium text-navy">Registration is currently closed.</p>
+            <p className="mt-1 text-sm text-muted">We're still polishing things up. Check back soon.</p>
+            <Link to="/login" className="mt-4 inline-block text-sm font-medium text-primary hover:underline">
+              Back to sign in
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-bg px-4">

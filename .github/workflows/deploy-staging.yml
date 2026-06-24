@@ -81,6 +81,7 @@ jobs:
                   SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE}
                   BACKEND_PORT: 8000
                   RUN_MIGRATIONS: true
+                  REGISTRATION_ENABLED: ${REGISTRATION_ENABLED}
                 depends_on:
                   db:
                     condition: service_healthy
@@ -143,6 +144,8 @@ jobs:
 
             SENTRY_DSN=${{ secrets.SENTRY_DSN }}
             SENTRY_TRACES_SAMPLE_RATE=${{ secrets.SENTRY_TRACES_SAMPLE_RATE }}
+
+            REGISTRATION_ENABLED=${{ secrets.REGISTRATION_ENABLED }}
 
             BACKEND_IMAGE=${{ secrets.BACKEND_IMAGE }}
             FRONTEND_IMAGE=${{ secrets.FRONTEND_IMAGE }}

@@ -114,12 +114,14 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <p className="mt-4 text-center text-sm text-muted">
-          Don&apos;t have an account?{" "}
-          <Link to="/register" className="font-medium text-primary hover:underline">
-            Create one
-          </Link>
-        </p>
+        {import.meta.env.VITE_REGISTRATION_ENABLED !== "false" && (
+          <p className="mt-4 text-center text-sm text-muted">
+            Don&apos;t have an account?{" "}
+            <Link to="/register" className="font-medium text-primary hover:underline">
+              Create one
+            </Link>
+          </p>
+        )}
       </div>
     </div>
   );

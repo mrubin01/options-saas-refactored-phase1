@@ -34,3 +34,6 @@ class ErrorCode(StrEnum):
     # --- users ---
     USER_NOT_FOUND = "USER_NOT_FOUND"
     USER_ALREADY_EXISTS = "USER_ALREADY_EXISTS"
+
+    # --- features ---
+    REGISTRATION_CLOSED = "REGISTRATION_CLOSED"

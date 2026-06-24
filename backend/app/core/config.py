@@ -49,6 +49,7 @@ class Settings(BaseSettings):
     # --- runtime ---
     BACKEND_PORT: int = 8000
     RUN_MIGRATIONS: bool = True
+    REGISTRATION_ENABLED: bool = True
 
     class Config:  # type: ignore
         env_file = ".env"
