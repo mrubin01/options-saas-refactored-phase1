@@ -33,7 +33,7 @@ export default function ForgotPasswordPage() {
           <p className="mt-1 text-sm text-muted">Reset your password</p>
         </div>
 
-        <div className="rounded-xl border border-border bg-white p-8 shadow-sm">
+        <div className="rounded-xl border border-border bg-surface p-8 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-navy mb-1.5">Email</label>
@@ -44,18 +44,18 @@ export default function ForgotPasswordPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
                 required
-                className="w-full rounded-md border border-border-dark bg-white px-3 py-2 text-sm text-navy placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full rounded-md border border-border-dark bg-surface px-3 py-2 text-sm text-navy placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
             {message && (
-              <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+              <div className="rounded-lg bg-emerald-950/30 border border-emerald-800 px-4 py-3 text-sm text-emerald-400">
                 {message}
               </div>
             )}
 
             {error && (
-              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+              <div className="rounded-lg bg-red-950/30 border border-red-800 px-4 py-3 text-sm text-red-400">
                 {error}
               </div>
             )}

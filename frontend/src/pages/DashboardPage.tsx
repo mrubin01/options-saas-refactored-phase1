@@ -31,7 +31,7 @@ function DashboardCard({
   subtitle?: string;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-white p-4">
+    <div className="rounded-xl border border-border bg-surface p-4">
       <div className="text-xs font-medium text-muted mb-1.5">{title}</div>
       <div className="text-3xl font-bold text-navy">{value}</div>
       {subtitle && (
@@ -197,7 +197,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="mb-6 grid gap-5 md:grid-cols-2">
-            <div className="rounded-xl border border-border bg-white p-5">
+            <div className="rounded-xl border border-border bg-surface p-5">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-base font-semibold text-navy">Recent Saved Screeners</h2>
                 <Link to="/covered-calls" className="text-xs font-medium text-primary hover:underline">
@@ -228,7 +228,7 @@ export default function DashboardPage() {
               )}
             </div>
 
-            <div className="rounded-xl border border-border bg-white p-5">
+            <div className="rounded-xl border border-border bg-surface p-5">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-base font-semibold text-navy">Recent Watchlist Items</h2>
                 <Link to="/watchlist" className="text-xs font-medium text-primary hover:underline">
@@ -262,7 +262,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-border bg-white p-5">
+          <div className="rounded-xl border border-border bg-surface p-5">
             <h2 className="mb-3 text-base font-semibold text-navy">Quick Links</h2>
             <div className="flex flex-wrap gap-2">
               {[

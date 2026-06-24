@@ -11,7 +11,7 @@ export default function Navigation() {
   }
 
   return (
-    <header className="bg-navy sticky top-0 z-40 border-b border-white/10 shadow-sm">
+    <header className="bg-[#0b1120] sticky top-0 z-40 border-b border-white/10 shadow-sm">
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-6 h-14">
         <div className="flex items-center gap-6">
           <Link

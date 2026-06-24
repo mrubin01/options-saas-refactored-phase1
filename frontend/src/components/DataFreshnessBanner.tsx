@@ -49,35 +49,35 @@ function getFreshnessStatus(lastUpdated: string | null): FreshnessStatus {
   if (ageMinutes === null) {
     return {
       label: "Unknown",
-      badge: "bg-slate-100 text-slate-600 border border-slate-200",
-      card: "bg-slate-50 border-slate-200",
-      text: "text-slate-600",
+      badge: "bg-surface text-muted border border-border",
+      card: "bg-surface border-border",
+      text: "text-muted",
     };
   }
 
   if (ageMinutes <= 180) {
     return {
       label: "Fresh",
-      badge: "bg-green-100 text-green-800 border border-green-200",
-      card: "bg-green-50 border-green-200",
-      text: "text-green-800",
+      badge: "bg-emerald-900/40 text-emerald-300 border border-emerald-700",
+      card: "bg-emerald-950/20 border-emerald-800/60",
+      text: "text-emerald-300",
     };
   }
 
   if (ageMinutes <= 1_440) {
     return {
       label: "Aging",
-      badge: "bg-amber-100 text-amber-800 border border-amber-200",
-      card: "bg-amber-50 border-amber-200",
-      text: "text-amber-800",
+      badge: "bg-amber-900/40 text-amber-300 border border-amber-700",
+      card: "bg-amber-950/20 border-amber-800/60",
+      text: "text-amber-300",
     };
   }
 
   return {
     label: "Stale",
-    badge: "bg-red-100 text-red-800 border border-red-200",
-    card: "bg-red-50 border-red-200",
-    text: "text-red-800",
+    badge: "bg-red-900/40 text-red-300 border border-red-700",
+    card: "bg-red-950/20 border-red-800/60",
+    text: "text-red-300",
   };
 }
 
@@ -148,7 +148,7 @@ export default function DataFreshnessBanner({ strategyKey }: Props) {
 
   if (error) {
     return (
-      <div className="my-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      <div className="my-4 rounded-xl border border-red-800 bg-red-950/30 px-4 py-3 text-sm text-red-400">
         {error}
       </div>
     );
@@ -157,7 +157,7 @@ export default function DataFreshnessBanner({ strategyKey }: Props) {
   if (!data) return null;
 
   return (
-    <section className="my-4 rounded-xl border border-border bg-white p-4">
+    <section className="my-4 rounded-xl border border-border bg-surface p-4">
       <div className="mb-3">
         <h2 className="text-sm font-semibold text-navy">Data freshness</h2>
         <p className="mt-0.5 text-xs text-muted">

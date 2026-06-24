@@ -118,6 +118,9 @@ export default function SpreadOptionsPage() {
   const rows: SpreadOption[] = data ?? [];
   const lastUpdated = getLastUpdated(rows);
 
+  const tickerOptions = useMemo(() => getUniqueSortedValues(rows.map((row) => row.ticker)), [rows]);
+  const contractOptions = useMemo(() => getUniqueSortedValues(rows.map((row) => row.contract)), [rows]);
+
   const sectorOptions = useMemo(() => {
     return getUniqueSortedValues(rows.map((row) => row.sector));
   }, [rows]);
@@ -246,7 +249,7 @@ export default function SpreadOptionsPage() {
   }
 
   return (
-    <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+    <div>
       <PageHeader title="Best Spread Options" lastUpdated={lastUpdated} />
 
       <DataFreshnessBanner strategyKey="spread_options" />
@@ -274,6 +277,8 @@ export default function SpreadOptionsPage() {
         filters={legacyFilters}
         onChange={handleLegacyFiltersChange}
         exchanges={exchanges}
+        tickerOptions={tickerOptions}
+        contractOptions={contractOptions}
       />
 
       <AdvancedFiltersPanel
@@ -298,11 +303,11 @@ export default function SpreadOptionsPage() {
       />
 
       {watchlistError && (
-        <div className="text-sm text-red-600 py-2">{watchlistError}</div>
+        <div className="text-sm text-red-400 py-2">{watchlistError}</div>
       )}
 
       {watchlistSuccess && (
-        <div className="text-sm text-green-600 py-2">{watchlistSuccess}</div>
+        <div className="text-sm text-emerald-400 py-2">{watchlistSuccess}</div>
       )}
 
       {!isLoading && !error && rows.length > 0 && (

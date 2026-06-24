@@ -43,7 +43,7 @@ export default function SortPresetSelect({ sortBy, sortDir, onChange }: Props) {
           const [nextSortBy, nextSortDir] = value.split(":") as [CoveredCallSortField, SortDirection];
           onChange({ sort_by: nextSortBy, sort_dir: nextSortDir });
         }}
-        className="rounded-md border border-border-dark bg-white px-3 py-2 text-sm text-navy focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+        className="rounded-md border border-border-dark bg-surface px-3 py-2 text-sm text-navy focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
       >
         <option value="">Default sorting</option>
         {coveredCallSortPresets.map((preset) => (

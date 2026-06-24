@@ -8,7 +8,7 @@ export default function AccountPage() {
     <div className="max-w-lg">
       <PageHeader title="Account" />
 
-      <div className="rounded-xl border border-border bg-white p-5">
+      <div className="rounded-xl border border-border bg-surface p-5">
         <dl className="grid gap-4">
           <div>
             <dt className="text-xs font-medium text-muted mb-0.5">Email</dt>

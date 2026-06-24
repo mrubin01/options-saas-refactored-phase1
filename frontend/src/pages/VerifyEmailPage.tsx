@@ -45,7 +45,7 @@ export default function VerifyEmailPage() {
           <p className="mt-1 text-sm text-muted">Email verification</p>
         </div>
 
-        <div className="rounded-xl border border-border bg-white p-8 shadow-sm space-y-4">
+        <div className="rounded-xl border border-border bg-surface p-8 shadow-sm space-y-4">
           {!token && (
             <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
               Missing verification token.

@@ -24,19 +24,19 @@ const STATUS_LABELS: Record<IngestionStatusValue, string> = {
 };
 
 const STATUS_BADGE: Record<IngestionStatusValue, string> = {
-  fresh: "bg-green-100 text-green-800 border border-green-200",
-  aging: "bg-amber-100 text-amber-800 border border-amber-200",
-  stale: "bg-red-100 text-red-800 border border-red-200",
-  empty: "bg-slate-100 text-slate-600 border border-slate-200",
-  unknown: "bg-slate-100 text-slate-600 border border-slate-200",
+  fresh: "bg-emerald-900/40 text-emerald-300 border border-emerald-700",
+  aging: "bg-amber-900/40 text-amber-300 border border-amber-700",
+  stale: "bg-red-900/40 text-red-300 border border-red-700",
+  empty: "bg-surface text-muted border border-border",
+  unknown: "bg-surface text-muted border border-border",
 };
 
 const STATUS_CARD: Record<IngestionStatusValue, string> = {
-  fresh: "bg-green-50 border-green-200",
-  aging: "bg-amber-50 border-amber-200",
-  stale: "bg-red-50 border-red-200",
-  empty: "bg-slate-50 border-slate-200",
-  unknown: "bg-slate-50 border-slate-200",
+  fresh: "bg-emerald-950/20 border-emerald-800/60",
+  aging: "bg-amber-950/20 border-amber-800/60",
+  stale: "bg-red-950/20 border-red-800/60",
+  empty: "bg-surface border-border",
+  unknown: "bg-surface border-border",
 };
 
 function formatDateTime(value: string | null) {
@@ -134,7 +134,7 @@ export default function IngestionStatusBanner() {
 
   if (error) {
     return (
-      <div className="my-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      <div className="my-4 rounded-xl border border-red-800 bg-red-950/30 px-4 py-3 text-sm text-red-400">
         {error}
       </div>
     );
@@ -143,7 +143,7 @@ export default function IngestionStatusBanner() {
   if (!data) return null;
 
   return (
-    <section className="my-4 rounded-xl border border-border bg-white p-4">
+    <section className="my-4 rounded-xl border border-border bg-surface p-4">
       <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
         <div>
           <h2 className="text-sm font-semibold text-navy">Ingestion status</h2>

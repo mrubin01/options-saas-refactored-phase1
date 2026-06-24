@@ -87,7 +87,7 @@ export default function GlossaryPage() {
 
       <div className="grid gap-4">
         {GROUPS.map((group) => (
-          <section key={group.title} className="rounded-xl border border-border bg-white p-5">
+          <section key={group.title} className="rounded-xl border border-border bg-surface p-5">
             <h2 className="text-base font-semibold text-navy mb-0.5">{group.title}</h2>
             <p className="mb-4 text-xs text-muted leading-relaxed">{group.description}</p>
 
@@ -125,7 +125,7 @@ export default function GlossaryPage() {
                         {metric.appliesTo.map((strategy: StrategyType) => (
                           <span
                             key={strategy}
-                            className="rounded-full border border-border bg-white px-2 py-0.5 text-xs text-muted"
+                            className="rounded-full border border-border bg-surface px-2 py-0.5 text-xs text-muted"
                           >
                             {strategy.replaceAll("_", " ")}
                           </span>

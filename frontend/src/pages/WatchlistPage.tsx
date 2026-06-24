@@ -95,7 +95,7 @@ export default function WatchlistPage() {
           <select
             value={filterStrategy}
             onChange={(e) => setFilterStrategy(e.target.value as "all" | WatchlistStrategyType)}
-            className="rounded-md border border-border-dark bg-white px-3 py-2 text-sm text-navy focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="rounded-md border border-border-dark bg-surface px-3 py-2 text-sm text-navy focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             {strategyOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -111,13 +111,13 @@ export default function WatchlistPage() {
       </div>
 
       {error && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="mb-4 rounded-lg border border-red-800 bg-red-950/30 px-4 py-3 text-sm text-red-400">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+        <div className="mb-4 rounded-lg border border-emerald-800 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-400">
           {success}
         </div>
       )}
@@ -145,7 +145,7 @@ export default function WatchlistPage() {
               {filteredItems.map((item, idx) => (
                 <tr
                   key={item.id}
-                  className={`border-b border-border last:border-0 hover:bg-bg/80 transition-colors ${idx % 2 === 0 ? "bg-white" : "bg-bg/40"}`}
+                  className={`border-b border-border last:border-0 hover:bg-border/30 transition-colors ${idx % 2 === 0 ? "bg-surface" : "bg-surface"}`}
                 >
                   <td className="px-4 py-2.5 whitespace-nowrap text-muted text-xs">
                     {strategyLabelMap[item.strategy_type]}
@@ -167,7 +167,7 @@ export default function WatchlistPage() {
                       type="button"
                       disabled={isPending(item.id)}
                       onClick={() => void handleRemove(item.id)}
-                      className="rounded border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-100 disabled:opacity-50 transition-colors"
+                      className="rounded border border-red-800 bg-red-950/30 px-2.5 py-1 text-xs font-medium text-red-400 hover:bg-red-900/40 disabled:opacity-50 transition-colors"
                     >
                       {isPending(item.id) ? "Removing…" : "Remove"}
                     </button>
