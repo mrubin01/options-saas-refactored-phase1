@@ -83,6 +83,13 @@ def log_email_link(purpose: str, email: str, link: str) -> None:
 @router.post("/register", response_model=ApiResponse[UserOut])
 @auth_limiter.limit(REGISTER_LIMIT)
 async def register(request: Request, user_in: UserCreate, db: Session = Depends(get_db)):
+    if not settings.REGISTRATION_ENABLED:
+        raise AppException(
+            code=ErrorCode.REGISTRATION_CLOSED,
+            message="Registration is currently closed.",
+            status_code=status.HTTP_403_FORBIDDEN,
+        )
+
     normalized_email = normalize_email(user_in.email)
 
     existing_user = db.query(User).filter(User.email == normalized_email).first()
