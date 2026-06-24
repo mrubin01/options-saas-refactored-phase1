@@ -19,19 +19,19 @@ test.describe("screener pages", () => {
   test("covered calls page renders", async () => {
     await page.goto("/covered-calls");
     await expect(page.getByText("Best Covered Calls")).toBeVisible();
-    await expect(page.getByPlaceholder("Ticker")).toBeVisible();
+    await expect(page.getByRole("combobox").filter({ hasText: "All Tickers" })).toBeVisible();
   });
 
   test("put options page renders", async () => {
     await page.goto("/put-options");
     await expect(page.getByText("Best Put Options")).toBeVisible();
-    await expect(page.getByPlaceholder("Ticker")).toBeVisible();
+    await expect(page.getByRole("combobox").filter({ hasText: "All Tickers" })).toBeVisible();
   });
 
   test("spread options page renders", async () => {
     await page.goto("/spread-options");
     await expect(page.getByText("Best Spread Options")).toBeVisible();
-    await expect(page.getByPlaceholder("Ticker")).toBeVisible();
+    await expect(page.getByRole("combobox").filter({ hasText: "All Tickers" })).toBeVisible();
   });
 
   test("navigation links are visible", async () => {
