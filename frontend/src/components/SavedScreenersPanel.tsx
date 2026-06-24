@@ -225,7 +225,7 @@ export default function SavedScreenersPanel({
   const btnBase = "rounded-md border px-3 py-1 text-xs font-medium transition-colors disabled:opacity-50";
 
   return (
-    <div className="rounded-xl border border-border bg-white p-4 shadow-sm">
+    <div className="rounded-xl border border-border bg-surface p-4 shadow-sm">
       <div className="mb-3">
         <h3 className="text-sm font-semibold text-navy">Saved screeners</h3>
         <p className="text-xs text-muted">
@@ -242,7 +242,7 @@ export default function SavedScreenersPanel({
             if (duplicateCandidate) setDuplicateCandidate(null);
           }}
           placeholder="Screener name"
-          className="flex-1 rounded-md border border-border-dark bg-white px-3 py-2 text-sm text-navy placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          className="flex-1 rounded-md border border-border-dark bg-surface px-3 py-2 text-sm text-navy placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           disabled={isSaving}
         />
 
@@ -257,19 +257,19 @@ export default function SavedScreenersPanel({
       </div>
 
       {error && (
-        <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <div className="mb-3 rounded-lg border border-red-800 bg-red-950/30 px-3 py-2 text-sm text-red-400">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="mb-3 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
+        <div className="mb-3 rounded-lg border border-emerald-800 bg-emerald-950/30 px-3 py-2 text-sm text-emerald-400">
           {success}
         </div>
       )}
 
       {duplicateCandidate && (
-        <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-800">
+        <div className="mb-3 rounded-lg border border-amber-700 bg-amber-950/30 px-3 py-3 text-sm text-amber-300">
           <div className="mb-2">
             A screener named <strong>{duplicateCandidate.name}</strong> already exists.
           </div>
@@ -278,7 +278,7 @@ export default function SavedScreenersPanel({
               type="button"
               onClick={() => void handleOverwriteDuplicate()}
               disabled={isSaving}
-              className={`${btnBase} border-amber-300 bg-amber-100 text-amber-800 hover:bg-amber-200`}
+              className={`${btnBase} border-amber-700 bg-amber-950/30 text-amber-300 hover:bg-amber-900/40`}
             >
               {isSaving ? "Overwriting…" : "Overwrite existing"}
             </button>
@@ -286,7 +286,7 @@ export default function SavedScreenersPanel({
               type="button"
               onClick={clearDuplicateCandidate}
               disabled={isSaving}
-              className={`${btnBase} border-border bg-white text-navy hover:bg-bg`}
+              className={`${btnBase} border-border bg-surface text-navy hover:bg-bg`}
             >
               Cancel
             </button>
@@ -333,7 +333,7 @@ export default function SavedScreenersPanel({
                         type="button"
                         onClick={cancelRename}
                         disabled={isRenaming}
-                        className={`${btnBase} border-border bg-white text-navy hover:bg-bg`}
+                        className={`${btnBase} border-border bg-surface text-navy hover:bg-bg`}
                       >
                         Cancel
                       </button>
@@ -352,7 +352,7 @@ export default function SavedScreenersPanel({
                       type="button"
                       onClick={() => handleApply(item.config_json)}
                       disabled={isBusy}
-                      className={`${btnBase} border-border bg-white text-navy hover:bg-bg`}
+                      className={`${btnBase} border-border bg-surface text-navy hover:bg-bg`}
                     >
                       Apply
                     </button>
@@ -360,7 +360,7 @@ export default function SavedScreenersPanel({
                       type="button"
                       onClick={() => void handleUpdateConfig(item.id)}
                       disabled={isBusy}
-                      className={`${btnBase} border-border bg-white text-navy hover:bg-bg`}
+                      className={`${btnBase} border-border bg-surface text-navy hover:bg-bg`}
                     >
                       {isUpdatingThis ? "Updating…" : "Update"}
                     </button>
@@ -368,7 +368,7 @@ export default function SavedScreenersPanel({
                       type="button"
                       onClick={() => startRename(item)}
                       disabled={isBusy}
-                      className={`${btnBase} border-border bg-white text-navy hover:bg-bg`}
+                      className={`${btnBase} border-border bg-surface text-navy hover:bg-bg`}
                     >
                       Rename
                     </button>
@@ -376,7 +376,7 @@ export default function SavedScreenersPanel({
                       type="button"
                       onClick={() => void handleDelete(item.id)}
                       disabled={isBusy}
-                      className={`${btnBase} border-red-200 bg-red-50 text-red-700 hover:bg-red-100`}
+                      className={`${btnBase} border-red-800 bg-red-950/30 text-red-400 hover:bg-red-900/40`}
                     >
                       {isDeletingThis ? "Deleting…" : "Delete"}
                     </button>

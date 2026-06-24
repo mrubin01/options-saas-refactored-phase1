@@ -45,14 +45,14 @@ export default function RegisterPage() {
   }
 
   const inputClass =
-    "w-full rounded-md border border-border-dark bg-white px-3 py-2 text-sm text-navy placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
+    "w-full rounded-md border border-border-dark bg-surface px-3 py-2 text-sm text-navy placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
 
   if (!registrationEnabled) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-bg px-4">
         <div className="w-full max-w-sm text-center">
           <h1 className="mb-2 text-2xl font-bold text-navy tracking-tight">OptionStacker</h1>
-          <div className="rounded-xl border border-border bg-white p-8 shadow-sm">
+          <div className="rounded-xl border border-border bg-surface p-8 shadow-sm">
             <p className="text-sm font-medium text-navy">Registration is currently closed.</p>
             <p className="mt-1 text-sm text-muted">We're still polishing things up. Check back soon.</p>
             <Link to="/login" className="mt-4 inline-block text-sm font-medium text-primary hover:underline">
@@ -72,7 +72,7 @@ export default function RegisterPage() {
           <p className="mt-1 text-sm text-muted">Create your account</p>
         </div>
 
-        <div className="rounded-xl border border-border bg-white p-8 shadow-sm">
+        <div className="rounded-xl border border-border bg-surface p-8 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-navy mb-1.5">Email</label>
@@ -114,13 +114,13 @@ export default function RegisterPage() {
             </div>
 
             {error && (
-              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+              <div className="rounded-lg bg-red-950/30 border border-red-800 px-4 py-3 text-sm text-red-400">
                 {error}
               </div>
             )}
 
             {success && (
-              <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+              <div className="rounded-lg bg-emerald-950/30 border border-emerald-800 px-4 py-3 text-sm text-emerald-400">
                 {success}
               </div>
             )}

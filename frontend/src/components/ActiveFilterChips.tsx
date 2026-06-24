@@ -88,7 +88,7 @@ export default function ActiveFilterChips({ filters, onRemove, onClearAll }: Pro
             key={key}
             type="button"
             onClick={() => onRemove(key)}
-            className="inline-flex items-center gap-1 rounded-full border border-border bg-white px-2.5 py-0.5 text-xs font-medium text-navy hover:bg-bg transition-colors"
+            className="inline-flex items-center gap-1 rounded-full border border-border bg-surface px-2.5 py-0.5 text-xs font-medium text-navy hover:bg-border/40 transition-colors"
             title="Remove filter"
           >
             <span className="text-muted">{label}:</span>

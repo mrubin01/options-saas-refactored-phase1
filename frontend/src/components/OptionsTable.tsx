@@ -18,6 +18,19 @@ function formatValue(value: string | number | null | undefined) {
   return value;
 }
 
+const RETURN_COLS = new Set([
+  "option_yield", "roc", "tot_return",
+  "max_profit", "max_profit_per_contract",
+  "premium_per_contract", "bid_per_share",
+]);
+
+function getValueColorClass(colKey: string, value: string | number | null | undefined): string {
+  if (!RETURN_COLS.has(colKey) || value === null || value === undefined || value === "") return "";
+  const num = parseFloat(String(value));
+  if (isNaN(num)) return "";
+  return num > 0 ? "text-emerald-400" : num < 0 ? "text-red-400" : "";
+}
+
 const HEADER_LABELS: Record<string, string> = {
   ticker: "Ticker",
   contract: "Contract",
@@ -75,7 +88,7 @@ function HeaderCell({ metricKey }: { metricKey: string }) {
           <span
             title={tooltip}
             aria-label={`Explanation for ${label}`}
-            className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border border-slate-300 text-subtle cursor-help shrink-0"
+            className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border border-border text-subtle cursor-help shrink-0"
             style={{ fontSize: 9 }}
           >
             ?
@@ -124,7 +137,7 @@ export default function OptionsTable({
     <div className="overflow-x-auto rounded-xl border border-border shadow-sm">
       <table className="w-full border-collapse text-sm">
         <thead>
-          <tr className="border-b border-border bg-bg">
+          <tr className="border-b border-border bg-surface">
             <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted whitespace-nowrap">
               Watchlist
             </th>
@@ -142,8 +155,8 @@ export default function OptionsTable({
               <tr
                 key={row.contract}
                 className={cn(
-                  "border-b border-border last:border-0 hover:bg-bg/80 transition-colors",
-                  idx % 2 === 0 ? "bg-white" : "bg-bg/40",
+                  "border-b border-border last:border-0 hover:bg-border/30 transition-colors",
+                  idx % 2 === 0 ? "bg-surface" : "",
                 )}
               >
                 <td className="px-3 py-2 whitespace-nowrap">
@@ -161,47 +174,47 @@ export default function OptionsTable({
                       type="button"
                       disabled={rowPending}
                       onClick={() => onAddToWatchlist?.(row)}
-                      className="rounded border border-border bg-white px-2 py-0.5 text-xs font-medium text-navy hover:bg-bg disabled:opacity-50 transition-colors"
+                      className="rounded border border-border bg-surface px-2 py-0.5 text-xs font-medium text-navy hover:bg-border/40 disabled:opacity-50 transition-colors"
                     >
                       {rowPending ? "…" : "+ Watch"}
                     </button>
                   )}
                 </td>
 
-                <td className="px-3 py-2 font-semibold text-navy whitespace-nowrap">
+                <td className="px-3 py-2 font-bold text-primary whitespace-nowrap">
                   {formatValue(row.ticker)}
                 </td>
                 <td className="px-3 py-2 font-mono text-xs text-muted whitespace-nowrap">
                   {formatValue(row.contract)}
                 </td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatValue(exchangeMap[row.exchange] ?? row.exchange)}</td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.expiry_date)}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(exchangeMap[row.exchange] ?? row.exchange)}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.expiry_date)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.days_to_expiration)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.current_price)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.strike_price)}</td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.highest_price)}</td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.avg_price)}</td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.lowest_price)}</td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.coeff_variation)}</td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.bid_per_share)}</td>
-                <td className="px-3 py-2 font-medium whitespace-nowrap">{formatValue(row.premium_per_contract)}</td>
-                <td className="px-3 py-2 font-medium text-primary whitespace-nowrap">{formatValue(row.option_yield)}</td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.max_profit)}</td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.max_profit_per_contract)}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.highest_price)}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.avg_price)}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.lowest_price)}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.coeff_variation)}</td>
+                <td className={cn("px-3 py-2 font-medium whitespace-nowrap", getValueColorClass("bid_per_share", row.bid_per_share))}>{formatValue(row.bid_per_share)}</td>
+                <td className={cn("px-3 py-2 font-medium whitespace-nowrap", getValueColorClass("premium_per_contract", row.premium_per_contract))}>{formatValue(row.premium_per_contract)}</td>
+                <td className={cn("px-3 py-2 font-semibold whitespace-nowrap", getValueColorClass("option_yield", row.option_yield))}>{formatValue(row.option_yield)}</td>
+                <td className={cn("px-3 py-2 font-medium whitespace-nowrap", getValueColorClass("max_profit", row.max_profit))}>{formatValue(row.max_profit)}</td>
+                <td className={cn("px-3 py-2 font-medium whitespace-nowrap", getValueColorClass("max_profit_per_contract", row.max_profit_per_contract))}>{formatValue(row.max_profit_per_contract)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.otm)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.moneyness)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.sigma_distance)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.break_even)}</td>
-                <td className="px-3 py-2 font-medium whitespace-nowrap">{formatValue(row.roc)}</td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.tot_return)}</td>
+                <td className={cn("px-3 py-2 font-semibold whitespace-nowrap", getValueColorClass("roc", row.roc))}>{formatValue(row.roc)}</td>
+                <td className={cn("px-3 py-2 font-medium whitespace-nowrap", getValueColorClass("tot_return", row.tot_return))}>{formatValue(row.tot_return)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.delta)}</td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.spread_bid_ask)}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.spread_bid_ask)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.open_interest)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.impl_volatility)}</td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.sector)}</td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.industry)}</td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.main_trend)}</td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.beta)}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.sector)}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.industry)}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.main_trend)}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.beta)}</td>
               </tr>
             );
           })}

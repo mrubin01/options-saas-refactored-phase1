@@ -34,7 +34,7 @@ function toOptionalNumber(value: string) {
 
 const labelClass = "flex items-center gap-1 text-xs font-medium text-muted mb-1";
 const inputClass =
-  "w-full rounded-md border border-border-dark bg-white px-2.5 py-1.5 text-sm text-navy focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20";
+  "w-full rounded-md border border-border-dark bg-surface px-2.5 py-1.5 text-sm text-navy focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20";
 
 function FieldLabel({ label, metricKey }: { label: string; metricKey?: string }) {
   const metric = metricKey ? getMetricEntry(metricKey) : undefined;
@@ -48,7 +48,7 @@ function FieldLabel({ label, metricKey }: { label: string; metricKey?: string })
         <span
           title={tooltip}
           aria-label={`Explanation for ${accessibleLabel}`}
-          className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border border-slate-300 text-subtle cursor-help"
+          className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border border-border text-subtle cursor-help"
           style={{ fontSize: 9 }}
         >
           ?
@@ -157,7 +157,7 @@ export default function AdvancedFiltersPanel({
   }
 
   return (
-    <section className="my-4 rounded-xl border border-border bg-white p-4">
+    <section className="my-4 rounded-xl border border-border bg-surface p-4">
       <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
         <div>
           <h2 className="text-sm font-semibold text-navy">Advanced filters</h2>
