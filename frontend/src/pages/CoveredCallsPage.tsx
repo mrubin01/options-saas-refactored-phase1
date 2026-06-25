@@ -120,6 +120,7 @@ export default function CoveredCallsPage() {
 
   const tickerOptions = useMemo(() => getUniqueSortedValues(rows.map((row) => row.ticker)), [rows]);
   const contractOptions = useMemo(() => getUniqueSortedValues(rows.map((row) => row.contract)), [rows]);
+  const expiryOptions = useMemo(() => getUniqueSortedValues(rows.map((row) => row.expiry_date)), [rows]);
 
   const sectorOptions = useMemo(() => {
     return getUniqueSortedValues(rows.map((row) => row.sector));
@@ -281,13 +282,21 @@ export default function CoveredCallsPage() {
         exchanges={exchanges}
         tickerOptions={tickerOptions}
         contractOptions={contractOptions}
+        expiryOptions={expiryOptions}
+        sector={filters.sector}
+        industry={filters.industry}
+        spreadMax={filters.spread_bid_ask_max}
+        sectorOptions={sectorOptions}
+        industryOptions={industryOptions}
+        onSectorChange={(v) => setFilters((f) => ({ ...f, sector: v, industry: undefined, offset: 0 }))}
+        onIndustryChange={(v) => setFilters((f) => ({ ...f, industry: v, offset: 0 }))}
+        onSpreadMaxChange={(v) => setFilters((f) => ({ ...f, spread_bid_ask_max: v, offset: 0 }))}
+        onReset={handleClearAllFilters}
       />
 
       <AdvancedFiltersPanel
         filters={filters}
         onChange={setFilters}
-        sectorOptions={sectorOptions}
-        industryOptions={industryOptions}
       />
 
       <ActiveFilterChips
