@@ -63,6 +63,7 @@ const NUMBER_FILTER_KEYS = [
   "avg_price_max",
   "lowest_price_min",
   "lowest_price_max",
+  "main_trend",
   "main_trend_min",
   "main_trend_max",
   "beta_min",

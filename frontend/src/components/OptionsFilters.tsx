@@ -9,9 +9,39 @@ interface Props {
   exchanges: { id: number; name: string }[];
   tickerOptions?: string[];
   contractOptions?: string[];
+  expiryOptions?: string[];
+  sector?: string;
+  industry?: string;
+  spreadMax?: number;
+  trend?: number;
+  sectorOptions?: string[];
+  industryOptions?: string[];
+  onSectorChange: (v: string | undefined) => void;
+  onIndustryChange: (v: string | undefined) => void;
+  onSpreadMaxChange: (v: number | undefined) => void;
+  onTrendChange: (v: number | undefined) => void;
+  onReset: () => void;
 }
 
-export default function OptionsFilters({ filters, onChange, exchanges, tickerOptions = [], contractOptions = [] }: Props) {
+export default function OptionsFilters({
+  filters,
+  onChange,
+  exchanges,
+  tickerOptions = [],
+  contractOptions = [],
+  expiryOptions = [],
+  sector,
+  industry,
+  spreadMax,
+  trend,
+  sectorOptions = [],
+  industryOptions = [],
+  onSectorChange,
+  onIndustryChange,
+  onSpreadMaxChange,
+  onTrendChange,
+  onReset,
+}: Props) {
   return (
     <div className="flex flex-wrap items-end gap-3 mb-3">
       <div className="flex flex-col gap-1">
@@ -56,23 +86,91 @@ export default function OptionsFilters({ filters, onChange, exchanges, tickerOpt
         >
           <option value="">All Exchanges</option>
           {exchanges.map((ex) => (
-            <option key={ex.id} value={ex.id}>
-              {ex.name}
-            </option>
+            <option key={ex.id} value={ex.id}>{ex.name}</option>
           ))}
         </select>
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-muted">Min Expiry</label>
-        <input
-          type="date"
+        <label className="text-xs font-medium text-muted">Expiry Date</label>
+        <select
           value={filters.expiry_date || ""}
-          onChange={(e) =>
-            onChange({ ...filters, expiry_date: e.target.value || undefined })
-          }
+          onChange={(e) => onChange({ ...filters, expiry_date: e.target.value || undefined })}
           className={selectClass}
+        >
+          <option value="">All Dates</option>
+          {expiryOptions.map((d) => (
+            <option key={d} value={d}>{d}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-xs font-medium text-muted">Sector</label>
+        <select
+          value={sector || ""}
+          onChange={(e) => onSectorChange(e.target.value || undefined)}
+          className={selectClass}
+        >
+          <option value="">All Sectors</option>
+          {sectorOptions.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-xs font-medium text-muted">Industry</label>
+        <select
+          value={industry || ""}
+          onChange={(e) => onIndustryChange(e.target.value || undefined)}
+          className={selectClass}
+        >
+          <option value="">All Industries</option>
+          {industryOptions.map((i) => (
+            <option key={i} value={i}>{i}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-xs font-medium text-muted">Spread max</label>
+        <input
+          type="number"
+          value={spreadMax ?? ""}
+          min={0}
+          step={0.01}
+          placeholder="—"
+          onChange={(e) =>
+            onSpreadMaxChange(e.target.value === "" ? undefined : Number(e.target.value))
+          }
+          className={`${selectClass} w-24`}
         />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-xs font-medium text-muted">Trend</label>
+        <select
+          value={trend ?? ""}
+          onChange={(e) => onTrendChange(e.target.value === "" ? undefined : Number(e.target.value))}
+          className={selectClass}
+        >
+          <option value="">All Trends</option>
+          <option value={1}>Uptrend</option>
+          <option value={0}>Sideways</option>
+          <option value={-1}>Downtrend</option>
+        </select>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-xs font-medium text-muted invisible">Reset</label>
+        <button
+          type="button"
+          onClick={onReset}
+          className="rounded-md border border-border px-3 py-2 text-sm font-medium text-muted hover:bg-border/30 transition-colors"
+        >
+          Reset
+        </button>
       </div>
     </div>
   );

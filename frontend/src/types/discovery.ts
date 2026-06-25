@@ -93,6 +93,7 @@ export type BaseDiscoveryFilters<TSortField extends OptionContractField> = {
   lowest_price_min?: number;
   lowest_price_max?: number;
 
+  main_trend?: number;
   main_trend_min?: number;
   main_trend_max?: number;
 

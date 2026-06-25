@@ -166,6 +166,10 @@ async def list_covered_calls(
     ),
 
     # Categorical filters
+    main_trend: int | None = Query(
+        default=None,
+        description="Filter by trend (0=Sideways, 1=Uptrend, -1=Downtrend).",
+    ),
     sector: str | None = Query(
         default=None,
         min_length=1,
@@ -241,6 +245,7 @@ async def list_covered_calls(
         moneyness_max=moneyness_max,
         spread_bid_ask_min=spread_bid_ask_min,
         spread_bid_ask_max=spread_bid_ask_max,
+        main_trend=main_trend,
         sector=sector,
         industry=industry,
         sort_by=sort_by,
