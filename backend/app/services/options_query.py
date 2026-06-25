@@ -56,6 +56,8 @@ def _apply_filters(query, model: Type[Any], **kwargs) -> Any:
         query = query.filter(model.ticker == kwargs["ticker"].upper())
     if kwargs.get("min_expiry") is not None:
         query = query.filter(model.expiry_date >= parse_date(kwargs["min_expiry"]))
+    if kwargs.get("main_trend") is not None:
+        query = query.filter(model.main_trend == kwargs["main_trend"])
     if kwargs.get("sector") is not None:
         query = query.filter(model.sector == kwargs["sector"])
     if kwargs.get("industry") is not None:
@@ -113,6 +115,7 @@ def build_options_query(
     moneyness_max: float | None = None,
     spread_bid_ask_min: float | None = None,
     spread_bid_ask_max: float | None = None,
+    main_trend: int | None = None,
     sector: str | None = None,
     industry: str | None = None,
     sort_by: OptionsSortField | None = None,
@@ -132,6 +135,7 @@ def build_options_query(
         delta_min=delta_min, delta_max=delta_max,
         moneyness_min=moneyness_min, moneyness_max=moneyness_max,
         spread_bid_ask_min=spread_bid_ask_min, spread_bid_ask_max=spread_bid_ask_max,
+        main_trend=main_trend,
         sector=sector, industry=industry,
     )
 

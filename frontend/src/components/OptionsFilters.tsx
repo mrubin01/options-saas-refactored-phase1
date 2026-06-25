@@ -158,7 +158,7 @@ export default function OptionsFilters({
           <option value="">All Trends</option>
           <option value={1}>Uptrend</option>
           <option value={0}>Sideways</option>
-          <option value={2}>Downtrend</option>
+          <option value={-1}>Downtrend</option>
         </select>
       </div>
 

@@ -100,9 +100,9 @@ function HeaderCell({ metricKey }: { metricKey: string }) {
 }
 
 const TREND_LABELS: Record<number, { label: string; className: string }> = {
-  0: { label: "Sideways",  className: "text-muted" },
-  1: { label: "Uptrend",   className: "text-emerald-400" },
-  2: { label: "Downtrend", className: "text-red-400" },
+  0:  { label: "Sideways",  className: "text-muted" },
+  1:  { label: "Uptrend",   className: "text-emerald-400" },
+  [-1]: { label: "Downtrend", className: "text-red-400" },
 };
 
 function formatTrend(value: string | number | null | undefined) {
