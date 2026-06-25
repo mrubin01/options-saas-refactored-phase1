@@ -291,6 +291,8 @@ export default function CoveredCallsPage() {
         onSectorChange={(v) => setFilters((f) => ({ ...f, sector: v, industry: undefined, offset: 0 }))}
         onIndustryChange={(v) => setFilters((f) => ({ ...f, industry: v, offset: 0 }))}
         onSpreadMaxChange={(v) => setFilters((f) => ({ ...f, spread_bid_ask_max: v, offset: 0 }))}
+        onTrendChange={(v) => setFilters((f) => ({ ...f, main_trend_min: v, main_trend_max: v, offset: 0 }))}
+        trend={filters.main_trend_min}
         onReset={handleClearAllFilters}
       />
 

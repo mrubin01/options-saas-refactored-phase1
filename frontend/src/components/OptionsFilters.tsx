@@ -13,11 +13,13 @@ interface Props {
   sector?: string;
   industry?: string;
   spreadMax?: number;
+  trend?: number;
   sectorOptions?: string[];
   industryOptions?: string[];
   onSectorChange: (v: string | undefined) => void;
   onIndustryChange: (v: string | undefined) => void;
   onSpreadMaxChange: (v: number | undefined) => void;
+  onTrendChange: (v: number | undefined) => void;
   onReset: () => void;
 }
 
@@ -31,11 +33,13 @@ export default function OptionsFilters({
   sector,
   industry,
   spreadMax,
+  trend,
   sectorOptions = [],
   industryOptions = [],
   onSectorChange,
   onIndustryChange,
   onSpreadMaxChange,
+  onTrendChange,
   onReset,
 }: Props) {
   return (
@@ -142,6 +146,20 @@ export default function OptionsFilters({
           }
           className={`${selectClass} w-24`}
         />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-xs font-medium text-muted">Trend</label>
+        <select
+          value={trend ?? ""}
+          onChange={(e) => onTrendChange(e.target.value === "" ? undefined : Number(e.target.value))}
+          className={selectClass}
+        >
+          <option value="">All Trends</option>
+          <option value={1}>Uptrend</option>
+          <option value={0}>Sideways</option>
+          <option value={2}>Downtrend</option>
+        </select>
       </div>
 
       <div className="flex flex-col gap-1">
