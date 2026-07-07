@@ -6,6 +6,7 @@
 # Scanner
 scanner/tickers/*.txt
 scanner/.env
+scanner/.venv/
 
 backend/.env
 backend/.env.docker
