@@ -98,6 +98,18 @@ services:
       timeout: 5s
       retries: 10
 
+  scanner:
+    build:
+      context: ./scanner
+      dockerfile: Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME:-optionstacker}-scanner
+    restart: unless-stopped
+    environment:
+      ALPACA_API_KEY: ${ALPACA_API_KEY}
+      ALPACA_SECRET_KEY: ${ALPACA_SECRET_KEY}
+    volumes:
+      - ./shared:/shared
+
 volumes:
   postgres_data:
   redis_data:

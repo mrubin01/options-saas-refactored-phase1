@@ -8,3 +8,5 @@ pandas
 requests-cache
 python-dotenv
 python-dateutil
+pandas-market-calendars
+tzdata
