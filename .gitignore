@@ -3,6 +3,10 @@
 .env
 .env.docker
 
+# Scanner
+scanner/tickers/*.txt
+scanner/.env
+
 backend/.env
 backend/.env.docker
 frontend/.env
