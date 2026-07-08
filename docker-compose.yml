@@ -98,6 +98,37 @@ services:
       timeout: 5s
       retries: 10
 
+  ingester:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME:-optionstacker}-ingester
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env.docker
+    environment:
+      DATABASE_URL_APP: ${DATABASE_URL_APP}
+      PYTHONPATH: /app
+    entrypoint: ["python", "ingestion/watcher.py"]
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./shared:/shared
+
+  scanner:
+    build:
+      context: ./scanner
+      dockerfile: Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME:-optionstacker}-scanner
+    restart: unless-stopped
+    environment:
+      ALPACA_API_KEY: ${ALPACA_API_KEY}
+      ALPACA_SECRET_KEY: ${ALPACA_SECRET_KEY}
+    volumes:
+      - ./shared:/shared
+      - ./scanner/tickers:/app/tickers
+
 volumes:
   postgres_data:
   redis_data:
