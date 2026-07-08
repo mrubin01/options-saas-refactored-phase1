@@ -109,6 +109,7 @@ services:
       ALPACA_SECRET_KEY: ${ALPACA_SECRET_KEY}
     volumes:
       - ./shared:/shared
+      - ./scanner/tickers:/app/tickers
 
 volumes:
   postgres_data:
