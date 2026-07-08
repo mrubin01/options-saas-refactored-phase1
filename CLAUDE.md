@@ -24,17 +24,33 @@ alembic revision --autogenerate -m "msg"   # generate new migration
 
 ### Full stack
 ```bash
-docker-compose up --build   # brings up postgres, redis, backend, frontend
+docker compose --env-file .env.docker up --build   # brings up all services
+docker compose --env-file .env.docker up --build -d scanner    # scanner only
+docker compose --env-file .env.docker up -d ingester           # ingester only
+docker compose --env-file .env.docker logs -f <service>        # follow logs
 ```
 
 Backend expects `backend/.env` for local dev; Docker reads `backend/.env.docker`. Key env vars are documented in `backend/app/core/config.py`.
+
+> **Important (Hetzner servers):** always pass `--env-file .env.docker` explicitly — `docker compose` does not pick it up automatically on those servers.
+
+### Scanner (local, one-off)
+```bash
+cd scanner
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python main.py   # runs all 9 exchange/option-type combinations
+```
+Ticker files must be present in `scanner/tickers/` (gitignored). Output is written to `shared/data/*.json`.
 
 ## Architecture
 
 ### Stack
 - **Backend**: FastAPI (Python), PostgreSQL via SQLAlchemy 2, Redis for response caching (falls back to in-memory), Alembic migrations, slowapi rate limiting, Sentry, Prometheus metrics.
 - **Frontend**: React 19, TypeScript, Vite, TanStack Query v5, React Router v7.
-- **Shared data**: `shared/data/*.json` — pre-computed options data files written by the ingestion pipeline and read by the backend.
+- **Scanner**: Python service (`scanner/`) — Alpaca-powered options screener. Writes JSON files to `shared/data/`. Scheduled Mon–Fri 14:30–19:30 BST (up to 3 full runs/day, ~2h each). Uses its own venv; runs as a Docker service via `scheduler.py`.
+- **Ingester**: Python service (`backend/ingestion/watcher.py`) — polls `shared/data/` every 5 min during 14:30–21:00 BST. Loads non-empty JSON files into PostgreSQL via upsert; skips empty files to preserve existing data.
+- **Shared data**: `shared/data/*.json` — written by the scanner, read by the ingester, which loads them into PostgreSQL. The backend serves data from the database, not directly from JSON.
 
 ### Backend layout
 `backend/app/` is organized as:
@@ -71,6 +87,16 @@ Use `response.ok(data=..., request=request)` and `response.fail(code=..., messag
 
 ### Database
 Two connection strings are configured: `DATABASE_URL_ADMIN` (for migrations/admin ops) and `DATABASE_URL_APP` (runtime). The app engine uses only `DATABASE_URL_APP`. Alembic reads `DATABASE_URL` from the environment (see `alembic.ini`).
+
+On a fresh server, run migrations and seed lookup tables:
+```bash
+docker compose --env-file .env.docker exec backend python -m app.db.seed
+```
+
+### Ingestion pipeline
+`backend/ingestion/` contains per-strategy scripts (`covered_calls.py`, `put_options.py`, `spread_options.py`) and `watcher.py` which orchestrates them. Each strategy deletes existing rows and re-inserts from all three exchange files (NYSE, NASDAQ, ARCA). The watcher only ingests a strategy when all three files are non-empty.
+
+JSON file naming: `best_cov_calls_{exchange}.json`, `best_put_options_{exchange}.json`, `best_spreads_{exchange}.json`.
 
 ### API versioning
 `VITE_API_URL` and `VITE_API_VERSION` build-time env vars control which backend the frontend calls. Default is `v1`. The `dev:v2` npm script sets `v2` mode for frontend testing against the v2 router.
