@@ -108,7 +108,7 @@ services:
       - ./backend/.env.docker
     environment:
       DATABASE_URL_APP: ${DATABASE_URL_APP}
-    command: ["python", "ingestion/watcher.py"]
+    entrypoint: ["python", "ingestion/watcher.py"]
     depends_on:
       db:
         condition: service_healthy
