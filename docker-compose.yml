@@ -108,6 +108,7 @@ services:
       - ./backend/.env.docker
     environment:
       DATABASE_URL_APP: ${DATABASE_URL_APP}
+      PYTHONPATH: /app
     entrypoint: ["python", "ingestion/watcher.py"]
     depends_on:
       db:
