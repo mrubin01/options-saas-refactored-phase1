@@ -32,6 +32,7 @@ import {
 } from "../utils/queryParams";
 import StrategyHelpPanel from "../components/StrategyHelpPanel";
 import DataFreshnessBanner from "../components/DataFreshnessBanner";
+import Pagination from "../components/Pagination";
 
 
 function toLegacyFilters(
@@ -115,7 +116,8 @@ export default function CoveredCallsPage() {
 
   const { data, isLoading, isFetching, error } = useCoveredCalls(stableFilters);
 
-  const rows: CoveredCall[] = data ?? [];
+  const rows: CoveredCall[] = data?.rows ?? [];
+  const total = data?.pagination?.total ?? 0;
   const lastUpdated = getLastUpdated(rows);
 
   const tickerOptions = useMemo(() => getUniqueSortedValues(rows.map((row) => row.ticker)), [rows]);
@@ -298,7 +300,7 @@ export default function CoveredCallsPage() {
 
       <AdvancedFiltersPanel
         filters={filters}
-        onChange={setFilters}
+        onChange={(newFilters) => setFilters({ ...newFilters, offset: 0 })}
       />
 
       <ActiveFilterChips
@@ -324,15 +326,23 @@ export default function CoveredCallsPage() {
       )}
 
       {!isLoading && !error && rows.length > 0 && (
-        <OptionsTable
-          data={rows}
-          exchangeMap={exchangeMap}
-          strategyType="covered_calls"
-          watchlistItems={watchlistItems}
-          pendingWatchlistContracts={pendingWatchlistContracts}
-          onAddToWatchlist={handleAddToWatchlist}
-          onRemoveFromWatchlist={handleRemoveFromWatchlist}
-        />
+        <>
+          <OptionsTable
+            data={rows}
+            exchangeMap={exchangeMap}
+            strategyType="covered_calls"
+            watchlistItems={watchlistItems}
+            pendingWatchlistContracts={pendingWatchlistContracts}
+            onAddToWatchlist={handleAddToWatchlist}
+            onRemoveFromWatchlist={handleRemoveFromWatchlist}
+          />
+          <Pagination
+            offset={filters.offset ?? 0}
+            limit={filters.limit ?? 50}
+            total={total}
+            onChange={(newOffset) => setFilters((f) => ({ ...f, offset: newOffset }))}
+          />
+        </>
       )}
 
       {isFetching && !isLoading && (

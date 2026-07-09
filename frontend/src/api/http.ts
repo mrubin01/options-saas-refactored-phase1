@@ -45,10 +45,22 @@ export interface ApiErrorPayload {
   request_id?: string;
 }
 
+export interface PaginationMeta {
+  limit: number;
+  offset: number;
+  total: number;
+  has_next: boolean;
+}
+
+export interface PagedResult<T> {
+  rows: T;
+  pagination: PaginationMeta | null;
+}
+
 export interface ApiMeta {
   request_id?: string;
   version?: string;
-  pagination?: unknown;
+  pagination?: PaginationMeta;
   timestamp?: string;
 }
 
@@ -105,6 +117,28 @@ function buildHeaders(options: ApiFetchOptions): Record<string, string> {
   }
 
   return Object.fromEntries(headers.entries());
+}
+
+async function parseResponsePaged<T>(res: Response): Promise<PagedResult<T>> {
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    throw new Error(!res.ok ? await res.text() : "Expected JSON response");
+  }
+  const payload: ApiResponse<T> = await res.json();
+  if (!res.ok || !payload.success) {
+    const err = payload.error;
+    throw new ApiClientError(
+      err?.message || "Unexpected API error",
+      err?.code || "UNKNOWN_ERROR",
+      res.status,
+      err?.details,
+      err?.request_id,
+    );
+  }
+  return {
+    rows: payload.data as T,
+    pagination: payload.meta?.pagination ?? null,
+  };
 }
 
 async function parseResponse<T>(res: Response): Promise<T> {
@@ -180,20 +214,16 @@ function handleAuthFailure() {
   }
 }
 
-export async function apiFetch<T>(
+async function executeWithRetry(
   path: string,
-  options: ApiFetchOptions = {}
-): Promise<T> {
+  options: ApiFetchOptions,
+): Promise<Response> {
   const headers = buildHeaders(options);
 
-  const execute = () =>
-    fetch(`${API_URL}${path}`, {
-      ...options,
-      headers,
-      credentials: "include",
-    });
+  const doFetch = (hdrs: Record<string, string>) =>
+    fetch(`${API_URL}${path}`, { ...options, headers: hdrs, credentials: "include" });
 
-  let res = await execute();
+  let res = await doFetch(headers);
 
   if (res.status === 401 && !options.skipAuthRetry) {
     const refreshedToken = await requestNewAccessToken();
@@ -206,12 +236,7 @@ export async function apiFetch<T>(
           Authorization: `Bearer ${refreshedToken}`,
         },
       });
-
-      res = await fetch(`${API_URL}${path}`, {
-        ...options,
-        headers: retryHeaders,
-        credentials: "include",
-      });
+      res = await doFetch(retryHeaders);
     } else {
       handleAuthFailure();
       throw new ApiClientError("Unauthorized", "UNAUTHORIZED", 401);
@@ -225,5 +250,21 @@ export async function apiFetch<T>(
     throw new ApiClientError("Unauthorized", "UNAUTHORIZED", 401);
   }
 
+  return res;
+}
+
+export async function apiFetch<T>(
+  path: string,
+  options: ApiFetchOptions = {}
+): Promise<T> {
+  const res = await executeWithRetry(path, options);
   return parseResponse<T>(res);
+}
+
+export async function apiFetchPaged<T>(
+  path: string,
+  options: ApiFetchOptions = {}
+): Promise<PagedResult<T>> {
+  const res = await executeWithRetry(path, options);
+  return parseResponsePaged<T>(res);
 }

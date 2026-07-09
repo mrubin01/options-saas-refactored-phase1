@@ -8,7 +8,7 @@ def _next_n_fridays(n: int) -> list[date]:
     return [first + timedelta(weeks=i) for i in range(n)]
 
 
-TARGET_DATES = [d.strftime("%Y-%m-%d") for d in _next_n_fridays(3)]
+TARGET_DATES = [d.strftime("%Y-%m-%d") for d in _next_n_fridays(4)]
 
 # global variables
 TYPE = 0  # 0 call, 1 put, 2 spread

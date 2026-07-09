@@ -1,7 +1,12 @@
-import { apiFetch } from "./http";
+import { apiFetch, apiFetchPaged } from "./http";
+import type { PagedResult } from "./http";
 
 export function apiGet<T>(path: string): Promise<T> {
   return apiFetch<T>(path, { method: "GET" });
+}
+
+export function apiGetPaged<T>(path: string): Promise<PagedResult<T>> {
+  return apiFetchPaged<T>(path, { method: "GET" });
 }
 
 export function apiPost<T>(path: string, body?: unknown): Promise<T> {

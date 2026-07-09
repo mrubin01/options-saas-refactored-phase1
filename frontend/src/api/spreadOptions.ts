@@ -1,5 +1,5 @@
-import { apiGet } from "./client";
-
+import { apiGetPaged } from "./client";
+import type { PagedResult } from "./http";
 import type { SpreadOption } from "../types/spreadOption";
 import type { SpreadOptionsDiscoveryFilters } from "../types/discovery";
 import { spreadOptionsFiltersToSearchParams } from "../utils/queryParams";
@@ -13,9 +13,9 @@ function buildSpreadOptionsQuery(params: SpreadOptionsDiscoveryFilters = {}) {
 
 export function fetchSpreadOptions(
   params: SpreadOptionsDiscoveryFilters = {},
-): Promise<SpreadOption[]> {
+): Promise<PagedResult<SpreadOption[]>> {
   const qs = buildSpreadOptionsQuery(params);
-  return apiGet<SpreadOption[]>(
+  return apiGetPaged<SpreadOption[]>(
     qs ? `/spread-options${qs}` : "/spread-options",
   );
 }

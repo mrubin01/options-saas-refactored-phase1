@@ -32,6 +32,7 @@ import {
 } from "../utils/queryParams";
 import StrategyHelpPanel from "../components/StrategyHelpPanel";
 import DataFreshnessBanner from "../components/DataFreshnessBanner";
+import Pagination from "../components/Pagination";
 
 
 function toLegacyFilters(
@@ -115,7 +116,8 @@ export default function PutOptionsPage() {
 
   const { data, isLoading, isFetching, error } = usePutOptions(stableFilters);
 
-  const rows: PutOption[] = data ?? [];
+  const rows: PutOption[] = data?.rows ?? [];
+  const total = data?.pagination?.total ?? 0;
   const lastUpdated = getLastUpdated(rows);
 
   const tickerOptions = useMemo(() => getUniqueSortedValues(rows.map((row) => row.ticker)), [rows]);
@@ -296,7 +298,7 @@ export default function PutOptionsPage() {
 
       <AdvancedFiltersPanel
         filters={filters}
-        onChange={setFilters}
+        onChange={(newFilters) => setFilters({ ...newFilters, offset: 0 })}
       />
 
       <ActiveFilterChips
@@ -322,15 +324,23 @@ export default function PutOptionsPage() {
       )}
 
       {!isLoading && !error && rows.length > 0 && (
-        <OptionsTable
-          data={rows}
-          exchangeMap={exchangeMap}
-          strategyType="put_options"
-          watchlistItems={watchlistItems}
-          pendingWatchlistContracts={pendingWatchlistContracts}
-          onAddToWatchlist={handleAddToWatchlist}
-          onRemoveFromWatchlist={handleRemoveFromWatchlist}
-        />
+        <>
+          <OptionsTable
+            data={rows}
+            exchangeMap={exchangeMap}
+            strategyType="put_options"
+            watchlistItems={watchlistItems}
+            pendingWatchlistContracts={pendingWatchlistContracts}
+            onAddToWatchlist={handleAddToWatchlist}
+            onRemoveFromWatchlist={handleRemoveFromWatchlist}
+          />
+          <Pagination
+            offset={filters.offset ?? 0}
+            limit={filters.limit ?? 50}
+            total={total}
+            onChange={(newOffset) => setFilters((f) => ({ ...f, offset: newOffset }))}
+          />
+        </>
       )}
 
       {isFetching && !isLoading && (
