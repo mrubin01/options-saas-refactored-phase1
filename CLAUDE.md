@@ -80,10 +80,23 @@ Use `response.ok(data=..., request=request)` and `response.fail(code=..., messag
 - Backend dependency: `get_current_user` in `app/auth/deps.py`.
 
 ### Frontend data layer
-- `api/http.ts` — base fetch wrapper (`apiFetch`), handles auth headers, token refresh, and maps the envelope to `data` or throws `ApiClientError`.
-- `api/client.ts` — thin typed wrappers (`apiGet`, `apiPost`, etc.).
-- `api/hooks/` — TanStack Query hooks per resource (`useCoveredCalls`, `usePutOptions`, `useSpreadOptions`).
+- `api/http.ts` — base fetch wrapper (`apiFetch`), handles auth headers, token refresh, and maps the envelope to `data` or throws `ApiClientError`. Also exports `apiFetchPaged<T>` which returns `PagedResult<T>` (wraps `{ rows, pagination }`).
+- `api/client.ts` — thin typed wrappers (`apiGet`, `apiGetPaged`, `apiPost`, etc.).
+- `api/hooks/` — TanStack Query hooks per resource (`useCoveredCalls`, `usePutOptions`, `useSpreadOptions`, `useExpiryDates`).
 - `api/queryKeys.ts` — centralised query key factory.
+
+### Pagination
+All three strategy endpoints support `limit` / `offset` query params and return `meta.pagination` (`{ limit, offset, total, has_next }`). The frontend uses `apiFetchPaged` / `apiGetPaged` to unwrap this into `PagedResult<T[]>`, and each page renders a `<Pagination>` component (`frontend/src/components/Pagination.tsx`). Changing any filter resets `offset` to 0.
+
+### Expiry date filtering
+Each strategy route exposes two expiry params:
+- `expiry_date` — exact match (used by the "Expiry Date" dropdown in the basic filter bar).
+- `min_expiry` — range (≥), used by the "Expiry from" field in the advanced filters panel.
+
+`expiry_date` takes priority over `min_expiry` in `backend/app/services/options_query.py`. Each strategy also has a `GET /expiry-dates` sub-route that returns all distinct expiry dates from the full table (used to populate the dropdown independently of pagination).
+
+### Scanner expiry dates
+`scanner/config.py` uses `_next_n_fridays(4)` to compute target expiry dates (4 Fridays for a buffer). Not all stocks list options for every Friday — coverage depends on what Alpaca/yfinance returns for each ticker.
 
 ### Database
 Two connection strings are configured: `DATABASE_URL_ADMIN` (for migrations/admin ops) and `DATABASE_URL_APP` (runtime). The app engine uses only `DATABASE_URL_APP`. Alembic reads `DATABASE_URL` from the environment (see `alembic.ini`).
