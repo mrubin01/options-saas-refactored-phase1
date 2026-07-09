@@ -24,6 +24,7 @@ jobs:
           script: |
             mkdir -p ~/options-saas/deploy
             mkdir -p ~/options-saas/shared
+            mkdir -p ~/options-saas/scanner/tickers
 
             cat > ~/options-saas/deploy/docker-compose.remote.yml <<'EOF'
             name: optionstacker-production
@@ -123,6 +124,29 @@ jobs:
                   frontend:
                     condition: service_healthy
 
+              ingester:
+                image: ${BACKEND_IMAGE}
+                restart: unless-stopped
+                entrypoint: ["python", "ingestion/watcher.py"]
+                environment:
+                  DATABASE_URL_APP: ${DATABASE_URL_APP}
+                  PYTHONPATH: /app
+                depends_on:
+                  db:
+                    condition: service_healthy
+                volumes:
+                  - ~/options-saas/shared:/shared
+
+              scanner:
+                image: ${SCANNER_IMAGE}
+                restart: unless-stopped
+                environment:
+                  ALPACA_API_KEY: ${ALPACA_API_KEY}
+                  ALPACA_SECRET_KEY: ${ALPACA_SECRET_KEY}
+                volumes:
+                  - ~/options-saas/shared:/shared
+                  - ~/options-saas/scanner/tickers:/app/tickers
+
             volumes:
               postgres_data:
               redis_data:
@@ -165,6 +189,10 @@ jobs:
 
             BACKEND_IMAGE=${{ secrets.BACKEND_IMAGE }}
             FRONTEND_IMAGE=${{ secrets.FRONTEND_IMAGE }}
+            SCANNER_IMAGE=${{ secrets.SCANNER_IMAGE }}
+
+            ALPACA_API_KEY=${{ secrets.ALPACA_API_KEY }}
+            ALPACA_SECRET_KEY=${{ secrets.ALPACA_SECRET_KEY }}
             EOF
 
             cat > ~/options-saas/deploy/Caddyfile <<'CADDYEOF'
