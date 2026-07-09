@@ -111,5 +111,24 @@ docker compose --env-file .env.docker exec backend python -m app.db.seed
 
 JSON file naming: `best_cov_calls_{exchange}.json`, `best_put_options_{exchange}.json`, `best_spreads_{exchange}.json`.
 
+### Production scanner/ingester
+Both `scanner` and `ingester` run as Docker services in production (added to `deploy-production.yml`). The scanner image is built and pushed to GHCR by `build-and-push-images.yml` alongside backend and frontend.
+
+Ticker files are gitignored and must be copied to the production server manually once:
+```bash
+ssh -i ~/.ssh/key_rsa root@95.216.153.97 'mkdir -p ~/options-saas/scanner/tickers'
+scp -i ~/.ssh/key_rsa scanner/tickers/*.txt root@95.216.153.97:~/options-saas/scanner/tickers/
+```
+
+Follow live logs on production:
+```bash
+ssh -i ~/.ssh/key_rsa root@95.216.153.97 'docker compose --env-file ~/options-saas/.env -f ~/options-saas/deploy/docker-compose.remote.yml logs -f scanner ingester'
+```
+
+> **Important:** only one environment should run the scanner at a time — running both staging and production scanners simultaneously hits Alpaca API rate limits. Stop staging scanner when production is scanning:
+> ```bash
+> ssh -i ~/.ssh/key_rsa root@135.181.109.67 'cd options-saas-refactored-phase1 && docker compose --env-file .env.docker stop scanner'
+> ```
+
 ### API versioning
 `VITE_API_URL` and `VITE_API_VERSION` build-time env vars control which backend the frontend calls. Default is `v1`. The `dev:v2` npm script sets `v2` mode for frontend testing against the v2 router.
