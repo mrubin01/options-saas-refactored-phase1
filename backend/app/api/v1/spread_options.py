@@ -56,9 +56,13 @@ async def list_spread_options(
         max_length=100,
         description="Filter by option contract symbol.",
     ),
+    expiry_date: str | None = Query(
+        default=None,
+        description="Filter by exact expiry date (YYYY-MM-DD).",
+    ),
     min_expiry: str | None = Query(
         default=None,
-        description="Filter by minimum expiry date. Existing format preserved.",
+        description="Filter by minimum expiry date (>=). Ignored when expiry_date is set.",
     ),
 
     # Stage 5.1 discovery filters
@@ -221,6 +225,7 @@ async def list_spread_options(
         exchange=exchange,
         ticker=ticker,
         contract=contract,
+        expiry_date=expiry_date,
         min_expiry=min_expiry,
         days_to_expiration_min=days_to_expiration_min,
         days_to_expiration_max=days_to_expiration_max,

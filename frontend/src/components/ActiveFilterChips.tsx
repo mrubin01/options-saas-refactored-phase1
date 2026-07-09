@@ -6,7 +6,8 @@ const FILTER_LABELS: Partial<Record<FilterKey, string>> = {
   ticker: "Ticker",
   contract: "Contract",
   exchange: "Exchange",
-  min_expiry: "Min expiry",
+  expiry_date: "Expiry",
+  min_expiry: "Expiry from",
   expiry_date_min: "Expiry from",
   expiry_date_max: "Expiry to",
   days_to_expiration_min: "DTE min",
@@ -73,7 +74,7 @@ export default function ActiveFilterChips({ filters, onRemove, onClearAll }: Pro
   const activeEntries = Object.entries(filters).filter(([key, value]) => {
     const typedKey = key as FilterKey;
     if (HIDDEN_KEYS.has(typedKey)) return false;
-    if (typedKey === "min_expiry" && filters.expiry_date_min) return false;
+    if (typedKey === "min_expiry" && (filters.expiry_date_min || filters.expiry_date)) return false;
     return value !== undefined && value !== null && value !== "";
   }) as [FilterKey, CoveredCallsDiscoveryFilters[FilterKey]][];
 

@@ -54,7 +54,9 @@ def _apply_filters(query, model: Type[Any], **kwargs) -> Any:
         query = query.filter(model.contract == kwargs["contract"])
     if kwargs.get("ticker") is not None:
         query = query.filter(model.ticker == kwargs["ticker"].upper())
-    if kwargs.get("min_expiry") is not None:
+    if kwargs.get("expiry_date") is not None:
+        query = query.filter(model.expiry_date == parse_date(kwargs["expiry_date"]))
+    elif kwargs.get("min_expiry") is not None:
         query = query.filter(model.expiry_date >= parse_date(kwargs["min_expiry"]))
     if kwargs.get("main_trend") is not None:
         query = query.filter(model.main_trend == kwargs["main_trend"])
@@ -94,6 +96,7 @@ def build_options_query(
     exchange: int | None = None,
     ticker: str | None = None,
     contract: str | None = None,
+    expiry_date: str | None = None,
     min_expiry: str | None = None,
     days_to_expiration_min: int | None = None,
     days_to_expiration_max: int | None = None,
@@ -124,7 +127,7 @@ def build_options_query(
     offset: int = 0,
 ) -> tuple[list, int]:
     filter_kwargs = dict(
-        exchange=exchange, ticker=ticker, contract=contract, min_expiry=min_expiry,
+        exchange=exchange, ticker=ticker, contract=contract, expiry_date=expiry_date, min_expiry=min_expiry,
         days_to_expiration_min=days_to_expiration_min, days_to_expiration_max=days_to_expiration_max,
         option_yield_min=option_yield_min, option_yield_max=option_yield_max,
         roc_min=roc_min, roc_max=roc_max,

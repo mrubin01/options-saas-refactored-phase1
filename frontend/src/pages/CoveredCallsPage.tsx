@@ -42,7 +42,7 @@ function toLegacyFilters(
     exchange: filters.exchange,
     ticker: filters.ticker,
     contract: filters.contract,
-    expiry_date: filters.expiry_date_min ?? filters.min_expiry,
+    expiry_date: filters.expiry_date ?? filters.expiry_date_min ?? filters.min_expiry,
   };
 }
 
@@ -55,8 +55,9 @@ function mergeLegacyFilters(
     exchange: nextLegacyFilters.exchange,
     ticker: nextLegacyFilters.ticker,
     contract: nextLegacyFilters.contract,
-    min_expiry: nextLegacyFilters.expiry_date,
-    expiry_date_min: nextLegacyFilters.expiry_date,
+    expiry_date: nextLegacyFilters.expiry_date,
+    min_expiry: undefined,
+    expiry_date_min: undefined,
     offset: 0,
   };
 }
@@ -79,13 +80,14 @@ function normalizeSavedScreenerFilters(
       | (CoveredCallsDiscoveryFilters & { expiry_date?: string })
       | undefined) ?? {};
 
-  const expiryDateMin =
-    rawFilters.expiry_date_min ?? rawFilters.min_expiry ?? rawFilters.expiry_date;
+  const exactExpiry = rawFilters.expiry_date;
+  const fromExpiry = rawFilters.expiry_date_min ?? rawFilters.min_expiry;
 
   return {
     ...rawFilters,
-    min_expiry: expiryDateMin,
-    expiry_date_min: expiryDateMin,
+    expiry_date: exactExpiry,
+    min_expiry: exactExpiry ? undefined : fromExpiry,
+    expiry_date_min: exactExpiry ? undefined : fromExpiry,
     sort_by: rawFilters.sort_by ?? (config.sort?.sort_by as CoveredCallSortField | undefined),
     sort_dir: rawFilters.sort_dir ?? config.sort?.sort_dir,
     offset: 0,
