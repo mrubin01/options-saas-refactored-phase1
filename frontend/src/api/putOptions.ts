@@ -1,5 +1,5 @@
-import { apiGet } from "./client";
-
+import { apiGetPaged } from "./client";
+import type { PagedResult } from "./http";
 import type { PutOption } from "../types/putOption";
 import type { PutOptionsDiscoveryFilters } from "../types/discovery";
 import { putOptionsFiltersToSearchParams } from "../utils/queryParams";
@@ -13,7 +13,7 @@ function buildPutOptionsQuery(params: PutOptionsDiscoveryFilters = {}) {
 
 export function fetchPutOptions(
   params: PutOptionsDiscoveryFilters = {},
-): Promise<PutOption[]> {
+): Promise<PagedResult<PutOption[]>> {
   const qs = buildPutOptionsQuery(params);
-  return apiGet<PutOption[]>(qs ? `/put-options${qs}` : "/put-options");
+  return apiGetPaged<PutOption[]>(qs ? `/put-options${qs}` : "/put-options");
 }

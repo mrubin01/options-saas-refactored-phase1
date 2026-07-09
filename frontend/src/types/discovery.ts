@@ -11,6 +11,9 @@ export type BaseDiscoveryFilters<TSortField extends OptionContractField> = {
   ticker?: string;
   contract?: string;
 
+  /** Exact expiry date match (YYYY-MM-DD). Used by the basic Expiry Date dropdown. */
+  expiry_date?: string;
+
   /**
    * Legacy/basic filter currently used by the old backend route.
    * Keep this while transitioning.

@@ -8,7 +8,9 @@ from app.auth.deps import get_current_user
 from app.models.user import User
 from app.schemas.v1.put_option import PutOptionOut, PutOptionList
 from app.services.put_options import get_put_options
+from app.models.put_option import PutOption
 from app.schemas.api import ApiResponse, PaginationMeta
+from sqlalchemy import distinct
 from app.core.rate_limit import limiter
 from fastapi_cache.decorator import cache
 from app.core.cache import cache_key_builder
@@ -17,6 +19,22 @@ from typing import Literal
 # this router handles filtering, pagination, and retrieval of put options
 
 router = APIRouter(tags=["put-options"])
+
+
+@router.get("/expiry-dates", response_model=ApiResponse[list[str]])
+@limiter.limit("30/minute")
+@cache(expire=300, key_builder=cache_key_builder, namespace="v1:put_options:expiry_dates")
+async def list_put_options_expiry_dates(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    dates = (
+        db.query(distinct(PutOption.expiry_date))
+        .order_by(PutOption.expiry_date.asc())
+        .all()
+    )
+    return ok(data=[str(row[0]) for row in dates], request=request)
 
 PutOptionSortField = Literal[
     "ticker",
@@ -56,9 +74,13 @@ async def list_put_options(
         max_length=100,
         description="Filter by option contract symbol.",
     ),
+    expiry_date: str | None = Query(
+        default=None,
+        description="Filter by exact expiry date (YYYY-MM-DD).",
+    ),
     min_expiry: str | None = Query(
         default=None,
-        description="Filter by minimum expiry date. Existing format preserved.",
+        description="Filter by minimum expiry date (>=). Ignored when expiry_date is set.",
     ),
 
     # Stage 5.1 discovery filters
@@ -221,6 +243,7 @@ async def list_put_options(
         exchange=exchange,
         ticker=ticker,
         contract=contract,
+        expiry_date=expiry_date,
         min_expiry=min_expiry,
         days_to_expiration_min=days_to_expiration_min,
         days_to_expiration_max=days_to_expiration_max,

@@ -75,6 +75,7 @@ const NUMBER_FILTER_KEYS = [
 const STRING_FILTER_KEYS = [
   "ticker",
   "contract",
+  "expiry_date",
   "min_expiry",
   "expiry_date_min",
   "expiry_date_max",

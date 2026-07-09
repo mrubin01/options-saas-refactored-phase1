@@ -13,11 +13,29 @@ from app.models.user import User
 from app.schemas.api import ApiResponse, PaginationMeta
 from app.schemas.v1.covered_call import CoveredCallOut
 from app.services.covered_calls import get_covered_calls
+from app.models.covered_call import CoveredCall
+from sqlalchemy import distinct
 
 
 # This router handles filtering, sorting, pagination, and retrieval of covered call options.
 
 router = APIRouter(tags=["covered-calls"])
+
+
+@router.get("/expiry-dates", response_model=ApiResponse[list[str]])
+@limiter.limit("30/minute")
+@cache(expire=300, key_builder=cache_key_builder, namespace="v1:covered_calls:expiry_dates")
+async def list_covered_calls_expiry_dates(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    dates = (
+        db.query(distinct(CoveredCall.expiry_date))
+        .order_by(CoveredCall.expiry_date.asc())
+        .all()
+    )
+    return ok(data=[str(row[0]) for row in dates], request=request)
 
 
 CoveredCallSortField = Literal[
@@ -59,9 +77,13 @@ async def list_covered_calls(
         max_length=100,
         description="Filter by option contract symbol.",
     ),
+    expiry_date: str | None = Query(
+        default=None,
+        description="Filter by exact expiry date (YYYY-MM-DD).",
+    ),
     min_expiry: str | None = Query(
         default=None,
-        description="Filter by minimum expiry date. Existing format preserved.",
+        description="Filter by minimum expiry date (>=). Ignored when expiry_date is set.",
     ),
 
     # Stage 5.1 discovery filters
@@ -224,6 +246,7 @@ async def list_covered_calls(
         exchange=exchange,
         ticker=ticker,
         contract=contract,
+        expiry_date=expiry_date,
         min_expiry=min_expiry,
         days_to_expiration_min=days_to_expiration_min,
         days_to_expiration_max=days_to_expiration_max,

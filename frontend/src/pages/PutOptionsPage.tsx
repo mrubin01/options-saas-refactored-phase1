@@ -16,6 +16,7 @@ import SavedScreenersPanel from "../components/SavedScreenersPanel";
 import ActiveFilterChips from "../components/ActiveFilterChips";
 import AdvancedFiltersPanel from "../components/AdvancedFiltersPanel";
 import { useExchanges } from "../api/hooks/useExchanges";
+import { useExpiryDates } from "../api/hooks/useExpiryDates";
 import type { PutOption } from "../types/putOption";
 import type {
   PutOptionSortField,
@@ -32,6 +33,7 @@ import {
 } from "../utils/queryParams";
 import StrategyHelpPanel from "../components/StrategyHelpPanel";
 import DataFreshnessBanner from "../components/DataFreshnessBanner";
+import Pagination from "../components/Pagination";
 
 
 function toLegacyFilters(
@@ -41,7 +43,7 @@ function toLegacyFilters(
     exchange: filters.exchange,
     ticker: filters.ticker,
     contract: filters.contract,
-    expiry_date: filters.expiry_date_min ?? filters.min_expiry,
+    expiry_date: filters.expiry_date ?? filters.expiry_date_min ?? filters.min_expiry,
   };
 }
 
@@ -54,8 +56,9 @@ function mergeLegacyFilters(
     exchange: nextLegacyFilters.exchange,
     ticker: nextLegacyFilters.ticker,
     contract: nextLegacyFilters.contract,
-    min_expiry: nextLegacyFilters.expiry_date,
-    expiry_date_min: nextLegacyFilters.expiry_date,
+    expiry_date: nextLegacyFilters.expiry_date,
+    min_expiry: undefined,
+    expiry_date_min: undefined,
     offset: 0,
   };
 }
@@ -78,13 +81,14 @@ function normalizeSavedScreenerFilters(
       | (PutOptionsDiscoveryFilters & { expiry_date?: string })
       | undefined) ?? {};
 
-  const expiryDateMin =
-    rawFilters.expiry_date_min ?? rawFilters.min_expiry ?? rawFilters.expiry_date;
+  const exactExpiry = rawFilters.expiry_date;
+  const fromExpiry = rawFilters.expiry_date_min ?? rawFilters.min_expiry;
 
   return {
     ...rawFilters,
-    min_expiry: expiryDateMin,
-    expiry_date_min: expiryDateMin,
+    expiry_date: exactExpiry,
+    min_expiry: exactExpiry ? undefined : fromExpiry,
+    expiry_date_min: exactExpiry ? undefined : fromExpiry,
     sort_by: rawFilters.sort_by ?? (config.sort?.sort_by as PutOptionSortField | undefined),
     sort_dir: rawFilters.sort_dir ?? config.sort?.sort_dir,
     offset: 0,
@@ -93,6 +97,7 @@ function normalizeSavedScreenerFilters(
 
 export default function PutOptionsPage() {
   const { data: exchanges = [] } = useExchanges();
+  const { data: expiryOptions = [] } = useExpiryDates("put-options");
   const exchangeMap: Record<number, string> = Object.fromEntries(exchanges.map((e) => [e.id, e.name]));
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -115,12 +120,12 @@ export default function PutOptionsPage() {
 
   const { data, isLoading, isFetching, error } = usePutOptions(stableFilters);
 
-  const rows: PutOption[] = data ?? [];
+  const rows: PutOption[] = data?.rows ?? [];
+  const total = data?.pagination?.total ?? 0;
   const lastUpdated = getLastUpdated(rows);
 
   const tickerOptions = useMemo(() => getUniqueSortedValues(rows.map((row) => row.ticker)), [rows]);
   const contractOptions = useMemo(() => getUniqueSortedValues(rows.map((row) => row.contract)), [rows]);
-  const expiryOptions = useMemo(() => getUniqueSortedValues(rows.map((row) => row.expiry_date)), [rows]);
 
   const sectorOptions = useMemo(() => {
     return getUniqueSortedValues(rows.map((row) => row.sector));
@@ -296,7 +301,7 @@ export default function PutOptionsPage() {
 
       <AdvancedFiltersPanel
         filters={filters}
-        onChange={setFilters}
+        onChange={(newFilters) => setFilters({ ...newFilters, offset: 0 })}
       />
 
       <ActiveFilterChips
@@ -322,15 +327,23 @@ export default function PutOptionsPage() {
       )}
 
       {!isLoading && !error && rows.length > 0 && (
-        <OptionsTable
-          data={rows}
-          exchangeMap={exchangeMap}
-          strategyType="put_options"
-          watchlistItems={watchlistItems}
-          pendingWatchlistContracts={pendingWatchlistContracts}
-          onAddToWatchlist={handleAddToWatchlist}
-          onRemoveFromWatchlist={handleRemoveFromWatchlist}
-        />
+        <>
+          <OptionsTable
+            data={rows}
+            exchangeMap={exchangeMap}
+            strategyType="put_options"
+            watchlistItems={watchlistItems}
+            pendingWatchlistContracts={pendingWatchlistContracts}
+            onAddToWatchlist={handleAddToWatchlist}
+            onRemoveFromWatchlist={handleRemoveFromWatchlist}
+          />
+          <Pagination
+            offset={filters.offset ?? 0}
+            limit={filters.limit ?? 50}
+            total={total}
+            onChange={(newOffset) => setFilters((f) => ({ ...f, offset: newOffset }))}
+          />
+        </>
       )}
 
       {isFetching && !isLoading && (
