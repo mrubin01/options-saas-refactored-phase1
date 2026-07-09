@@ -16,6 +16,7 @@ import SavedScreenersPanel from "../components/SavedScreenersPanel";
 import ActiveFilterChips from "../components/ActiveFilterChips";
 import AdvancedFiltersPanel from "../components/AdvancedFiltersPanel";
 import { useExchanges } from "../api/hooks/useExchanges";
+import { useExpiryDates } from "../api/hooks/useExpiryDates";
 import type { PutOption } from "../types/putOption";
 import type {
   PutOptionSortField,
@@ -96,6 +97,7 @@ function normalizeSavedScreenerFilters(
 
 export default function PutOptionsPage() {
   const { data: exchanges = [] } = useExchanges();
+  const { data: expiryOptions = [] } = useExpiryDates("put-options");
   const exchangeMap: Record<number, string> = Object.fromEntries(exchanges.map((e) => [e.id, e.name]));
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -124,7 +126,6 @@ export default function PutOptionsPage() {
 
   const tickerOptions = useMemo(() => getUniqueSortedValues(rows.map((row) => row.ticker)), [rows]);
   const contractOptions = useMemo(() => getUniqueSortedValues(rows.map((row) => row.contract)), [rows]);
-  const expiryOptions = useMemo(() => getUniqueSortedValues(rows.map((row) => row.expiry_date)), [rows]);
 
   const sectorOptions = useMemo(() => {
     return getUniqueSortedValues(rows.map((row) => row.sector));
