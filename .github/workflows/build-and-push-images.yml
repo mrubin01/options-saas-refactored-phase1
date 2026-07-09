@@ -66,3 +66,14 @@ jobs:
           tags: |
             ghcr.io/${{ steps.repo.outputs.repo }}/frontend:${{ steps.meta.outputs.channel }}
             ghcr.io/${{ steps.repo.outputs.repo }}/frontend:${{ github.sha }}
+
+      - name: Build and push scanner
+        uses: docker/build-push-action@v6
+        with:
+          context: ./scanner
+          push: true
+          provenance: false
+          sbom: false
+          tags: |
+            ghcr.io/${{ steps.repo.outputs.repo }}/scanner:${{ steps.meta.outputs.channel }}
+            ghcr.io/${{ steps.repo.outputs.repo }}/scanner:${{ github.sha }}
