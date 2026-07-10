@@ -10,6 +10,7 @@ from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 import alpaca_client
 from alpaca.data.requests import OptionChainRequest
+from alpaca.data.enums import OptionsFeed
 from alpaca.trading.enums import ContractType
 
 
@@ -188,6 +189,7 @@ def get_alpaca_option_chain(symbol: str, expiry_date: str, option_type: str) -> 
             underlying_symbol=symbol,
             expiration_date=expiry_date,
             type=ct,
+            feed=OptionsFeed.INDICATIVE,
         )
         chain = alpaca_client.get_option_chain(req)
     except Exception:
