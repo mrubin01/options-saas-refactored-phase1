@@ -139,6 +139,7 @@ Alpaca's ToS requires 30 days written notice before making a User Application av
 - `bid_per_share`, `premium_per_contract` — option bid/premium values
 - `max_profit`, `max_profit_per_contract` — derived dollar profit figures
 - `break_even` — derived break-even price
+- `open_interest` — always 0 because `OptionsSnapshot` (returned by `get_option_chain`) has no OI field; fetching it from `TradingClient.get_option_contracts` would add hundreds of extra API calls per scan run and Alpaca's indicative feed likely doesn't include it anyway
 
 These fields remain in the database and API response — only the frontend display is suppressed. Do not re-add them to `COLUMNS` or the table `<td>` cells until legal/licensing is resolved.
 

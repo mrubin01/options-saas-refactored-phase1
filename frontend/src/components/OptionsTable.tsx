@@ -116,7 +116,7 @@ const COLUMNS: string[] = [
   "highest_price", "avg_price", "lowest_price", "coeff_variation",
   "option_yield", "roc", "tot_return",
   "otm", "moneyness", "sigma_distance", "delta",
-  "spread_bid_ask", "open_interest", "impl_volatility", "sector", "industry", "main_trend", "beta",
+  "spread_bid_ask", "impl_volatility", "sector", "industry", "main_trend", "beta",
 ];
 
 export default function OptionsTable({
@@ -214,7 +214,6 @@ export default function OptionsTable({
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.sigma_distance)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.delta)}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.spread_bid_ask)}</td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.open_interest)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.impl_volatility)}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.sector)}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.industry)}</td>
