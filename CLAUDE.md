@@ -145,5 +145,37 @@ These fields remain in the database and API response — only the frontend displ
 
 Registration is also disabled in production (`VITE_REGISTRATION_ENABLED=false` GitHub variable + `REGISTRATION_ENABLED=false` secret) so there are no active users during the Alpaca notice period.
 
+### Manual user creation (beta testers)
+Registration is disabled in production. To create tester accounts without exposing an email address, the login field was changed from "Email" to "Username" (`type="text"`) in `frontend/src/pages/LoginPage.tsx`. The backend stores the username in the `email` column (plain VARCHAR, no format constraint enforced at DB level).
+
+Create a tester account on production:
+```bash
+ssh -i ~/.ssh/key_rsa root@95.216.153.97 'docker compose --env-file ~/options-saas/.env -f ~/options-saas/deploy/docker-compose.remote.yml exec -T backend python -c "
+from app.db.database import SessionLocal
+from app.models.user import User
+from app.auth.security import hash_password
+from datetime import datetime, timezone
+db = SessionLocal()
+user = User(email=\"tester1\", password_hash=hash_password(\"TempPass123!\"), is_email_verified=True, email_verified_at=datetime.now(timezone.utc))
+db.add(user)
+db.commit()
+print(\"Created:\", user.email)
+db.close()
+"'
+```
+
+Delete a tester account:
+```bash
+ssh -i ~/.ssh/key_rsa root@95.216.153.97 'docker compose --env-file ~/options-saas/.env -f ~/options-saas/deploy/docker-compose.remote.yml exec -T backend python -c "
+from app.db.database import SessionLocal
+from app.models.user import User
+db = SessionLocal()
+user = db.query(User).filter(User.email == \"tester1\").first()
+if user: db.delete(user); db.commit(); print(\"Deleted\")
+else: print(\"Not found\")
+db.close()
+"'
+```
+
 ### API versioning
 `VITE_API_URL` and `VITE_API_VERSION` build-time env vars control which backend the frontend calls. Default is `v1`. The `dev:v2` npm script sets `v2` mode for frontend testing against the v2 router.

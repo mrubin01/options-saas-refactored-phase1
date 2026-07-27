@@ -15,7 +15,7 @@ export default function LoginPage() {
   const state = (location.state as LocationState | null) ?? null;
   const redirectTo = state?.from || "/covered-calls";
 
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,7 +35,7 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      await login(email, password);
+      await login(username, password);
       navigate(redirectTo, { replace: true });
     } catch (err) {
       setError(getApiErrorMessage(err, "Unable to log in."));
@@ -61,16 +61,16 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-navy mb-1.5">
-                Email
+              <label htmlFor="username" className="block text-sm font-medium text-navy mb-1.5">
+                Username
               </label>
               <input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
+                id="username"
+                type="text"
+                placeholder="your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
                 required
                 className="w-full rounded-md border border-border-dark bg-surface px-3 py-2 text-sm text-navy placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
