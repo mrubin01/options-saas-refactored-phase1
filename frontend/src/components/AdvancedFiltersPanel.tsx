@@ -146,7 +146,7 @@ export default function AdvancedFiltersPanel({ filters, onChange }: Props) {
 
       {open && (
         <div className="rounded-xl border border-border bg-surface p-4">
-          <div className="grid grid-cols-5 grid-rows-4 grid-flow-col gap-3">
+          <div className="grid grid-cols-4 grid-rows-4 grid-flow-col gap-3">
             <DateInput
               label="Expiry from"
               metricKey="expiry_date"
@@ -169,11 +169,6 @@ export default function AdvancedFiltersPanel({ filters, onChange }: Props) {
 
             <NumberInput label="Tot return min" metricKey="tot_return" value={filters.tot_return_min} step={0.01} onChange={(v) => setNumberFilter("tot_return_min", v)} />
             <NumberInput label="Tot return max" metricKey="tot_return" value={filters.tot_return_max} step={0.01} onChange={(v) => setNumberFilter("tot_return_max", v)} />
-            <NumberInput label="Premium min" metricKey="premium_per_contract" value={filters.premium_per_contract_min} min={0} step={0.01} onChange={(v) => setNumberFilter("premium_per_contract_min", v)} />
-            <NumberInput label="Premium max" metricKey="premium_per_contract" value={filters.premium_per_contract_max} min={0} step={0.01} onChange={(v) => setNumberFilter("premium_per_contract_max", v)} />
-
-            <NumberInput label="OI min" metricKey="open_interest" value={filters.open_interest_min} min={0} step={1} onChange={(v) => setNumberFilter("open_interest_min", v)} />
-            <NumberInput label="OI max" metricKey="open_interest" value={filters.open_interest_max} min={0} step={1} onChange={(v) => setNumberFilter("open_interest_max", v)} />
             <NumberInput label="IV min" metricKey="impl_volatility" value={filters.impl_volatility_min} min={0} step={0.01} onChange={(v) => setNumberFilter("impl_volatility_min", v)} />
             <NumberInput label="IV max" metricKey="impl_volatility" value={filters.impl_volatility_max} min={0} step={0.01} onChange={(v) => setNumberFilter("impl_volatility_max", v)} />
 
