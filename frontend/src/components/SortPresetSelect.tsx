@@ -10,11 +10,12 @@ export const coveredCallSortPresets: SortPreset<CoveredCallSortField>[] = [
   { label: "Highest option yield", sort_by: "option_yield", sort_dir: "desc" },
   { label: "Highest ROC", sort_by: "roc", sort_dir: "desc" },
   { label: "Highest total return", sort_by: "tot_return", sort_dir: "desc" },
-  { label: "Highest premium", sort_by: "premium_per_contract", sort_dir: "desc" },
-  { label: "Highest open interest", sort_by: "open_interest", sort_dir: "desc" },
   { label: "Lowest bid/ask spread", sort_by: "spread_bid_ask", sort_dir: "asc" },
   { label: "Lowest moneyness", sort_by: "moneyness", sort_dir: "asc" },
   { label: "Highest implied volatility", sort_by: "impl_volatility", sort_dir: "desc" },
+  { label: "Lowest IV", sort_by: "impl_volatility", sort_dir: "asc" },
+  { label: "Highest OTM", sort_by: "otm", sort_dir: "desc" },
+  { label: "Lowest Delta", sort_by: "delta", sort_dir: "asc" },
 ];
 
 interface Props {
