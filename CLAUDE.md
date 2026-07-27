@@ -130,5 +130,19 @@ ssh -i ~/.ssh/key_rsa root@95.216.153.97 'docker compose --env-file ~/options-sa
 > ssh -i ~/.ssh/key_rsa root@135.181.109.67 'cd options-saas-refactored-phase1 && docker compose --env-file .env.docker stop scanner'
 > ```
 
+### Data redistribution compliance
+The scanner fetches options data from Alpaca using `feed=OptionsFeed.INDICATIVE` (set explicitly in `scanner/functions.py`). This uses Alpaca's proprietary indicative feed rather than OPRA data, which avoids OPRA redistribution licensing requirements.
+
+Alpaca's ToS requires 30 days written notice before making a User Application available to others. Pending their response, the following price/quote fields are intentionally **hidden from all strategy tables** (`frontend/src/components/OptionsTable.tsx`) to avoid displaying raw market data:
+
+- `current_price`, `strike_price` — underlying and strike prices
+- `bid_per_share`, `premium_per_contract` — option bid/premium values
+- `max_profit`, `max_profit_per_contract` — derived dollar profit figures
+- `break_even` — derived break-even price
+
+These fields remain in the database and API response — only the frontend display is suppressed. Do not re-add them to `COLUMNS` or the table `<td>` cells until legal/licensing is resolved.
+
+Registration is also disabled in production (`VITE_REGISTRATION_ENABLED=false` GitHub variable + `REGISTRATION_ENABLED=false` secret) so there are no active users during the Alpaca notice period.
+
 ### API versioning
 `VITE_API_URL` and `VITE_API_VERSION` build-time env vars control which backend the frontend calls. Default is `v1`. The `dev:v2` npm script sets `v2` mode for frontend testing against the v2 router.
