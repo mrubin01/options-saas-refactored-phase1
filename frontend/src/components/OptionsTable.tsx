@@ -112,10 +112,10 @@ function formatTrend(value: string | number | null | undefined) {
 }
 
 const COLUMNS: string[] = [
-  "ticker", "contract", "exchange", "expiry_date", "days_to_expiration", "current_price",
-  "strike_price", "highest_price", "avg_price", "lowest_price", "coeff_variation",
-  "bid_per_share", "premium_per_contract", "option_yield", "roc", "tot_return", "max_profit", "max_profit_per_contract",
-  "otm", "moneyness", "sigma_distance", "break_even", "delta",
+  "ticker", "contract", "exchange", "expiry_date", "days_to_expiration",
+  "highest_price", "avg_price", "lowest_price", "coeff_variation",
+  "option_yield", "roc", "tot_return",
+  "otm", "moneyness", "sigma_distance", "delta",
   "spread_bid_ask", "open_interest", "impl_volatility", "sector", "industry", "main_trend", "beta",
 ];
 
@@ -202,23 +202,16 @@ export default function OptionsTable({
                 <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(exchangeMap[row.exchange] ?? row.exchange)}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.expiry_date)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.days_to_expiration)}</td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.current_price)}</td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.strike_price)}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.highest_price)}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.avg_price)}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.lowest_price)}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.coeff_variation)}</td>
-                <td className={cn("px-3 py-2 font-medium whitespace-nowrap", getValueColorClass("bid_per_share", row.bid_per_share))}>{formatValue(row.bid_per_share)}</td>
-                <td className={cn("px-3 py-2 font-medium whitespace-nowrap", getValueColorClass("premium_per_contract", row.premium_per_contract))}>{formatValue(row.premium_per_contract)}</td>
                 <td className={cn("px-3 py-2 font-semibold whitespace-nowrap", getValueColorClass("option_yield", row.option_yield))}>{formatValue(row.option_yield)}</td>
                 <td className={cn("px-3 py-2 font-semibold whitespace-nowrap", getValueColorClass("roc", row.roc))}>{formatValue(row.roc)}</td>
                 <td className={cn("px-3 py-2 font-medium whitespace-nowrap", getValueColorClass("tot_return", row.tot_return))}>{formatValue(row.tot_return)}</td>
-                <td className={cn("px-3 py-2 font-medium whitespace-nowrap", getValueColorClass("max_profit", row.max_profit))}>{formatValue(row.max_profit)}</td>
-                <td className={cn("px-3 py-2 font-medium whitespace-nowrap", getValueColorClass("max_profit_per_contract", row.max_profit_per_contract))}>{formatValue(row.max_profit_per_contract)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.otm)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.moneyness)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.sigma_distance)}</td>
-                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.break_even)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.delta)}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.spread_bid_ask)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.open_interest)}</td>
