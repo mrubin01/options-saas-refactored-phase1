@@ -9,7 +9,7 @@ test.describe("authentication", () => {
 
   test("login with valid credentials", async ({ page }) => {
     await page.goto("/login");
-    await page.getByLabel("Email").fill(TEST_EMAIL);
+    await page.getByLabel("Username").fill(TEST_EMAIL);
     await page.getByLabel("Password").fill(TEST_PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
     await expect(page).toHaveURL(/\/covered-calls/);
@@ -18,7 +18,7 @@ test.describe("authentication", () => {
 
   test("login with wrong password shows error", async ({ page }) => {
     await page.goto("/login");
-    await page.getByLabel("Email").fill(TEST_EMAIL);
+    await page.getByLabel("Username").fill(TEST_EMAIL);
     await page.getByLabel("Password").fill("wrongpassword");
     await page.getByRole("button", { name: "Sign in" }).click();
     await expect(page.getByText(/unauthorized/i)).toBeVisible();
@@ -26,7 +26,7 @@ test.describe("authentication", () => {
 
   test("logout redirects to login", async ({ page }) => {
     await page.goto("/login");
-    await page.getByLabel("Email").fill(TEST_EMAIL);
+    await page.getByLabel("Username").fill(TEST_EMAIL);
     await page.getByLabel("Password").fill(TEST_PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
     await page.waitForURL("**/covered-calls");
