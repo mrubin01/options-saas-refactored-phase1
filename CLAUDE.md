@@ -181,5 +181,30 @@ db.close()
 "'
 ```
 
+### Options table columns
+The visible columns in `frontend/src/components/OptionsTable.tsx` (`COLUMNS` array) are:
+
+```
+ticker, contract, exchange, expiry_date, days_to_expiration, strike_price,
+highest_price, avg_price, lowest_price, coeff_variation,
+option_yield, roc, tot_return,
+otm, moneyness, sigma_distance, delta,
+spread_bid_ask, impl_volatility, sector, industry, main_trend, beta
+```
+
+`strike_price` is shown because it is already embedded in the contract name (no additional data exposure). All other price/quote fields remain hidden — see **Data redistribution compliance** above.
+
+### CI/CD workflows
+All workflows are in `.github/workflows/`:
+
+| Workflow | Trigger | What it does |
+|---|---|---|
+| `ci.yml` | Push / PR (any branch) | Lint + type-check + tests |
+| `build-and-push-images.yml` | Push to `develop` or `main` | Builds backend, frontend, scanner Docker images → GHCR |
+| `deploy-staging.yml` | Manual (`workflow_dispatch`) | Pulls latest images → deploys to staging server |
+| `deploy-production.yml` | Manual (`workflow_dispatch`) | Pulls latest images → deploys to production server |
+
+**Deploy flow**: commit + push to `develop` → images built automatically → run `deploy-staging.yml` manually to test → merge `develop` → `main` → run `deploy-production.yml` manually. Both deploy workflows must be triggered from the GitHub Actions UI (Actions tab → select workflow → Run workflow).
+
 ### API versioning
 `VITE_API_URL` and `VITE_API_VERSION` build-time env vars control which backend the frontend calls. Default is `v1`. The `dev:v2` npm script sets `v2` mode for frontend testing against the v2 router.
