@@ -112,7 +112,7 @@ function formatTrend(value: string | number | null | undefined) {
 }
 
 const COLUMNS: string[] = [
-  "ticker", "contract", "exchange", "expiry_date", "days_to_expiration",
+  "ticker", "contract", "exchange", "expiry_date", "days_to_expiration", "strike_price",
   "highest_price", "avg_price", "lowest_price", "coeff_variation",
   "option_yield", "roc", "tot_return",
   "otm", "moneyness", "sigma_distance", "delta",
@@ -146,6 +146,10 @@ export default function OptionsTable({
   }
 
   return (
+    <>
+    <div className="mb-2 rounded-lg border border-amber-800/40 bg-amber-950/20 px-3 py-2 text-xs text-amber-300">
+      Data is delayed by at least 15 minutes. Not suitable for live trading decisions.
+    </div>
     <div className="overflow-x-auto overflow-y-auto rounded-xl border border-border shadow-sm max-h-[calc(100vh-14rem)]">
       <table className="w-full border-collapse text-sm">
         <thead className="sticky top-0 z-10">
@@ -202,6 +206,7 @@ export default function OptionsTable({
                 <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(exchangeMap[row.exchange] ?? row.exchange)}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.expiry_date)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.days_to_expiration)}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.strike_price)}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.highest_price)}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.avg_price)}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.lowest_price)}</td>
@@ -225,5 +230,6 @@ export default function OptionsTable({
         </tbody>
       </table>
     </div>
+    </>
   );
 }
