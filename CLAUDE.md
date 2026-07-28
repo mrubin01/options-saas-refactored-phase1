@@ -135,13 +135,17 @@ The scanner fetches options data from Alpaca using `feed=OptionsFeed.INDICATIVE`
 
 Alpaca's ToS requires 30 days written notice before making a User Application available to others. Pending their response, the following price/quote fields are intentionally **hidden from all strategy tables** (`frontend/src/components/OptionsTable.tsx`) to avoid displaying raw market data:
 
-- `current_price`, `strike_price` — underlying and strike prices
+- `current_price` — underlying stock price
 - `bid_per_share`, `premium_per_contract` — option bid/premium values
 - `max_profit`, `max_profit_per_contract` — derived dollar profit figures
 - `break_even` — derived break-even price
 - `open_interest` — always 0 because `OptionsSnapshot` (returned by `get_option_chain`) has no OI field; fetching it from `TradingClient.get_option_contracts` would add hundreds of extra API calls per scan run and Alpaca's indicative feed likely doesn't include it anyway
 
-These fields remain in the database and API response — only the frontend display is suppressed. Do not re-add them to `COLUMNS` or the table `<td>` cells until legal/licensing is resolved.
+`strike_price` is displayed — it is already embedded in the option contract name, so it adds no additional raw market data exposure.
+
+These fields remain in the database and API response — only the frontend display is suppressed. Do not re-add the hidden fields to `COLUMNS` or the table `<td>` cells until legal/licensing is resolved.
+
+A "data delayed ≥15 minutes" banner is shown above every strategy table (`OptionsTable.tsx`) to warn users not to rely on the data for live trading decisions.
 
 Registration is also disabled in production (`VITE_REGISTRATION_ENABLED=false` GitHub variable + `REGISTRATION_ENABLED=false` secret) so there are no active users during the Alpaca notice period.
 
