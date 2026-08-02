@@ -100,7 +100,8 @@ def get_ingestion_status(db: Session) -> dict[str, Any]:
     strategies = {
         "covered_calls": _get_strategy_status(freshness["covered_calls"]),
         "put_options": _get_strategy_status(freshness["put_options"]),
-        "spread_options": _get_strategy_status(freshness["spread_options"]),
+        "long_calls": _get_strategy_status(freshness["long_calls"]),
+        "long_puts": _get_strategy_status(freshness["long_puts"]),
     }
 
     return {
