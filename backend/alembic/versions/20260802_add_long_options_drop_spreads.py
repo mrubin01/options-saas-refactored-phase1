@@ -103,9 +103,9 @@ def upgrade() -> None:
     op.create_index("ix_lp_exchange_ticker_expiry", "BEST_LONG_PUTS", ["exchange", "ticker", "expiry_date"])
     op.create_index("ix_lp_exchange_ticker_expiry_contract", "BEST_LONG_PUTS", ["exchange", "ticker", "expiry_date", "contract"])
 
-    op.drop_index("ix_so_ticker_expiry", table_name="BEST_SPREAD_OPTIONS")
-    op.drop_index("ix_so_exchange_ticker_expiry", table_name="BEST_SPREAD_OPTIONS")
-    op.drop_index("ix_so_exchange_ticker_expiry_contract", table_name="BEST_SPREAD_OPTIONS")
+    op.drop_index("ix_so_ticker_expiry", table_name="BEST_SPREAD_OPTIONS", if_exists=True)
+    op.drop_index("ix_so_exchange_ticker_expiry", table_name="BEST_SPREAD_OPTIONS", if_exists=True)
+    op.drop_index("ix_so_exchange_ticker_expiry_contract", table_name="BEST_SPREAD_OPTIONS", if_exists=True)
     op.drop_table("BEST_SPREAD_OPTIONS")
 
 
