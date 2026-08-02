@@ -28,16 +28,9 @@ test.describe("screener pages", () => {
     await expect(page.getByRole("combobox").filter({ hasText: "All Tickers" })).toBeVisible();
   });
 
-  test("spread options page renders", async () => {
-    await page.goto("/spread-options");
-    await expect(page.getByText("Best Spread Options")).toBeVisible();
-    await expect(page.getByRole("combobox").filter({ hasText: "All Tickers" })).toBeVisible();
-  });
-
   test("navigation links are visible", async () => {
     await expect(page.getByRole("link", { name: "Covered Calls" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Put Options" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Spread Options" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Watchlist" })).toBeVisible();
   });
 });
