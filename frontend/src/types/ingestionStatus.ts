@@ -23,7 +23,8 @@ export type IngestionStatus = {
   strategies: {
     covered_calls: StrategyIngestionStatus;
     put_options: StrategyIngestionStatus;
-    spread_options: StrategyIngestionStatus;
+    long_calls: StrategyIngestionStatus;
+    long_puts: StrategyIngestionStatus;
   };
 };
 

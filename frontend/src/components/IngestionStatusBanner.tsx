@@ -10,9 +10,10 @@ import type {
 import { cn } from "../lib/utils";
 
 const STRATEGY_LABELS: Record<StrategyIngestionStatusKey, string> = {
-  covered_calls: "Covered Calls",
-  put_options: "Put Options",
-  spread_options: "Spread Options",
+  covered_calls: "Sell Calls",
+  put_options: "Sell Puts",
+  long_calls: "Buy Calls",
+  long_puts: "Buy Puts",
 };
 
 const STATUS_LABELS: Record<IngestionStatusValue, string> = {
@@ -154,7 +155,7 @@ export default function IngestionStatusBanner() {
         <StatusBadge status={data.overall_status} />
       </div>
 
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
         {strategyEntries.map(([key, status]) => (
           <StrategyStatusItem key={key} label={STRATEGY_LABELS[key]} status={status} />
         ))}
