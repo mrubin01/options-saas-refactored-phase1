@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../auth/AuthContext";
 import { apiGet } from "../client";
 
-type Strategy = "covered-calls" | "put-options" | "spread-options";
+type Strategy = "covered-calls" | "put-options" | "long-calls" | "long-puts" | "spread-options";
 
 export function useExpiryDates(strategy: Strategy) {
   const { user } = useAuth();

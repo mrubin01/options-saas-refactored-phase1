@@ -6,7 +6,8 @@ export type StrategyFreshness = {
 export type DataFreshness = {
   covered_calls: StrategyFreshness;
   put_options: StrategyFreshness;
-  spread_options: StrategyFreshness;
+  long_calls: StrategyFreshness;
+  long_puts: StrategyFreshness;
 };
 
 export type StrategyFreshnessKey = keyof DataFreshness;

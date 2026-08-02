@@ -38,7 +38,11 @@ def test_get_data_freshness_returns_all_strategy_keys(monkeypatch):
             "last_updated": None,
             "row_count": 0,
         },
-        "spread_options": {
+        "long_calls": {
+            "last_updated": None,
+            "row_count": 0,
+        },
+        "long_puts": {
             "last_updated": None,
             "row_count": 0,
         },
@@ -47,7 +51,8 @@ def test_get_data_freshness_returns_all_strategy_keys(monkeypatch):
     assert set(calls) == {
         "CoveredCall",
         "PutOption",
-        "SpreadOption",
+        "LongCall",
+        "LongPut",
     }
 
 
@@ -63,9 +68,13 @@ def test_data_freshness_endpoint_returns_wrapped_response(monkeypatch):
             "last_updated": "2026-06-14T10:31:00Z",
             "row_count": 20,
         },
-        "spread_options": {
+        "long_calls": {
             "last_updated": "2026-06-14T10:32:00Z",
             "row_count": 30,
+        },
+        "long_puts": {
+            "last_updated": "2026-06-14T10:33:00Z",
+            "row_count": 40,
         },
     }
 

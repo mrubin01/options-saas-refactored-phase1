@@ -258,7 +258,7 @@ export default function SpreadOptionsPage() {
     <div>
       <PageHeader title="Best Spread Options" lastUpdated={lastUpdated} />
 
-      <DataFreshnessBanner strategyKey="spread_options" />
+      <DataFreshnessBanner />
 
       <StrategyHelpPanel title="How to read spreads">
         <p>

@@ -24,8 +24,10 @@ export default function Navigation() {
           <nav className="flex items-center gap-1">
             {[
               { to: "/dashboard", label: "Dashboard" },
-              { to: "/covered-calls", label: "Covered Calls" },
-              { to: "/put-options", label: "Put Options" },
+              { to: "/covered-calls", label: "Sell Calls" },
+              { to: "/put-options", label: "Sell Puts" },
+              { to: "/long-calls", label: "Buy Calls" },
+              { to: "/long-puts", label: "Buy Puts" },
               { to: "/watchlist", label: "Watchlist" },
               { to: "/glossary", label: "Glossary" },
               { to: "/account", label: "Account" },

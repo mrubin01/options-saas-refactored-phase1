@@ -119,6 +119,12 @@ export type PutOptionsDiscoveryFilters =
 export type SpreadOptionsDiscoveryFilters =
   BaseDiscoveryFilters<SpreadOptionSortField>;
 
+export type LongCallSortField = OptionContractField;
+export type LongPutSortField = OptionContractField;
+
+export type LongCallsDiscoveryFilters = BaseDiscoveryFilters<LongCallSortField>;
+export type LongPutsDiscoveryFilters = BaseDiscoveryFilters<LongPutSortField>;
+
 export type SortPreset<TSortField extends string> = {
   label: string;
   sort_by: TSortField;

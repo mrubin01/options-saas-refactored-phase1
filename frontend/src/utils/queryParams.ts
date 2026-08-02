@@ -6,13 +6,17 @@ import type {
   CoveredCallsDiscoveryFilters,
   PutOptionsDiscoveryFilters,
   SpreadOptionsDiscoveryFilters,
+  LongCallsDiscoveryFilters,
+  LongPutsDiscoveryFilters,
   SortDirection,
 } from "../types/discovery";
 
 type DiscoveryFilters =
   | CoveredCallsDiscoveryFilters
   | PutOptionsDiscoveryFilters
-  | SpreadOptionsDiscoveryFilters;
+  | SpreadOptionsDiscoveryFilters
+  | LongCallsDiscoveryFilters
+  | LongPutsDiscoveryFilters;
 
 type NumberFilterKey = (typeof NUMBER_FILTER_KEYS)[number];
 type StringFilterKey = (typeof STRING_FILTER_KEYS)[number];
@@ -251,4 +255,32 @@ export function buildSpreadOptionsPathFromFilters(
   const qs = searchParams.toString();
 
   return qs ? `/spread-options?${qs}` : "/spread-options";
+}
+
+export function parseLongCallsFiltersFromSearchParams(
+  searchParams: URLSearchParams,
+): LongCallsDiscoveryFilters {
+  return parseDiscoveryFiltersFromSearchParams<LongCallsDiscoveryFilters>(
+    searchParams,
+  );
+}
+
+export function longCallsFiltersToSearchParams(
+  filters: LongCallsDiscoveryFilters,
+): URLSearchParams {
+  return discoveryFiltersToSearchParams(filters);
+}
+
+export function parseLongPutsFiltersFromSearchParams(
+  searchParams: URLSearchParams,
+): LongPutsDiscoveryFilters {
+  return parseDiscoveryFiltersFromSearchParams<LongPutsDiscoveryFilters>(
+    searchParams,
+  );
+}
+
+export function longPutsFiltersToSearchParams(
+  filters: LongPutsDiscoveryFilters,
+): URLSearchParams {
+  return discoveryFiltersToSearchParams(filters);
 }

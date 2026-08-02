@@ -165,19 +165,19 @@ export default function DashboardPage() {
               subtitle="Tracked option opportunities"
             />
             <DashboardCard
-              title="Covered Calls Screeners"
+              title="Sell Calls Screeners"
               value={screenerCounts.covered_calls}
             />
             <DashboardCard
-              title="Put Options Screeners"
+              title="Sell Puts Screeners"
               value={screenerCounts.put_options}
             />
             <DashboardCard
-              title="Covered Calls Watchlist"
+              title="Sell Calls Watchlist"
               value={watchlistCounts.covered_calls}
             />
             <DashboardCard
-              title="Put Options Watchlist"
+              title="Sell Puts Watchlist"
               value={watchlistCounts.put_options}
             />
           </div>
@@ -224,7 +224,7 @@ export default function DashboardPage() {
 
               {recentWatchlist.length === 0 ? (
                 <p className="text-sm text-muted">
-                  Your watchlist is empty. Add opportunities from Covered Calls or Put Options.
+                  Your watchlist is empty. Add opportunities from Sell Calls or Sell Puts.
                 </p>
               ) : (
                 <div className="grid gap-2.5">
@@ -252,8 +252,10 @@ export default function DashboardPage() {
             <h2 className="mb-3 text-base font-semibold text-navy">Quick Links</h2>
             <div className="flex flex-wrap gap-2">
               {[
-                { to: "/covered-calls", label: "Covered Calls" },
-                { to: "/put-options", label: "Put Options" },
+                { to: "/covered-calls", label: "Sell Calls" },
+                { to: "/put-options", label: "Sell Puts" },
+                { to: "/long-calls", label: "Buy Calls" },
+                { to: "/long-puts", label: "Buy Puts" },
                 { to: "/watchlist", label: "Watchlist" },
                 { to: "/glossary", label: "Glossary" },
                 { to: "/account", label: "Account" },

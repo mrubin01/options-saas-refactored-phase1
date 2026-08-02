@@ -13,9 +13,10 @@ type Props = {
 };
 
 const STRATEGY_LABELS: Record<StrategyFreshnessKey, string> = {
-  covered_calls: "Covered Calls",
-  put_options: "Put Options",
-  spread_options: "Spread Options",
+  covered_calls: "Sell Calls",
+  put_options: "Sell Puts",
+  long_calls: "Buy Calls",
+  long_puts: "Buy Puts",
 };
 
 function formatDateTime(value: string | null) {
@@ -165,7 +166,7 @@ export default function DataFreshnessBanner({ strategyKey }: Props) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
         {items.map(([key, freshness]) => (
           <FreshnessItem key={key} label={STRATEGY_LABELS[key]} freshness={freshness} />
         ))}

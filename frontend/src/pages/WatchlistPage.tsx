@@ -13,8 +13,10 @@ const strategyOptions: Array<{ value: "all" | WatchlistStrategyType; label: stri
 ];
 
 const strategyLabelMap: Record<WatchlistStrategyType, string> = {
-  covered_calls: "Covered Calls",
-  put_options: "Put Options",
+  covered_calls: "Sell Calls",
+  put_options: "Sell Puts",
+  long_calls: "Buy Calls",
+  long_puts: "Buy Puts",
   spread_options: "Spread Options",
 };
 

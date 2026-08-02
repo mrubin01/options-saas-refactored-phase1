@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 
 from app.models.covered_call import CoveredCall
 from app.models.put_option import PutOption
-from app.models.spread_option import SpreadOption
+from app.models.long_call import LongCall
+from app.models.long_put import LongPut
 
 
 def _get_table_freshness(db: Session, model: Any) -> dict[str, Any]:
@@ -28,5 +29,6 @@ def get_data_freshness(db: Session) -> dict[str, dict[str, datetime | int | None
     return {
         "covered_calls": _get_table_freshness(db, CoveredCall),
         "put_options": _get_table_freshness(db, PutOption),
-        "spread_options": _get_table_freshness(db, SpreadOption),
+        "long_calls": _get_table_freshness(db, LongCall),
+        "long_puts": _get_table_freshness(db, LongPut),
     }
