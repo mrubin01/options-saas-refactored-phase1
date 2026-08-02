@@ -34,6 +34,9 @@ export type OptionRow = {
   lowest_price: number | null;
   main_trend: string | number | null;
   beta: number | null;
+  iv_hv_ratio: number | null;
+  ex_dividend_date: string | null;
+  earnings_date: string | null;
 
   updated_at?: string | null;
 };

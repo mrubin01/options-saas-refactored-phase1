@@ -62,6 +62,9 @@ const HEADER_LABELS: Record<string, string> = {
   industry: "Industry",
   main_trend: "Trend",
   beta: "Beta",
+  iv_hv_ratio: "IV/HV",
+  ex_dividend_date: "Ex-Div",
+  earnings_date: "Earnings",
 };
 
 type MetricKey = keyof typeof metricGlossary;
@@ -117,6 +120,7 @@ const COLUMNS: string[] = [
   "option_yield", "roc", "tot_return",
   "otm", "moneyness", "sigma_distance", "delta",
   "spread_bid_ask", "impl_volatility", "sector", "industry", "main_trend", "beta",
+  "iv_hv_ratio", "ex_dividend_date", "earnings_date",
 ];
 
 export default function OptionsTable({
@@ -224,6 +228,9 @@ export default function OptionsTable({
                 <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.industry)}</td>
                 <td className={cn("px-3 py-2 whitespace-nowrap font-medium", formatTrend(row.main_trend).className)}>{formatTrend(row.main_trend).label}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.beta)}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.iv_hv_ratio)}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.ex_dividend_date)}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.earnings_date)}</td>
               </tr>
             );
           })}

@@ -38,6 +38,9 @@ class CoveredCallBase(BaseModel):
     main_trend: float | None = None
 
     beta: float | None = None
+    iv_hv_ratio: float | None = None
+    ex_dividend_date: date | None = None
+    earnings_date: date | None = None
     sector: str | None = None
     industry: str | None = None
 
