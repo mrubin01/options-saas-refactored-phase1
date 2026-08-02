@@ -1,8 +1,8 @@
-import type { CoveredCallsDiscoveryFilters } from "../types/discovery";
+import type { CoveredCallsDiscoveryFilters, LongOptionsExtraFilters } from "../types/discovery";
 
-type FilterKey = keyof CoveredCallsDiscoveryFilters;
+type AllFilterLabels = keyof CoveredCallsDiscoveryFilters | keyof LongOptionsExtraFilters;
 
-const FILTER_LABELS: Partial<Record<FilterKey, string>> = {
+const FILTER_LABELS: Partial<Record<AllFilterLabels, string>> = {
   ticker: "Ticker",
   contract: "Contract",
   exchange: "Exchange",
@@ -34,6 +34,14 @@ const FILTER_LABELS: Partial<Record<FilterKey, string>> = {
   industry: "Industry",
   sort_by: "Sort",
   sort_dir: "Direction",
+  profit_5pct_min: "Profit 5% min",
+  profit_5pct_max: "Profit 5% max",
+  return_5pct_min: "Return 5% min",
+  return_5pct_max: "Return 5% max",
+  profit_10pct_min: "Profit 10% min",
+  profit_10pct_max: "Profit 10% max",
+  return_10pct_min: "Return 10% min",
+  return_10pct_max: "Return 10% max",
 };
 
 const SORT_FIELD_LABELS: Record<string, string> = {
@@ -51,44 +59,47 @@ const SORT_FIELD_LABELS: Record<string, string> = {
   spread_bid_ask: "Spread",
 };
 
-const HIDDEN_KEYS = new Set<FilterKey>(["limit", "offset"]);
+const HIDDEN_KEYS = new Set(["limit", "offset"]);
 
 function formatKey(key: string) {
   return key.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function formatValue(key: FilterKey, value: unknown) {
+function formatValue(key: string, value: unknown) {
   if (value === undefined || value === null || value === "") return "";
   if (key === "sort_by") return SORT_FIELD_LABELS[String(value)] ?? formatKey(String(value));
   if (key === "sort_dir") return String(value).toUpperCase();
   return String(value);
 }
 
-interface Props {
-  filters: CoveredCallsDiscoveryFilters;
-  onRemove: (key: keyof CoveredCallsDiscoveryFilters) => void;
+interface Props<TFilters extends Record<string, unknown>> {
+  filters: TFilters;
+  onRemove: (key: string & keyof TFilters) => void;
   onClearAll: () => void;
 }
 
-export default function ActiveFilterChips({ filters, onRemove, onClearAll }: Props) {
+export default function ActiveFilterChips<TFilters extends Record<string, unknown>>({
+  filters,
+  onRemove,
+  onClearAll,
+}: Props<TFilters>) {
   const activeEntries = Object.entries(filters).filter(([key, value]) => {
-    const typedKey = key as FilterKey;
-    if (HIDDEN_KEYS.has(typedKey)) return false;
-    if (typedKey === "min_expiry" && (filters.expiry_date_min || filters.expiry_date)) return false;
+    if (HIDDEN_KEYS.has(key)) return false;
+    if (key === "min_expiry" && ((filters as Record<string, unknown>).expiry_date_min || (filters as Record<string, unknown>).expiry_date)) return false;
     return value !== undefined && value !== null && value !== "";
-  }) as [FilterKey, CoveredCallsDiscoveryFilters[FilterKey]][];
+  });
 
   if (activeEntries.length === 0) return null;
 
   return (
     <div className="mb-3 flex flex-wrap items-center gap-1.5">
       {activeEntries.map(([key, value]) => {
-        const label = FILTER_LABELS[key] ?? formatKey(key);
+        const label = FILTER_LABELS[key as AllFilterLabels] ?? formatKey(key);
         return (
           <button
             key={key}
             type="button"
-            onClick={() => onRemove(key)}
+            onClick={() => onRemove(key as string & keyof TFilters)}
             className="inline-flex items-center gap-1 rounded-full border border-border bg-surface px-2.5 py-0.5 text-xs font-medium text-navy hover:bg-border/40 transition-colors"
             title="Remove filter"
           >

@@ -12,7 +12,7 @@ function formatValue(value: string | number | null | undefined) {
   return value;
 }
 
-const RETURN_COLS = new Set(["return_5pct", "return_10pct"]);
+const RETURN_COLS = new Set(["profit_5pct", "return_5pct", "profit_10pct", "return_10pct"]);
 
 function getValueColorClass(colKey: string, value: string | number | null | undefined): string {
   if (!RETURN_COLS.has(colKey) || value === null || value === undefined || value === "") return "";
@@ -33,7 +33,9 @@ const HEADER_LABELS: Record<string, string> = {
   moneyness: "Moneyness%",
   sigma_distance: "Sigma Dist",
   iv_hv_ratio: "IV/HV",
+  profit_5pct: "Profit 5%",
   return_5pct: "Return 5%",
+  profit_10pct: "Profit 10%",
   return_10pct: "Return 10%",
   delta: "Delta%",
   spread_bid_ask: "Spread",
@@ -96,7 +98,7 @@ function formatTrend(value: string | number | null | undefined) {
 const COLUMNS: string[] = [
   "ticker", "contract", "exchange", "expiry_date", "days_to_expiration", "strike_price",
   "coeff_variation", "otm", "moneyness", "sigma_distance",
-  "iv_hv_ratio", "return_5pct", "return_10pct",
+  "iv_hv_ratio", "profit_5pct", "return_5pct", "profit_10pct", "return_10pct",
   "delta", "spread_bid_ask", "impl_volatility",
   "sector", "industry", "main_trend", "beta",
   "ex_dividend_date", "earnings_date",
@@ -148,7 +150,9 @@ export default function BuyingOptionsTable({
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.moneyness)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.sigma_distance)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.iv_hv_ratio)}</td>
+                <td className={cn("px-3 py-2 font-semibold whitespace-nowrap", getValueColorClass("profit_5pct", row.profit_5pct))}>{formatValue(row.profit_5pct)}</td>
                 <td className={cn("px-3 py-2 font-semibold whitespace-nowrap", getValueColorClass("return_5pct", row.return_5pct))}>{formatValue(row.return_5pct)}</td>
+                <td className={cn("px-3 py-2 font-semibold whitespace-nowrap", getValueColorClass("profit_10pct", row.profit_10pct))}>{formatValue(row.profit_10pct)}</td>
                 <td className={cn("px-3 py-2 font-semibold whitespace-nowrap", getValueColorClass("return_10pct", row.return_10pct))}>{formatValue(row.return_10pct)}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{formatValue(row.delta)}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-muted">{formatValue(row.spread_bid_ask)}</td>

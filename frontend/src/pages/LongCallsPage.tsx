@@ -8,7 +8,7 @@ import OptionsFilters from "../components/OptionsFilters";
 import BuyingOptionsTable from "../components/BuyingOptionsTable";
 import PageHeader from "../components/PageHeader";
 import ActiveFilterChips from "../components/ActiveFilterChips";
-import AdvancedFiltersPanel from "../components/AdvancedFiltersPanel";
+import BuyingAdvancedFiltersPanel from "../components/BuyingAdvancedFiltersPanel";
 import { useExchanges } from "../api/hooks/useExchanges";
 import { useExpiryDates } from "../api/hooks/useExpiryDates";
 import type { LongCall } from "../types/longCall";
@@ -168,7 +168,7 @@ export default function LongCallsPage() {
         onReset={handleClearAllFilters}
       />
 
-      <AdvancedFiltersPanel
+      <BuyingAdvancedFiltersPanel
         filters={filters}
         onChange={(newFilters) => setFilters({ ...newFilters, offset: 0 })}
       />

@@ -122,8 +122,19 @@ export type SpreadOptionsDiscoveryFilters =
 export type LongCallSortField = OptionContractField;
 export type LongPutSortField = OptionContractField;
 
-export type LongCallsDiscoveryFilters = BaseDiscoveryFilters<LongCallSortField>;
-export type LongPutsDiscoveryFilters = BaseDiscoveryFilters<LongPutSortField>;
+export type LongOptionsExtraFilters = {
+  profit_5pct_min?: number;
+  profit_5pct_max?: number;
+  return_5pct_min?: number;
+  return_5pct_max?: number;
+  profit_10pct_min?: number;
+  profit_10pct_max?: number;
+  return_10pct_min?: number;
+  return_10pct_max?: number;
+};
+
+export type LongCallsDiscoveryFilters = BaseDiscoveryFilters<LongCallSortField> & LongOptionsExtraFilters;
+export type LongPutsDiscoveryFilters = BaseDiscoveryFilters<LongPutSortField> & LongOptionsExtraFilters;
 
 export type SortPreset<TSortField extends string> = {
   label: string;
