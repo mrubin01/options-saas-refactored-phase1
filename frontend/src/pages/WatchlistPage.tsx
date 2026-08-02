@@ -8,8 +8,8 @@ import PageHeader from "../components/PageHeader";
 
 const strategyOptions: Array<{ value: "all" | WatchlistStrategyType; label: string }> = [
   { value: "all", label: "All" },
-  { value: "covered_calls", label: "Covered Calls" },
-  { value: "put_options", label: "Put Options" },
+  { value: "covered_calls", label: "Sell Calls" },
+  { value: "put_options", label: "Sell Puts" },
 ];
 
 const strategyLabelMap: Record<WatchlistStrategyType, string> = {
