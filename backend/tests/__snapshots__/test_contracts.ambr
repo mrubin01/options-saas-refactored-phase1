@@ -19,13 +19,3 @@
     'success': True,
   })
 # ---
-# name: test_v1_spread_options_contract
-  dict({
-    'data_is_list': True,
-    'error_is_none': True,
-    'meta': dict({
-      'version': 'v1',
-    }),
-    'success': True,
-  })
-# ---

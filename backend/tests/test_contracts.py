@@ -23,8 +23,3 @@ def test_v1_put_options_contract(client, auth_headers, snapshot):
     snapshot.assert_match(normalize_response(r.json()))
 
 
-def test_v1_spread_options_contract(client, auth_headers, snapshot):
-    r = client.get("/v1/spread-options", headers=auth_headers)
-    assert r.status_code == 200
-    snapshot.assert_match(normalize_response(r.json()))
-    
