@@ -10,6 +10,8 @@ const strategyOptions: Array<{ value: "all" | WatchlistStrategyType; label: stri
   { value: "all", label: "All" },
   { value: "covered_calls", label: "Sell Calls" },
   { value: "put_options", label: "Sell Puts" },
+  { value: "long_calls", label: "Buy Calls" },
+  { value: "long_puts", label: "Buy Puts" },
 ];
 
 const strategyLabelMap: Record<WatchlistStrategyType, string> = {
