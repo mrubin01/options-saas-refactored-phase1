@@ -10,7 +10,6 @@ const strategyOptions: Array<{ value: "all" | WatchlistStrategyType; label: stri
   { value: "all", label: "All" },
   { value: "covered_calls", label: "Covered Calls" },
   { value: "put_options", label: "Put Options" },
-  { value: "spread_options", label: "Spread Options" },
 ];
 
 const strategyLabelMap: Record<WatchlistStrategyType, string> = {
@@ -126,7 +125,7 @@ export default function WatchlistPage() {
         <div className="py-10 text-center text-sm text-muted">Loading watchlist…</div>
       ) : filteredItems.length === 0 ? (
         <div className="py-10 text-center text-sm text-muted">
-          Your watchlist is empty. Add opportunities from Covered Calls, Put Options, or Spread Options.
+          Your watchlist is empty. Add opportunities from Covered Calls or Put Options.
         </div>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border shadow-sm">
