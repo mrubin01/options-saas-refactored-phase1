@@ -8,7 +8,8 @@ from zoneinfo import ZoneInfo
 from app.db.database import SessionLocal
 from ingestion.covered_calls import JSON_PATHS as CC_PATHS, ingest_covered_calls
 from ingestion.put_options import JSON_PATHS as PUT_PATHS, ingest_put_options
-from ingestion.spread_options import JSON_PATHS as SPREAD_PATHS, ingest_spread_options
+from ingestion.long_calls import JSON_PATHS as LONG_CALL_PATHS, ingest_long_calls
+from ingestion.long_puts import JSON_PATHS as LONG_PUT_PATHS, ingest_long_puts
 
 logging.basicConfig(
     format="[%(asctime)s] %(levelname)s %(message)s",
@@ -25,7 +26,8 @@ WINDOW_END = (21, 0)
 STRATEGIES = [
     ("covered_calls", CC_PATHS, ingest_covered_calls),
     ("put_options", PUT_PATHS, ingest_put_options),
-    ("spread_options", SPREAD_PATHS, ingest_spread_options),
+    ("long_calls", LONG_CALL_PATHS, ingest_long_calls),
+    ("long_puts", LONG_PUT_PATHS, ingest_long_puts),
 ]
 
 

@@ -100,6 +100,9 @@ def normalize_row(row: dict) -> dict:
         "lowest_price": normalize_float(row.get("lowest_price")),
         "main_trend": normalize_int(row.get("main_trend")),
         "beta": normalize_float(row.get("beta")),
+        "iv_hv_ratio": normalize_float(row.get("iv_hv_ratio")),
+        "ex_dividend_date": parse_expiry_date(row.get("ex_dividend_date")),
+        "earnings_date": parse_expiry_date(row.get("earnings_date")),
         "updated_at": now,
     }
 
