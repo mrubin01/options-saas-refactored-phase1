@@ -1,5 +1,7 @@
 from app.models.covered_call import CoveredCall
 from app.models.put_option import PutOption
+from app.models.long_call import LongCall
+from app.models.long_put import LongPut
 from app.models.spread_option import SpreadOption
 from app.models.exchange import Exchange
 from app.models.trend import Trend

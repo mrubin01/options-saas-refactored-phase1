@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, Float, String, Date, ForeignKey, Index, 
 from app.db.database import Base
 from sqlalchemy.sql import func
 
+
 class CoveredCall(Base):
     __tablename__ = "BEST_COVERED_CALLS"
 
@@ -45,9 +46,11 @@ class CoveredCall(Base):
     beta = Column(Float, nullable=True)
     sector = Column(String, nullable=True)
     industry = Column(String, nullable=True)
+    iv_hv_ratio = Column(Float, nullable=True)
+    ex_dividend_date = Column(Date, nullable=True)
+    earnings_date = Column(Date, nullable=True)
 
-
-    updated_at = Column(DateTime(timezone=True), 
+    updated_at = Column(DateTime(timezone=True),
                         server_default=func.now(),
                         onupdate=func.now(),
                         nullable=False)

@@ -26,7 +26,6 @@ export default function Navigation() {
               { to: "/dashboard", label: "Dashboard" },
               { to: "/covered-calls", label: "Covered Calls" },
               { to: "/put-options", label: "Put Options" },
-              { to: "/spread-options", label: "Spread Options" },
               { to: "/watchlist", label: "Watchlist" },
               { to: "/glossary", label: "Glossary" },
               { to: "/account", label: "Account" },

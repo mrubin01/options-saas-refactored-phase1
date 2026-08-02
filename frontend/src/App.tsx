@@ -3,7 +3,6 @@ import { RequireAuth } from "./auth/RequireAuth";
 import Layout from "./components/Layout";
 import CoveredCallsPage from "./pages/CoveredCallsPage";
 import PutOptionsPage from "./pages/PutOptionsPage";
-import SpreadOptionsPage from "./pages/SpreadOptionsPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -54,17 +53,6 @@ export default function App() {
           <RequireAuth>
             <Layout>
               <PutOptionsPage />
-            </Layout>
-          </RequireAuth>
-        }
-      />
-
-      <Route
-        path="/spread-options"
-        element={
-          <RequireAuth>
-            <Layout>
-              <SpreadOptionsPage />
             </Layout>
           </RequireAuth>
         }

@@ -104,9 +104,6 @@ export default function DashboardPage() {
       put_options: savedScreeners.filter(
         (item) => item.strategy_type === "put_options",
       ).length,
-      spread_options: savedScreeners.filter(
-        (item) => item.strategy_type === "spread_options",
-      ).length,
     };
   }, [savedScreeners]);
 
@@ -118,9 +115,6 @@ export default function DashboardPage() {
       ).length,
       put_options: watchlistItems.filter(
         (item) => item.strategy_type === "put_options",
-      ).length,
-      spread_options: watchlistItems.filter(
-        (item) => item.strategy_type === "spread_options",
       ).length,
     };
   }, [watchlistItems]);
@@ -179,20 +173,12 @@ export default function DashboardPage() {
               value={screenerCounts.put_options}
             />
             <DashboardCard
-              title="Spread Options Screeners"
-              value={screenerCounts.spread_options}
-            />
-            <DashboardCard
               title="Covered Calls Watchlist"
               value={watchlistCounts.covered_calls}
             />
             <DashboardCard
               title="Put Options Watchlist"
               value={watchlistCounts.put_options}
-            />
-            <DashboardCard
-              title="Spread Options Watchlist"
-              value={watchlistCounts.spread_options}
             />
           </div>
 
@@ -238,7 +224,7 @@ export default function DashboardPage() {
 
               {recentWatchlist.length === 0 ? (
                 <p className="text-sm text-muted">
-                  Your watchlist is empty. Add opportunities from Covered Calls, Put Options, or Spread Options.
+                  Your watchlist is empty. Add opportunities from Covered Calls or Put Options.
                 </p>
               ) : (
                 <div className="grid gap-2.5">
@@ -268,7 +254,6 @@ export default function DashboardPage() {
               {[
                 { to: "/covered-calls", label: "Covered Calls" },
                 { to: "/put-options", label: "Put Options" },
-                { to: "/spread-options", label: "Spread Options" },
                 { to: "/watchlist", label: "Watchlist" },
                 { to: "/glossary", label: "Glossary" },
                 { to: "/account", label: "Account" },

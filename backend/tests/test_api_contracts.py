@@ -118,27 +118,6 @@ def test_put_options_contract(client, auth_headers):
             assert "beta" in row
 
 
-def test_spread_options_contract(client, auth_headers):
-    res = client.get("/v1/spread-options", headers=auth_headers)
-    assert res.status_code == 200
-
-    data = res.json()
-    assert_api_response_shape(data)
-
-    if data["success"]:
-        payload = data["data"]
-        assert isinstance(payload, list)
-
-        if payload:
-            row = payload[0]
-            assert "contract" in row
-            assert "ticker" in row
-            assert "exchange" in row
-            assert "expiry_date" in row
-            assert "current_price" in row
-            assert "strike_price" in row
-
-
 def test_unauthorized_contract(client):
     res = client.get("/v1/covered-calls")
     assert res.status_code == 401
