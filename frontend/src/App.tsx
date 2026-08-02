@@ -3,6 +3,8 @@ import { RequireAuth } from "./auth/RequireAuth";
 import Layout from "./components/Layout";
 import CoveredCallsPage from "./pages/CoveredCallsPage";
 import PutOptionsPage from "./pages/PutOptionsPage";
+import LongCallsPage from "./pages/LongCallsPage";
+import LongPutsPage from "./pages/LongPutsPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -53,6 +55,28 @@ export default function App() {
           <RequireAuth>
             <Layout>
               <PutOptionsPage />
+            </Layout>
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/long-calls"
+        element={
+          <RequireAuth>
+            <Layout>
+              <LongCallsPage />
+            </Layout>
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/long-puts"
+        element={
+          <RequireAuth>
+            <Layout>
+              <LongPutsPage />
             </Layout>
           </RequireAuth>
         }

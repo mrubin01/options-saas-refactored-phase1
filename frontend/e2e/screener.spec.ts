@@ -28,9 +28,23 @@ test.describe("screener pages", () => {
     await expect(page.getByRole("combobox").filter({ hasText: "All Tickers" })).toBeVisible();
   });
 
+  test("long calls page renders", async () => {
+    await page.goto("/long-calls");
+    await expect(page.getByText("Best Long Calls")).toBeVisible();
+    await expect(page.getByRole("combobox").filter({ hasText: "All Tickers" })).toBeVisible();
+  });
+
+  test("long puts page renders", async () => {
+    await page.goto("/long-puts");
+    await expect(page.getByText("Best Long Puts")).toBeVisible();
+    await expect(page.getByRole("combobox").filter({ hasText: "All Tickers" })).toBeVisible();
+  });
+
   test("navigation links are visible", async () => {
-    await expect(page.getByRole("link", { name: "Covered Calls" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Put Options" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Sell Calls" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Sell Puts" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Buy Calls" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Buy Puts" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Watchlist" })).toBeVisible();
   });
 });
