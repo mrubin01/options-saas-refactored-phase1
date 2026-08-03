@@ -33,15 +33,12 @@ exchanges = config.EXCHANGES
 SCANS = [
     (0, 0),  # covered calls   NYSE
     (1, 1),  # put options      NASDAQ
-    (2, 2),  # spread           ARCA
+    (0, 3),  # long calls       NYSE
     (1, 0),  # covered calls   NASDAQ
     (2, 1),  # put options      ARCA
-    (0, 2),  # spread           NYSE
+    (1, 3),  # long calls       NASDAQ
     (2, 0),  # covered calls   ARCA
     (0, 1),  # put options      NYSE
-    (1, 2),  # spread           NASDAQ
-    (0, 3),  # long calls       NYSE
-    (1, 3),  # long calls       NASDAQ
     (2, 3),  # long calls       ARCA
     (0, 4),  # long puts        NYSE
     (1, 4),  # long puts        NASDAQ
