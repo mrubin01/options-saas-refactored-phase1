@@ -21,27 +21,6 @@ def sigma_distance_to_strike(
     days_left: int,
     days_in_year: int = 365
 ) -> float:
-    """
-    Calculate the sigma distance to strike.
-
-    Parameters
-    ----------
-    current_price : float
-        Current underlying price.
-    strike_price : float
-        Option strike price.
-    implied_volatility : float
-        Annualized IV as a decimal, e.g. 0.40 for 40%.
-    days_left : int
-        Days to expiration.
-    days_in_year : int
-        Use 365 for calendar days, or 252 for trading days.
-
-    Returns
-    -------
-    float
-        Distance to strike in implied standard deviations.
-    """
     if current_price <= 0:
         raise ValueError("current_price must be positive.")
     if strike_price <= 0:
@@ -59,69 +38,27 @@ def sigma_distance_to_strike(
 
 
 def is_at_least_3_months_after_today(date_string: str) -> bool:
-    """
-    Returns True if date_string is at least 3 months after today.
-
-    Example:
-    today = 2026-05-11
-    date_string = "2026-08-02" -> True
-    date_string = "2026-07-30" -> False
-    """
-
     other_date = datetime.strptime(date_string, "%Y-%m-%d").date()
     three_months_from_today = date.today() + relativedelta(months=3)
-
     return other_date >= three_months_from_today
 
 
 def days_to_expiration(expiration_date: str, today: date | None = None) -> int:
-    """
-    Calculate calendar days from today to an option expiration date.
-
-    Parameters
-    ----------
-    expiration_date : str
-        Expiration date in 'YYYY-MM-DD' format.
-        Example: '2026-05-01'
-    today : date | None
-        Optional custom start date. Defaults to today's date.
-
-    Returns
-    -------
-    int
-        Number of calendar days until expiration.
-    """
-
     if today is None:
         today = date.today()
-
     expiry = datetime.strptime(expiration_date, "%Y-%m-%d").date()
-
     return (expiry - today).days
 
 
 def normalize_rate(value: float) -> float:
-    """
-    Accepts either:
-    - 3.68 for 3.68%
-    - 0.0368 for 3.68%
-    """
     value = float(value)
     return value / 100 if value > 1 else value
 
 
 def normalize_iv(value: float) -> float:
-    """
-    Accepts IV in common formats:
-    - 115.23 means 115.23%
-    - 1.1523 means 115.23%
-    - 0.4263 means 42.63%
-    """
     value = float(value)
-
     if value > 3:
         return value / 100
-
     return value
 
 
@@ -158,16 +95,13 @@ def estimate_delta(
 
 
 def normalize_nullable_fields(value):
-    """It returns null instead of NaN or an empty string"""
     if value is None:
         return None
     if isinstance(value, float) and math.isnan(value):
         return None
-
     text = str(value).strip()
     if text == "" or text.lower() == "nan":
         return None
-
     return text
 
 
@@ -198,6 +132,20 @@ def get_alpaca_option_chain(symbol: str, expiry_date: str, option_type: str) -> 
     if not chain:
         return pd.DataFrame()
 
+    oi_map = {}
+    try:
+        yf_chain = yf.Ticker(symbol).option_chain(expiry_date)
+        yf_df = yf_chain.calls if ct == ContractType.CALL else yf_chain.puts
+        if yf_df is not None and not yf_df.empty and "openInterest" in yf_df.columns:
+            oi_map = (
+                yf_df.set_index("contractSymbol")["openInterest"]
+                .fillna(0)
+                .astype(int)
+                .to_dict()
+            )
+    except Exception:
+        pass
+
     rows = []
     for contract_sym, snap in chain.items():
         if snap.latest_quote is None:
@@ -210,27 +158,24 @@ def get_alpaca_option_chain(symbol: str, expiry_date: str, option_type: str) -> 
             "ask": snap.latest_quote.ask_price or 0.0,
             "strike": int(contract_sym[-8:]) / 1000,
             "impliedVolatility": snap.implied_volatility,
-            "openInterest": 0,
+            "openInterest": oi_map.get(contract_sym, 0),
         })
 
     return pd.DataFrame(rows) if rows else pd.DataFrame()
 
 
-def get_std_dev(ticker: str, price_list: pd.DataFrame | pd.Series) -> list[float]:
-    """
-    Starting from a DataFrame/Series of stock prices, calculate the absolute
-    and relative (%) standard deviation.
+def compute_hv(close_prices: pd.Series) -> float:
+    log_returns = np.log(close_prices / close_prices.shift(1)).dropna()
+    if log_returns.empty:
+        return 0.0
+    return round(float(log_returns.std() * np.sqrt(252)), 4)
 
-    :param ticker: the stock ticker
-    :param price_list: pandas DataFrame or Series of stock prices
-    :return: [abs_std_dev, rel_std_dev]
-    """
+
+def get_std_dev(ticker: str, price_list: pd.DataFrame | pd.Series) -> list[float]:
     try:
         if price_list is None or len(price_list) == 0:
             return [-1, -1]
 
-        # If a DataFrame is passed, extract the ticker column if present.
-        # Otherwise, if it has only one column, use that column.
         if isinstance(price_list, pd.DataFrame):
             if ticker in price_list.columns:
                 prices = price_list[ticker]
@@ -260,24 +205,17 @@ def get_std_dev(ticker: str, price_list: pd.DataFrame | pd.Series) -> list[float
 
 
 def get_price_trend(price_list: list):
-    """
-    Based on the price list, it calculates the trend: 1 uptrend, 0 downtrend
-    :param price_list:
-    :return:
-    """
     X = np.arange(len(price_list)).reshape(-1, 1)
     y = price_list.values.reshape(-1, 1)
     model = LinearRegression().fit(X, y)
     slope = model.coef_[0][0]
     trend = 1 if slope > 0 else 0
-
     return trend
 
 
 def create_user_agent():
     session = requests_cache.CachedSession('yfinance.cache')
     session.headers['User-Agent'] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:132.0) Gecko/20100101 Firefox/132.0"
-
     return session
 
 
@@ -288,26 +226,19 @@ def compute_main_trend(
     avg_price_30d: float,
     trend: int,
 ) -> int:
-    below_all = current_price < avg_price and current_price < avg_price_7d and current_price < avg_price_30d
-    above_all = current_price > avg_price and current_price > avg_price_7d and current_price > avg_price_30d
+    below_recent = current_price < avg_price_7d and current_price < avg_price_30d
+    above_recent = current_price > avg_price_7d and current_price > avg_price_30d
 
-    if above_all and trend == 1:
+    if above_recent and trend == 1:
         return 1   # TREND_UP
-    if below_all and trend == 0:
+    if below_recent and trend == 0:
         return -1  # TREND_DOWN
     return 0       # TREND_SIDEWAYS
 
 
 def write_tickers_to_file(tickers: list, filename: str):
-    """
-    Writes a list of tickers to a TXT file, one ticker per line
-    :param tickers: a list of tickers
-    :param filename: Output filename, e.g. 'tickers.txt'
-    :return: none
-    """
     if not filename.endswith(('.txt', '.csv')):
         raise ValueError("Filename must end with .txt or .csv")
-
     try:
         with open(filename, 'w') as f:
             for ticker in tickers:
@@ -316,7 +247,7 @@ def write_tickers_to_file(tickers: list, filename: str):
         print(f"Failed to write file: {e}")
 
 
-def write_best_options_to_json(path: str, exchange_no: int, sorted_option_list: list[dict]):
+def write_best_options_to_json(path: str, exchange_no: int, sorted_option_list: list[dict], buying_side: bool = False):
     if exchange_no in [0, 1]:
         keys = [
             "ticker",
@@ -349,6 +280,9 @@ def write_best_options_to_json(path: str, exchange_no: int, sorted_option_list: 
             "lowest_price",
             "main_trend",
             "beta",
+            "iv_hv_ratio",
+            "ex_dividend_date",
+            "earnings_date",
         ]
     elif exchange_no == 2:
         keys = [
@@ -379,54 +313,18 @@ def write_best_options_to_json(path: str, exchange_no: int, sorted_option_list: 
             "avg_price",
             "lowest_price",
             "main_trend",
+            "iv_hv_ratio",
+            "ex_dividend_date",
+            "earnings_date",
         ]
     else:
         raise ValueError("Wrong exchange number!")
 
-    data = []
-    for row in sorted_option_list:
-        item = {key: row[key] for key in keys}
-        # item["expiry_date"] = row["strike_date"]
-        data.append(item)
-
-    with open(path, "w") as jsonfile:
-        json.dump(data, jsonfile, indent=2)
-
-
-def write_long_options_to_json(path: str, exchange_no: int, sorted_option_list: list[dict]):
-    base_keys = [
-        "ticker",
-        "exchange",
-        "contract",
-        "expiry_date",
-        "days_to_expiration",
-        "current_price",
-        "coeff_variation",
-        "otm",
-        "strike_price",
-        "moneyness",
-        "sigma_distance",
-        "ask_per_share",
-        "premium_per_contract",
-        "spread_bid_ask",
-        "break_even",
-        "open_interest",
-        "impl_volatility",
-        "delta",
-        "highest_price",
-        "avg_price",
-        "lowest_price",
-        "main_trend",
-        "iv_hv_ratio",
-        "ex_dividend_date",
-        "earnings_date",
-        "profit_5pct",
-        "return_5pct",
-        "profit_10pct",
-        "return_10pct",
-    ]
-    equity_keys = base_keys + ["sector", "industry", "beta"]
-    keys = equity_keys if exchange_no in [0, 1] else base_keys
+    if buying_side:
+        remove = {"max_profit", "max_profit_per_contract", "tot_return", "option_yield", "roc"}
+        keys = [k for k in keys if k not in remove]
+        keys = ["ask_per_share" if k == "bid_per_share" else k for k in keys]
+        keys = keys + ["profit_5pct", "return_5pct", "profit_10pct", "return_10pct"]
 
     data = [{key: row.get(key) for key in keys} for row in sorted_option_list]
 

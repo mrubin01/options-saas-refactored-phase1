@@ -1,5 +1,4 @@
 import yfinance as yf
-import numpy as np
 import pandas as pd
 import functions
 import alpaca_client
@@ -67,11 +66,9 @@ class Asset(object):
             avg_price_30d = round(float(close_prices.tail(30).mean()), 2)
             last_price = round(float(close_prices.iloc[-1]), 2)
             first_price = round(float(close_prices.iloc[0]), 2)
-            price_trend = functions.get_price_trend(close_prices)
+            price_trend = functions.get_price_trend(close_prices.tail(30))
             abs_sd, rel_sd = functions.get_std_dev(self._symbol, close_prices)
-
-            log_returns = np.log(close_prices / close_prices.shift(1)).dropna()
-            hv = float(log_returns.std()) * np.sqrt(252) if len(log_returns) > 1 else 0.0
+            hv = functions.compute_hv(close_prices)
 
             return {
                 "low": low,
@@ -107,7 +104,6 @@ class Equity(Asset):
                 return {}
             price = float(trade[self._symbol].price)
 
-            # yfinance retained for options list and fundamentals only
             stock = yf.Ticker(self._symbol)
             options = stock.options
             if not options:
@@ -123,8 +119,6 @@ class Equity(Asset):
                 "sector": info.get("sector"),
                 "industry": info.get("industry"),
                 "beta": info.get("beta"),
-                "vol_aver_10days": info.get("averageDailyVolume10Day"),
-                "vol_aver_3months": info.get("averageDailyVolume3Month"),
             }
 
         except Exception:
@@ -146,7 +140,6 @@ class ETF(Asset):
                 return {}
             price = float(trade[self._symbol].price)
 
-            # yfinance retained for options list only; no .info call needed for ETFs
             stock = yf.Ticker(self._symbol)
             options = stock.options
             if not options:

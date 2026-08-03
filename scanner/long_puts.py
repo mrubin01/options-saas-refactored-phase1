@@ -9,7 +9,6 @@ def scan_long_puts(
     ticker: Assets.Equity | Assets.ETF,
     exchange: int,
     option_date: str,
-    min_ask: float,
     symbol: str,
     current_price: float,
     lowest_price: float,
@@ -19,77 +18,67 @@ def scan_long_puts(
     avg_price_30d: float,
     trend: int,
     rel_std_deviation: float,
-    historical_volatility: float,
+    hv: float = 0.0,
     sector: str | None = None,
     industry: str | None = None,
     beta: float | None = None,
+    df=None,
+    ex_dividend_date: str | None = None,
+    earnings_date: str | None = None,
 ) -> list[dict[str, Any]]:
 
     matched_contracts = []
 
-    puts = functions.get_alpaca_option_chain(symbol, option_date, "put")
+    puts = df if df is not None else functions.get_alpaca_option_chain(symbol, option_date, "put")
     if puts is None or puts.empty:
         return []
 
     main_trend = functions.compute_main_trend(current_price, avg_price, avg_price_7d, avg_price_30d, trend)
+    if main_trend > 0:
+        return []
+
     dte = functions.days_to_expiration(option_date)
     if dte <= 0:
         return []
 
     for row in puts.itertuples(index=False):
-        ask = row.ask
-        bid = row.bid
+        ask = row.ask if not (isinstance(row.ask, float) and math.isnan(row.ask)) else 0.0
 
-        if isinstance(ask, float) and math.isnan(ask):
-            continue
-        if ask < min_ask:
+        if ask < config.LONG_MIN_ASK or ask > config.LONG_MAX_ASK:
             continue
 
-        spread_bid_ask = round(ask - bid, 2)
-        if isinstance(spread_bid_ask, float) and math.isnan(spread_bid_ask):
+        if row.strike >= current_price:
             continue
 
-        # Skip options with very wide spreads relative to ask (poor liquidity)
-        if ask > 0 and (spread_bid_ask / ask) > 1.0:
-            continue
-
-        # Moneyness for puts: positive = OTM (strike below current price)
         moneyness = round(((current_price - float(row.strike)) / current_price) * 100, 2)
-
-        # Skip very deep OTM puts — unlikely to be profitable at 10% move
-        if moneyness > 20.0:
+        if moneyness > config.LONG_MAX_MONEYNESS:
             continue
 
-        # Profit at 5% and 10% stock price declines (intrinsic value at expiry)
-        price_5pct = current_price * 0.95
-        price_10pct = current_price * 0.90
-        intrinsic_5pct = max(0.0, float(row.strike) - price_5pct)
-        intrinsic_10pct = max(0.0, float(row.strike) - price_10pct)
-        profit_5pct = round(intrinsic_5pct - ask, 2)
-        profit_10pct = round(intrinsic_10pct - ask, 2)
-
-        # Require the 10% decline scenario to be profitable
-        if profit_10pct <= 0:
+        if row.openInterest > 0 and row.openInterest < config.LONG_MIN_OPEN_INTEREST:
             continue
 
-        return_5pct = round((profit_5pct / ask) * 100, 2) if ask > 0 else 0.0
-        return_10pct = round((profit_10pct / ask) * 100, 2) if ask > 0 else 0.0
-
-        iv_decimal = float(row.impliedVolatility)
-        iv_hv_ratio = round(iv_decimal / historical_volatility, 2) if historical_volatility > 0 else None
-
-        otm = round(abs(float(row.strike) - current_price), 2)
-        try:
-            sigma_distance = functions.sigma_distance_to_strike(
-                current_price, float(row.strike), iv_decimal, dte
-            )
-        except Exception:
+        iv_hv_ratio = round(row.impliedVolatility / hv, 2) if hv > 0 else None
+        if iv_hv_ratio is not None and iv_hv_ratio > config.LONG_MAX_IV_HV_RATIO:
             continue
 
-        est_delta = functions.estimate_delta(
-            "put", current_price, row.strike, dte, config.RISK_FREE_RATE, row.impliedVolatility
-        )
+        spread_bid_ask = round(row.ask - row.bid, 2)
+        spread_strike_price = round(abs(row.strike - current_price), 2)
         break_even = round(float(row.strike) - ask, 2)
+        max_profit_per_share = round(float(row.strike) - ask, 2)
+
+        est_delta = functions.estimate_delta("put", current_price, row.strike, dte, config.RISK_FREE_RATE, row.impliedVolatility)
+        if float(est_delta) < config.LONG_MIN_DELTA:
+            continue
+
+        tot_return = round(((float(row.strike) - ask) / current_price) * 100, 2)
+        sigma_distance = functions.sigma_distance_to_strike(
+            current_price, float(row.strike), float(row.impliedVolatility), dte
+        )
+
+        profit_5pct = round(float(row.strike) * 0.05 - ask, 2)
+        return_5pct = round((profit_5pct / ask) * 100, 2) if ask > 0 else 0.0
+        profit_10pct = round(float(row.strike) * 0.10 - ask, 2)
+        return_10pct = round((profit_10pct / ask) * 100, 2) if ask > 0 else 0.0
 
         contract = {
             "ticker": ticker.symbol,
@@ -99,28 +88,31 @@ def scan_long_puts(
             "days_to_expiration": dte,
             "current_price": round(current_price, 2),
             "coeff_variation": rel_std_deviation,
-            "otm": otm,
+            "max_profit": max_profit_per_share,
+            "max_profit_per_contract": round(max_profit_per_share * 100, 2),
+            "otm": round(float(spread_strike_price), 2),
             "strike_price": round(float(row.strike), 2),
             "moneyness": moneyness,
             "sigma_distance": round(sigma_distance, 2),
-            "ask_per_share": round(ask, 2),
-            "premium_per_contract": round(ask * 100, 2),
-            "spread_bid_ask": spread_bid_ask,
+            "ask_per_share": round(float(ask), 2),
+            "premium_per_contract": round(float(ask * 100), 2),
+            "spread_bid_ask": round(float(spread_bid_ask), 2),
             "break_even": break_even,
-            "open_interest": 0,
-            "impl_volatility": round(iv_decimal * 100, 2),
+            "open_interest": int(row.openInterest) if row.openInterest is not None and not (isinstance(row.openInterest, float) and math.isnan(row.openInterest)) else 0,
+            "impl_volatility": round(float(row.impliedVolatility * 100), 2),
+            "tot_return": tot_return,
+            "profit_5pct": profit_5pct,
+            "return_5pct": return_5pct,
+            "profit_10pct": profit_10pct,
+            "return_10pct": return_10pct,
             "delta": est_delta,
             "highest_price": highest_price,
             "avg_price": avg_price,
             "lowest_price": lowest_price,
             "main_trend": main_trend,
             "iv_hv_ratio": iv_hv_ratio,
-            "ex_dividend_date": None,
-            "earnings_date": None,
-            "profit_5pct": profit_5pct,
-            "return_5pct": return_5pct,
-            "profit_10pct": profit_10pct,
-            "return_10pct": return_10pct,
+            "ex_dividend_date": ex_dividend_date,
+            "earnings_date": earnings_date,
         }
 
         if exchange in [0, 1]:

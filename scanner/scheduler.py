@@ -66,7 +66,7 @@ def main():
             _sleep_until(_next_window_start(now))
             continue
 
-        _log("Starting full scan (all 9 combinations).")
+        _log("Starting full scan (all 6 combinations).")
         subprocess.run([sys.executable, "main.py"], cwd=HERE)
         _log("Scan complete. Checking window...")
 
