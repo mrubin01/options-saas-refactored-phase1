@@ -39,7 +39,7 @@ Backend expects `backend/.env` for local dev; Docker reads `backend/.env.docker`
 cd scanner
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python main.py   # runs all 9 exchange/option-type combinations
+python main.py   # runs all 6 combined scans (~77-80 min)
 ```
 Ticker files must be present in `scanner/tickers/` (gitignored). Output is written to `shared/data/*.json`.
 
@@ -48,7 +48,7 @@ Ticker files must be present in `scanner/tickers/` (gitignored). Output is writt
 ### Stack
 - **Backend**: FastAPI (Python), PostgreSQL via SQLAlchemy 2, Redis for response caching (falls back to in-memory), Alembic migrations, slowapi rate limiting, Sentry, Prometheus metrics.
 - **Frontend**: React 19, TypeScript, Vite, TanStack Query v5, React Router v7.
-- **Scanner**: Python service (`scanner/`) — Alpaca-powered options screener. Writes JSON files to `shared/data/`. Scheduled Mon–Fri 14:30–19:30 BST (up to 3 full runs/day, ~2h each). Uses its own venv; runs as a Docker service via `scheduler.py`.
+- **Scanner**: Python service (`scanner/`) — Alpaca-powered options screener. Writes JSON files to `shared/data/`. Scheduled Mon–Fri 14:30–19:30 BST (up to 3 full runs/day, ~77-80 min each). Uses its own venv; runs as a Docker service via `scheduler.py`.
 - **Ingester**: Python service (`backend/ingestion/watcher.py`) — polls `shared/data/` every 5 min during 14:30–21:00 BST. Loads non-empty JSON files into PostgreSQL via upsert; skips empty files to preserve existing data.
 - **Shared data**: `shared/data/*.json` — written by the scanner, read by the ingester, which loads them into PostgreSQL. The backend serves data from the database, not directly from JSON.
 
@@ -95,8 +95,24 @@ Each strategy route exposes two expiry params:
 
 `expiry_date` takes priority over `min_expiry` in `backend/app/services/options_query.py`. Each strategy also has a `GET /expiry-dates` sub-route that returns all distinct expiry dates from the full table (used to populate the dropdown independently of pagination).
 
+### Scanner architecture
+The scanner uses **6 combined scans** (`SCANS = [(0,5),(1,5),(2,5),(0,6),(1,6),(2,6)]`): option type 5 = Combined Call, type 6 = Combined Put, exchange 0/1/2 = NYSE/NASDAQ/ARCA. Each combined scan fetches the option chain **once per ticker/expiry** and applies both selling and buying filter sets to the same DataFrame, producing two output JSON files per scan (e.g. `best_cov_calls_nyse.json` + `best_long_calls_nyse.json`).
+
+Key config thresholds (`scanner/config.py`):
+- `TARGET_DATES` — next 3 Fridays (selling side expiries)
+- `LONG_TARGET_DATES` — 3rd and 4th next Fridays (buying side needs more time)
+- `SELL_MIN_IV_HV_RATIO = 1.0` — only sell when IV ≥ HV (options are "rich")
+- `LONG_MAX_IV_HV_RATIO = 1.0` — only buy when IV ≤ HV (options are "cheap")
+- `LONG_MAX_ASK = 1.00` — cheap contracts only for buying side
+- `LONG_MIN_DELTA = 30` — minimum delta for buying side
+- `LONG_MAX_MONEYNESS = 5.0` — max % OTM for buying side
+
+HV (historical volatility) is computed in `functions.compute_hv()` as annualised std dev of daily log returns × √252. Open interest is fetched from yfinance option chain (Alpaca indicative feed has no OI field).
+
+Directional filters: covered calls skip uptrending stocks (`main_trend > 0`); put options skip downtrending stocks; long calls skip downtrending; long puts skip uptrending.
+
 ### Scanner expiry dates
-`scanner/config.py` uses `_next_n_fridays(4)` to compute target expiry dates (4 Fridays for a buffer). Not all stocks list options for every Friday — coverage depends on what Alpaca/yfinance returns for each ticker.
+`scanner/config.py` uses `_next_n_fridays(3)` for the selling-side `TARGET_DATES` and `_next_n_fridays(4)[2:]` for the buying-side `LONG_TARGET_DATES`. Not all stocks list options for every Friday — coverage depends on what Alpaca/yfinance returns for each ticker.
 
 ### Database
 Two connection strings are configured: `DATABASE_URL_ADMIN` (for migrations/admin ops) and `DATABASE_URL_APP` (runtime). The app engine uses only `DATABASE_URL_APP`. Alembic reads `DATABASE_URL` from the environment (see `alembic.ini`).
@@ -107,9 +123,14 @@ docker compose --env-file .env.docker exec backend python -m app.db.seed
 ```
 
 ### Ingestion pipeline
-`backend/ingestion/` contains per-strategy scripts (`covered_calls.py`, `put_options.py`, `spread_options.py`) and `watcher.py` which orchestrates them. Each strategy deletes existing rows and re-inserts from all three exchange files (NYSE, NASDAQ, ARCA). The watcher only ingests a strategy when all three files are non-empty.
+`backend/ingestion/` contains per-strategy scripts (`covered_calls.py`, `put_options.py`, `long_calls.py`, `long_puts.py`, `spread_options.py`) and `watcher.py` which orchestrates them. Each strategy deletes existing rows and re-inserts from all three exchange files (NYSE, NASDAQ, ARCA). The watcher only ingests a strategy when all three files are non-empty.
 
-JSON file naming: `best_cov_calls_{exchange}.json`, `best_put_options_{exchange}.json`, `best_spreads_{exchange}.json`.
+JSON file naming:
+- Selling side: `best_cov_calls_{exchange}.json`, `best_put_options_{exchange}.json`
+- Buying side: `best_long_calls_{exchange}.json`, `best_long_puts_{exchange}.json`
+- Spreads: `best_spreads_{exchange}.json`
+
+Buying-side JSON files use `ask_per_share` instead of `bid_per_share`, omit `option_yield`/`roc`/`tot_return`/`max_profit`/`max_profit_per_contract`, and include `profit_5pct`, `return_5pct`, `profit_10pct`, `return_10pct`. Both sides include `iv_hv_ratio`, `ex_dividend_date`, `earnings_date`.
 
 ### Production scanner/ingester
 Both `scanner` and `ingester` run as Docker services in production (added to `deploy-production.yml`). The scanner image is built and pushed to GHCR by `build-and-push-images.yml` alongside backend and frontend.
@@ -139,7 +160,7 @@ Alpaca's ToS requires 30 days written notice before making a User Application av
 - `bid_per_share`, `premium_per_contract` — option bid/premium values
 - `max_profit`, `max_profit_per_contract` — derived dollar profit figures
 - `break_even` — derived break-even price
-- `open_interest` — always 0 because `OptionsSnapshot` (returned by `get_option_chain`) has no OI field; fetching it from `TradingClient.get_option_contracts` would add hundreds of extra API calls per scan run and Alpaca's indicative feed likely doesn't include it anyway
+- `open_interest` — fetched from yfinance option chain (Alpaca's indicative feed has no OI field); may be 0 for thinly-traded contracts
 
 `strike_price` is displayed — it is already embedded in the option contract name, so it adds no additional raw market data exposure.
 
