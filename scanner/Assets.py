@@ -1,4 +1,5 @@
 import yfinance as yf
+import numpy as np
 import pandas as pd
 import functions
 import alpaca_client
@@ -69,6 +70,9 @@ class Asset(object):
             price_trend = functions.get_price_trend(close_prices)
             abs_sd, rel_sd = functions.get_std_dev(self._symbol, close_prices)
 
+            log_returns = np.log(close_prices / close_prices.shift(1)).dropna()
+            hv = float(log_returns.std()) * np.sqrt(252) if len(log_returns) > 1 else 0.0
+
             return {
                 "low": low,
                 "high": high,
@@ -80,6 +84,7 @@ class Asset(object):
                 "price_trend": price_trend,
                 "abs_sd": abs_sd,
                 "rel_sd": rel_sd,
+                "hv": hv,
             }
 
         except Exception as e:

@@ -391,3 +391,44 @@ def write_best_options_to_json(path: str, exchange_no: int, sorted_option_list: 
 
     with open(path, "w") as jsonfile:
         json.dump(data, jsonfile, indent=2)
+
+
+def write_long_options_to_json(path: str, exchange_no: int, sorted_option_list: list[dict]):
+    base_keys = [
+        "ticker",
+        "exchange",
+        "contract",
+        "expiry_date",
+        "days_to_expiration",
+        "current_price",
+        "coeff_variation",
+        "otm",
+        "strike_price",
+        "moneyness",
+        "sigma_distance",
+        "ask_per_share",
+        "premium_per_contract",
+        "spread_bid_ask",
+        "break_even",
+        "open_interest",
+        "impl_volatility",
+        "delta",
+        "highest_price",
+        "avg_price",
+        "lowest_price",
+        "main_trend",
+        "iv_hv_ratio",
+        "ex_dividend_date",
+        "earnings_date",
+        "profit_5pct",
+        "return_5pct",
+        "profit_10pct",
+        "return_10pct",
+    ]
+    equity_keys = base_keys + ["sector", "industry", "beta"]
+    keys = equity_keys if exchange_no in [0, 1] else base_keys
+
+    data = [{key: row.get(key) for key in keys} for row in sorted_option_list]
+
+    with open(path, "w") as jsonfile:
+        json.dump(data, jsonfile, indent=2)

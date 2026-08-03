@@ -9,6 +9,8 @@ import config
 import spread_options
 import covered_calls as cov_calls
 import put_options as put_options
+import long_calls as long_calls_mod
+import long_puts as long_puts_mod
 from concurrent.futures import ThreadPoolExecutor
 
 BASE_DIR = Path(__file__).parent
@@ -27,16 +29,23 @@ option_type = config.OPTION_TYPE
 exchanges = config.EXCHANGES
 
 # Ordered list of (exchange, option_type) for a full automated run
+# option_type: 0=covered calls, 1=cash-secured puts, 2=spreads, 3=long calls, 4=long puts
 SCANS = [
-    (0, 0),  # calls  NYSE
-    (1, 1),  # puts   NASDAQ
-    (2, 2),  # spread ARCA
-    (1, 0),  # calls  NASDAQ
-    (2, 1),  # puts   ARCA
-    (0, 2),  # spread NYSE
-    (2, 0),  # calls  ARCA
-    (0, 1),  # puts   NYSE
-    (1, 2),  # spread NASDAQ
+    (0, 0),  # covered calls   NYSE
+    (1, 1),  # put options      NASDAQ
+    (2, 2),  # spread           ARCA
+    (1, 0),  # covered calls   NASDAQ
+    (2, 1),  # put options      ARCA
+    (0, 2),  # spread           NYSE
+    (2, 0),  # covered calls   ARCA
+    (0, 1),  # put options      NYSE
+    (1, 2),  # spread           NASDAQ
+    (0, 3),  # long calls       NYSE
+    (1, 3),  # long calls       NASDAQ
+    (2, 3),  # long calls       ARCA
+    (0, 4),  # long puts        NYSE
+    (1, 4),  # long puts        NASDAQ
+    (2, 4),  # long puts        ARCA
 ]
 
 
@@ -115,6 +124,7 @@ def main(exchange_number: int = 0, option_type_input: int | None = None):
             avg_price_30d = price_data["avg_price_30d"]
             trend = price_data["price_trend"]
             rel_std_deviation = price_data["rel_sd"]
+            hv = price_data.get("hv", 0.0)
 
             if rel_std_deviation > std_dev_threshold:
                 return [], False
@@ -148,6 +158,18 @@ def main(exchange_number: int = 0, option_type_input: int | None = None):
                             ticker, stock_exchange, d, min_bid_price, t, price,
                             lowest_price, highest_price, avg_price, avg_price_7d,
                             avg_price_30d, trend, rel_std_deviation,
+                            sector=sector, industry=industry, beta=beta)
+                    elif option_no == 3:
+                        best_contracts = long_calls_mod.scan_long_calls(
+                            ticker, stock_exchange, d, min_bid_price, t, price,
+                            lowest_price, highest_price, avg_price, avg_price_7d,
+                            avg_price_30d, trend, rel_std_deviation, hv,
+                            sector=sector, industry=industry, beta=beta)
+                    elif option_no == 4:
+                        best_contracts = long_puts_mod.scan_long_puts(
+                            ticker, stock_exchange, d, min_bid_price, t, price,
+                            lowest_price, highest_price, avg_price, avg_price_7d,
+                            avg_price_30d, trend, rel_std_deviation, hv,
                             sector=sector, industry=industry, beta=beta)
                     else:
                         best_contracts = []
@@ -190,6 +212,7 @@ def main(exchange_number: int = 0, option_type_input: int | None = None):
             avg_price_30d = price_data["avg_price_30d"]
             trend = price_data["price_trend"]
             rel_std_deviation = price_data["rel_sd"]
+            hv = price_data.get("hv", 0.0)
 
             if rel_std_deviation > std_dev_threshold:
                 return [], False
@@ -217,6 +240,16 @@ def main(exchange_number: int = 0, option_type_input: int | None = None):
                             ticker, stock_exchange, d, min_bid_price, t, price,
                             lowest_price, highest_price, avg_price, avg_price_7d,
                             avg_price_30d, trend, rel_std_deviation)
+                    elif option_no == 3:
+                        best_contracts = long_calls_mod.scan_long_calls(
+                            ticker, stock_exchange, d, min_bid_price, t, price,
+                            lowest_price, highest_price, avg_price, avg_price_7d,
+                            avg_price_30d, trend, rel_std_deviation, hv)
+                    elif option_no == 4:
+                        best_contracts = long_puts_mod.scan_long_puts(
+                            ticker, stock_exchange, d, min_bid_price, t, price,
+                            lowest_price, highest_price, avg_price, avg_price_7d,
+                            avg_price_30d, trend, rel_std_deviation, hv)
                     else:
                         best_contracts = []
                 except Exception:
@@ -233,7 +266,12 @@ def main(exchange_number: int = 0, option_type_input: int | None = None):
                 tickers_with_options.append(t)
             all_best_contracts.extend(contracts)
 
-    all_best_contracts_sorted = sorted(all_best_contracts, key=lambda x: x["option_yield"], reverse=True)
+    if option_no in [3, 4]:
+        all_best_contracts_sorted = sorted(
+            all_best_contracts, key=lambda x: x.get("return_10pct", 0.0), reverse=True
+        )
+    else:
+        all_best_contracts_sorted = sorted(all_best_contracts, key=lambda x: x["option_yield"], reverse=True)
     print(f"Tot. number of contracts: {len(all_best_contracts_sorted)}")
     print()
 
@@ -281,6 +319,30 @@ def main(exchange_number: int = 0, option_type_input: int | None = None):
     elif stock_exchange == 2 and option_no == 2:
         functions.write_best_options_to_json(
             OUTPUT_DIR / "best_spreads_arca.json", 2, all_best_contracts_sorted)
+    # write NYSE long calls
+    elif stock_exchange == 0 and option_no == 3:
+        functions.write_long_options_to_json(
+            OUTPUT_DIR / "best_long_calls_nyse.json", 0, all_best_contracts_sorted)
+    # write NASDAQ long calls
+    elif stock_exchange == 1 and option_no == 3:
+        functions.write_long_options_to_json(
+            OUTPUT_DIR / "best_long_calls_nasdaq.json", 1, all_best_contracts_sorted)
+    # write ARCA long calls
+    elif stock_exchange == 2 and option_no == 3:
+        functions.write_long_options_to_json(
+            OUTPUT_DIR / "best_long_calls_arca.json", 2, all_best_contracts_sorted)
+    # write NYSE long puts
+    elif stock_exchange == 0 and option_no == 4:
+        functions.write_long_options_to_json(
+            OUTPUT_DIR / "best_long_puts_nyse.json", 0, all_best_contracts_sorted)
+    # write NASDAQ long puts
+    elif stock_exchange == 1 and option_no == 4:
+        functions.write_long_options_to_json(
+            OUTPUT_DIR / "best_long_puts_nasdaq.json", 1, all_best_contracts_sorted)
+    # write ARCA long puts
+    elif stock_exchange == 2 and option_no == 4:
+        functions.write_long_options_to_json(
+            OUTPUT_DIR / "best_long_puts_arca.json", 2, all_best_contracts_sorted)
 
     end_time = time.time()
     execution_time = end_time - start_time
