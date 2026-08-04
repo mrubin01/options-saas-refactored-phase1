@@ -54,7 +54,7 @@ Ticker files must be present in `scanner/tickers/` (gitignored). Output is writt
 
 ### Backend layout
 `backend/app/` is organized as:
-- `api/v1/` — active API routes (auth, covered-calls, put-options, spread-options, watchlist, saved-screeners, health, metrics, data-freshness, ingestion-status)
+- `api/v1/` — active API routes (auth, covered-calls, put-options, long-calls, long-puts, watchlist, saved-screeners, health, metrics, data-freshness, ingestion-status)
 - `api/v2/` — stub router (prefix `/v2`), not yet implemented
 - `auth/` — JWT decode, bearer dependency (`deps.py`), password hashing
 - `core/` — config, middleware stack, exception handlers, rate limiting, Sentry, response helpers
@@ -82,11 +82,11 @@ Use `response.ok(data=..., request=request)` and `response.fail(code=..., messag
 ### Frontend data layer
 - `api/http.ts` — base fetch wrapper (`apiFetch`), handles auth headers, token refresh, and maps the envelope to `data` or throws `ApiClientError`. Also exports `apiFetchPaged<T>` which returns `PagedResult<T>` (wraps `{ rows, pagination }`).
 - `api/client.ts` — thin typed wrappers (`apiGet`, `apiGetPaged`, `apiPost`, etc.).
-- `api/hooks/` — TanStack Query hooks per resource (`useCoveredCalls`, `usePutOptions`, `useSpreadOptions`, `useExpiryDates`).
+- `api/hooks/` — TanStack Query hooks per resource (`useCoveredCalls`, `usePutOptions`, `useLongCalls`, `useLongPuts`, `useExpiryDates`).
 - `api/queryKeys.ts` — centralised query key factory.
 
 ### Pagination
-All three strategy endpoints support `limit` / `offset` query params and return `meta.pagination` (`{ limit, offset, total, has_next }`). The frontend uses `apiFetchPaged` / `apiGetPaged` to unwrap this into `PagedResult<T[]>`, and each page renders a `<Pagination>` component (`frontend/src/components/Pagination.tsx`). Changing any filter resets `offset` to 0.
+All four strategy endpoints support `limit` / `offset` query params and return `meta.pagination` (`{ limit, offset, total, has_next }`). The frontend uses `apiFetchPaged` / `apiGetPaged` to unwrap this into `PagedResult<T[]>`, and each page renders a `<Pagination>` component (`frontend/src/components/Pagination.tsx`). Changing any filter resets `offset` to 0.
 
 ### Expiry date filtering
 Each strategy route exposes two expiry params:
@@ -111,6 +111,8 @@ HV (historical volatility) is computed in `functions.compute_hv()` as annualised
 
 Directional filters: covered calls skip uptrending stocks (`main_trend > 0`); put options skip downtrending stocks; long calls skip downtrending; long puts skip uptrending.
 
+Earnings/ex-div filters (applied per expiry date in the combined loop): `ex_dividend_date` and `earnings_date` are fetched from yfinance (`stock.info` / `stock.calendar`) in `Assets.py` and threaded into every scan call. If either event falls between today and the option expiry date (`today <= event <= option_dt`), the contract is skipped. Rules: selling side skips both earnings and ex-div within DTE; long calls skip both (ex-div drops the stock price, hurting calls); long puts skip earnings only (an ex-div drop actually helps puts).
+
 ### Scanner expiry dates
 `scanner/config.py` uses `_next_n_fridays(3)` for the selling-side `TARGET_DATES` and `_next_n_fridays(4)[2:]` for the buying-side `LONG_TARGET_DATES`. Not all stocks list options for every Friday — coverage depends on what Alpaca/yfinance returns for each ticker.
 
@@ -123,12 +125,11 @@ docker compose --env-file .env.docker exec backend python -m app.db.seed
 ```
 
 ### Ingestion pipeline
-`backend/ingestion/` contains per-strategy scripts (`covered_calls.py`, `put_options.py`, `long_calls.py`, `long_puts.py`, `spread_options.py`) and `watcher.py` which orchestrates them. Each strategy deletes existing rows and re-inserts from all three exchange files (NYSE, NASDAQ, ARCA). The watcher only ingests a strategy when all three files are non-empty.
+`backend/ingestion/` contains per-strategy scripts (`covered_calls.py`, `put_options.py`, `long_calls.py`, `long_puts.py`) and `watcher.py` which orchestrates them. Each strategy deletes existing rows and re-inserts from all three exchange files (NYSE, NASDAQ, ARCA). The watcher only ingests a strategy when all three files are non-empty.
 
 JSON file naming:
 - Selling side: `best_cov_calls_{exchange}.json`, `best_put_options_{exchange}.json`
 - Buying side: `best_long_calls_{exchange}.json`, `best_long_puts_{exchange}.json`
-- Spreads: `best_spreads_{exchange}.json`
 
 Buying-side JSON files use `ask_per_share` instead of `bid_per_share`, omit `option_yield`/`roc`/`tot_return`/`max_profit`/`max_profit_per_contract`, and include `profit_5pct`, `return_5pct`, `profit_10pct`, `return_10pct`. Both sides include `iv_hv_ratio`, `ex_dividend_date`, `earnings_date`.
 
