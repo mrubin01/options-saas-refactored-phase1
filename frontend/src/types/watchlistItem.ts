@@ -1,4 +1,4 @@
-export type WatchlistStrategyType = "covered_calls" | "put_options" | "long_calls" | "long_puts" | "spread_options";
+export type WatchlistStrategyType = "covered_calls" | "put_options" | "long_calls" | "long_puts";
 
 export type WatchlistItem = {
   id: number;

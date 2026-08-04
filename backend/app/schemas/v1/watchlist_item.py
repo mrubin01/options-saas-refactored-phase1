@@ -6,7 +6,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
-StrategyType = Literal["covered_calls", "put_options", "spread_options"]
+StrategyType = Literal["covered_calls", "put_options", "long_calls", "long_puts"]
 
 
 class WatchlistItemCreate(BaseModel):

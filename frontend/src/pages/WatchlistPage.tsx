@@ -19,7 +19,6 @@ const strategyLabelMap: Record<WatchlistStrategyType, string> = {
   put_options: "Sell Puts",
   long_calls: "Buy Calls",
   long_puts: "Buy Puts",
-  spread_options: "Spread Options",
 };
 
 function formatDateTime(value: string) {

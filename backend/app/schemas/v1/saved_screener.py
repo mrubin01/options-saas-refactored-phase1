@@ -6,7 +6,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field, validator
 
 
-StrategyType = Literal["covered_calls", "put_options", "spread_options"]
+StrategyType = Literal["covered_calls", "put_options", "long_calls", "long_puts"]
 
 
 class SavedScreenerConfig(BaseModel):

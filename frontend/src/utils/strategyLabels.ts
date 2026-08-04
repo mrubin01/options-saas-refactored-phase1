@@ -8,7 +8,6 @@ export const strategyLabelMap: Record<AnyStrategyType, string> = {
   put_options: "Sell Puts",
   long_calls: "Buy Calls",
   long_puts: "Buy Puts",
-  spread_options: "Spread Options",
 };
 
 export const strategyPathMap: Record<AnyStrategyType, string> = {
@@ -16,5 +15,4 @@ export const strategyPathMap: Record<AnyStrategyType, string> = {
   put_options: "/put-options",
   long_calls: "/long-calls",
   long_puts: "/long-puts",
-  spread_options: "/spread-options",
 };

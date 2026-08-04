@@ -8,7 +8,7 @@ export const metricGlossary: Partial<
     key: "ticker",
     label: "Ticker",
     shortDefinition: "The stock symbol of the underlying company.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "core",
   },
 
@@ -16,7 +16,7 @@ export const metricGlossary: Partial<
     key: "exchange",
     label: "Exchange",
     shortDefinition: "The stock exchange where the underlying company is listed.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "supporting",
   },
 
@@ -26,7 +26,7 @@ export const metricGlossary: Partial<
     shortDefinition: "The option contract identifier.",
     interpretation:
       "Use this to distinguish between different strikes, expirations, and option types.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "core",
   },
 
@@ -36,7 +36,7 @@ export const metricGlossary: Partial<
     shortDefinition: "The date when the option contract expires.",
     interpretation:
       "Shorter expirations usually mean faster time decay and more sensitivity to near-term price movement.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "core",
   },
 
@@ -44,7 +44,7 @@ export const metricGlossary: Partial<
     key: "current_price",
     label: "Current price",
     shortDefinition: "The latest available price of the underlying stock.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "core",
   },
 
@@ -54,7 +54,7 @@ export const metricGlossary: Partial<
     shortDefinition: "The price at which the option can be exercised.",
     interpretation:
       "Compare strike price with current price to understand whether the option is in, at, or out of the money.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "core",
   },
 
@@ -64,7 +64,7 @@ export const metricGlossary: Partial<
     shortDefinition: "Days to expiration.",
     interpretation:
       "Lower DTE means the contract expires sooner. Higher DTE gives the trade more time but may reduce annualized efficiency.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "core",
   },
 
@@ -75,7 +75,7 @@ export const metricGlossary: Partial<
       "A relative volatility or dispersion measure. Also known as relative standard deviation.",
     interpretation:
       "Can help compare variability across instruments with different price levels.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "advanced",
   },
 
@@ -85,7 +85,7 @@ export const metricGlossary: Partial<
     shortDefinition: "Estimated maximum profit for the trade.",
     interpretation:
       "This is the upper bound of the modeled payoff, assuming the trade reaches its best-case outcome.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "core",
   },
 
@@ -94,7 +94,7 @@ export const metricGlossary: Partial<
     label: "Max profit / contract",
     shortDefinition:
       "Estimated maximum profit for one option contract: max_profit * 100.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "supporting",
   },
 
@@ -115,7 +115,7 @@ export const metricGlossary: Partial<
       "Relationship between the stock price and the option strike price.",
     interpretation:
       "The percentage the stock needs to rise for calls, or drop for puts, to reach the strike price.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "core",
   },
 
@@ -126,7 +126,7 @@ export const metricGlossary: Partial<
       "Distance from current price expressed in volatility-adjusted terms.",
     interpretation:
       "Useful for comparing strike distance across stocks with different volatility levels.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "advanced",
   },
 
@@ -137,7 +137,7 @@ export const metricGlossary: Partial<
       "The underlying price level where the trade approximately breaks even.",
     interpretation:
       "A break-even farther from the current price can indicate a larger margin of safety.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "core",
   },
 
@@ -162,7 +162,7 @@ export const metricGlossary: Partial<
       "Shows the expected return relative to the capital required for the trade. It is the annualized option yield.",
     caution:
       "ROC should be compared with DTE and downside risk, not viewed alone.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "core",
   },
 
@@ -172,7 +172,7 @@ export const metricGlossary: Partial<
     shortDefinition: "Estimated total return.",
     interpretation:
       "Useful as a broad comparison metric, but it should be checked against risk and liquidity.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "core",
   },
 
@@ -185,7 +185,7 @@ export const metricGlossary: Partial<
       "For income strategies, delta can be used as a rough proxy for assignment risk at expiration.",
     caution:
       "Delta changes as price, volatility, and time to expiration change.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "advanced",
   },
 
@@ -197,7 +197,7 @@ export const metricGlossary: Partial<
       "A narrower spread usually indicates better liquidity and lower execution friction.",
     caution:
       "Wide spreads can make attractive-looking opportunities harder to execute at the displayed price.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "core",
   },
 
@@ -210,7 +210,7 @@ export const metricGlossary: Partial<
       "Higher open interest can indicate better market participation and potentially better liquidity.",
     caution:
       "Open interest does not guarantee good execution. Always consider bid/ask spread too.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "core",
   },
 
@@ -221,7 +221,7 @@ export const metricGlossary: Partial<
       "The market-implied expectation of future price movement.",
     interpretation:
       "Higher implied volatility often increases option premiums, but it can also signal greater expected risk.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "core",
   },
 
@@ -231,7 +231,7 @@ export const metricGlossary: Partial<
     shortDefinition: "The quoted bid price per option share.",
     interpretation:
       "This is often used as a conservative estimate of what a seller may receive.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "supporting",
   },
 
@@ -244,7 +244,7 @@ export const metricGlossary: Partial<
       "Higher premium can improve income, but it may also reflect higher risk, volatility, or less favorable moneyness.",
     caution:
       "Premium alone is not enough to judge quality. Compare it with DTE, liquidity, strike distance, and risk.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "core",
   },
 
@@ -254,7 +254,7 @@ export const metricGlossary: Partial<
     shortDefinition: "The broad market sector of the underlying company.",
     interpretation:
       "Useful for diversification and avoiding overconcentration.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "supporting",
   },
 
@@ -263,7 +263,7 @@ export const metricGlossary: Partial<
     label: "Industry",
     shortDefinition:
       "The more specific industry group of the underlying company.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "supporting",
   },
 
@@ -274,7 +274,7 @@ export const metricGlossary: Partial<
       "The highest observed price of the underlying in the scanner lookback period.",
     interpretation:
       "Useful for understanding whether the current price is near the top of its recent range.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "supporting",
   },
 
@@ -285,7 +285,7 @@ export const metricGlossary: Partial<
       "The average observed price of the underlying in the scanner lookback period.",
     interpretation:
       "Useful as a simple reference point for where the current price sits relative to recent trading history.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "supporting",
   },
 
@@ -296,7 +296,7 @@ export const metricGlossary: Partial<
       "The lowest observed price of the underlying in the scanner lookback period.",
     interpretation:
       "Useful for understanding downside range and recent support-like areas.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "supporting",
   },
 
@@ -307,7 +307,7 @@ export const metricGlossary: Partial<
       "Scanner-derived trend value for the underlying stock or ETF.",
     interpretation:
       "Useful as a quick directional context indicator, but it should not be used alone.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "supporting",
   },
 
@@ -318,7 +318,7 @@ export const metricGlossary: Partial<
       "A measure of how much the underlying stock tends to move relative to the broader market.",
     interpretation:
       "Higher beta usually means the stock is more sensitive to market moves.",
-    appliesTo: ["covered_calls", "put_options", "spread_options"],
+    appliesTo: ["covered_calls", "put_options"],
     importance: "supporting",
   },
 };

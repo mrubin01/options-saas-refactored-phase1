@@ -6,7 +6,6 @@ from pydantic import BaseModel
 
 from app.models.covered_call import CoveredCall
 from app.models.put_option import PutOption
-from app.models.spread_option import SpreadOption
 
 
 COMMON_OPTION_CONTRACT_FIELDS = {
@@ -63,13 +62,11 @@ DEPRECATED_FIELD_NAMES = {
 STRATEGY_MODEL_CONTRACTS = [
     ("covered_calls", CoveredCall),
     ("put_options", PutOption),
-    ("spread_options", SpreadOption),
 ]
 
 STRATEGY_SCHEMA_MODULES = [
     ("covered_calls", "app.schemas.v1.covered_call"),
     ("put_options", "app.schemas.v1.put_option"),
-    ("spread_options", "app.schemas.v1.spread_option"),
 ]
 
 

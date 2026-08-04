@@ -4,7 +4,6 @@ export type SortDirection = "asc" | "desc";
 
 export type CoveredCallSortField = OptionContractField;
 export type PutOptionSortField = OptionContractField;
-export type SpreadOptionSortField = OptionContractField;
 
 export type BaseDiscoveryFilters<TSortField extends OptionContractField> = {
   exchange?: number;
@@ -115,9 +114,6 @@ export type CoveredCallsDiscoveryFilters =
 
 export type PutOptionsDiscoveryFilters =
   BaseDiscoveryFilters<PutOptionSortField>;
-
-export type SpreadOptionsDiscoveryFilters =
-  BaseDiscoveryFilters<SpreadOptionSortField>;
 
 export type LongCallSortField = OptionContractField;
 export type LongPutSortField = OptionContractField;

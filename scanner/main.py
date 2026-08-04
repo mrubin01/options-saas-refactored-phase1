@@ -7,7 +7,6 @@ from pathlib import Path
 from datetime import date as _date, datetime
 import Assets
 import config
-import spread_options
 import covered_calls as cov_calls
 import put_options as put_options
 import long_calls
@@ -92,6 +91,8 @@ def main(exchange_number: int = 0, option_type_input: int | None = None):
             sector = functions.normalize_nullable_fields(ticker_data.get("sector"))
             industry = functions.normalize_nullable_fields(ticker_data.get("industry"))
             beta = functions.normalize_nullable_float(ticker_data.get("beta"))
+            ex_dividend_date = functions.normalize_nullable_fields(ticker_data.get("ex_dividend_date"))
+            earnings_date = functions.normalize_nullable_fields(ticker_data.get("earnings_date"))
 
             if price > max_stock_price:
                 return [], []
@@ -121,9 +122,28 @@ def main(exchange_number: int = 0, option_type_input: int | None = None):
                 opt_type = "call" if option_no == 5 else "put"
                 selling = []
                 buying = []
+                earnings_dt = None
+                if earnings_date:
+                    try:
+                        earnings_dt = datetime.strptime(earnings_date, "%Y-%m-%d").date()
+                    except ValueError:
+                        pass
+                ex_div_dt = None
+                if ex_dividend_date:
+                    try:
+                        ex_div_dt = datetime.strptime(ex_dividend_date, "%Y-%m-%d").date()
+                    except ValueError:
+                        pass
                 for d in options:
-                    is_selling = d in target_dates and not too_volatile_for_selling
-                    is_buying = d in config.LONG_TARGET_DATES
+                    option_dt = datetime.strptime(d, "%Y-%m-%d").date()
+                    today = _date.today()
+                    earnings_within_dte = earnings_dt is not None and today <= earnings_dt <= option_dt
+                    ex_div_within_dte = ex_div_dt is not None and today <= ex_div_dt <= option_dt
+                    is_selling = (d in target_dates and not too_volatile_for_selling
+                                  and not earnings_within_dte and not ex_div_within_dte)
+                    is_buying = d in config.LONG_TARGET_DATES and not earnings_within_dte
+                    if option_no == 5:  # long calls: also skip ex-div (stock drop hurts calls)
+                        is_buying = is_buying and not ex_div_within_dte
                     if not is_selling and not is_buying:
                         continue
                     df = functions.get_alpaca_option_chain(t, d, opt_type)
@@ -135,7 +155,8 @@ def main(exchange_number: int = 0, option_type_input: int | None = None):
                                 ticker, stock_exchange, d, min_bid_price, t, price,
                                 lowest_price, highest_price, avg_price, avg_price_7d,
                                 avg_price_30d, trend, rel_std_deviation,
-                                sector=sector, industry=industry, beta=beta, hv=hv, df=df)
+                                sector=sector, industry=industry, beta=beta, hv=hv, df=df,
+                                ex_dividend_date=ex_dividend_date, earnings_date=earnings_date)
                             selling.extend(best)
                         except Exception:
                             pass
@@ -145,7 +166,8 @@ def main(exchange_number: int = 0, option_type_input: int | None = None):
                                 ticker, stock_exchange, d, t, price,
                                 lowest_price, highest_price, avg_price, avg_price_7d,
                                 avg_price_30d, trend, rel_std_deviation,
-                                hv=hv, sector=sector, industry=industry, beta=beta, df=df)
+                                hv=hv, sector=sector, industry=industry, beta=beta, df=df,
+                                ex_dividend_date=ex_dividend_date, earnings_date=earnings_date)
                             buying.extend(best)
                         except Exception:
                             pass
@@ -154,10 +176,6 @@ def main(exchange_number: int = 0, option_type_input: int | None = None):
             # Single modes (backward compat)
             if too_volatile_for_selling and option_no not in [3, 4]:
                 return [], []
-
-            has_long_itm_options = False
-            if option_no == 2:
-                has_long_itm_options = spread_options.scan_long_cov_calls(options, t, price)
 
             active_dates = config.LONG_TARGET_DATES if option_no in [3, 4] else target_dates
             matched = []
@@ -170,31 +188,29 @@ def main(exchange_number: int = 0, option_type_input: int | None = None):
                             ticker, stock_exchange, d, min_bid_price, t, price,
                             lowest_price, highest_price, avg_price, avg_price_7d,
                             avg_price_30d, trend, rel_std_deviation,
-                            sector=sector, industry=industry, beta=beta, hv=hv)
+                            sector=sector, industry=industry, beta=beta, hv=hv,
+                            ex_dividend_date=ex_dividend_date, earnings_date=earnings_date)
                     elif option_no == 1:
                         best_contracts = put_options.scan_put_options(
                             ticker, stock_exchange, d, min_bid_price, t, price,
                             lowest_price, highest_price, avg_price, avg_price_7d,
                             avg_price_30d, trend, rel_std_deviation,
-                            sector=sector, industry=industry, beta=beta, hv=hv)
-                    elif option_no == 2 and len(options) > config.SPREAD_MIN_EXPIRY_DATES and has_long_itm_options:
-                        best_contracts = spread_options.scan_spread_options(
-                            ticker, stock_exchange, d, min_bid_price, t, price,
-                            lowest_price, highest_price, avg_price, avg_price_7d,
-                            avg_price_30d, trend, rel_std_deviation,
-                            sector=sector, industry=industry, beta=beta)
+                            sector=sector, industry=industry, beta=beta, hv=hv,
+                            ex_dividend_date=ex_dividend_date, earnings_date=earnings_date)
                     elif option_no == 3:
                         best_contracts = long_calls.scan_long_calls(
                             ticker, stock_exchange, d, t, price,
                             lowest_price, highest_price, avg_price, avg_price_7d,
                             avg_price_30d, trend, rel_std_deviation, hv=hv,
-                            sector=sector, industry=industry, beta=beta)
+                            sector=sector, industry=industry, beta=beta,
+                            ex_dividend_date=ex_dividend_date, earnings_date=earnings_date)
                     elif option_no == 4:
                         best_contracts = long_puts.scan_long_puts(
                             ticker, stock_exchange, d, t, price,
                             lowest_price, highest_price, avg_price, avg_price_7d,
                             avg_price_30d, trend, rel_std_deviation, hv=hv,
-                            sector=sector, industry=industry, beta=beta)
+                            sector=sector, industry=industry, beta=beta,
+                            ex_dividend_date=ex_dividend_date, earnings_date=earnings_date)
                     else:
                         best_contracts = []
                 except Exception:
@@ -240,6 +256,8 @@ def main(exchange_number: int = 0, option_type_input: int | None = None):
             hv = price_data.get("hv", 0.0)
 
             too_volatile_for_selling = rel_std_deviation > std_dev_threshold
+            ex_dividend_date = functions.normalize_nullable_fields(ticker_data.get("ex_dividend_date"))
+            earnings_date = functions.normalize_nullable_fields(ticker_data.get("earnings_date"))
 
             if len(options) == 0:
                 return [], []
@@ -251,9 +269,28 @@ def main(exchange_number: int = 0, option_type_input: int | None = None):
                 opt_type = "call" if option_no == 5 else "put"
                 selling = []
                 buying = []
+                earnings_dt = None
+                if earnings_date:
+                    try:
+                        earnings_dt = datetime.strptime(earnings_date, "%Y-%m-%d").date()
+                    except ValueError:
+                        pass
+                ex_div_dt = None
+                if ex_dividend_date:
+                    try:
+                        ex_div_dt = datetime.strptime(ex_dividend_date, "%Y-%m-%d").date()
+                    except ValueError:
+                        pass
                 for d in options:
-                    is_selling = d in target_dates and not too_volatile_for_selling
-                    is_buying = d in config.LONG_TARGET_DATES
+                    option_dt = datetime.strptime(d, "%Y-%m-%d").date()
+                    today = _date.today()
+                    earnings_within_dte = earnings_dt is not None and today <= earnings_dt <= option_dt
+                    ex_div_within_dte = ex_div_dt is not None and today <= ex_div_dt <= option_dt
+                    is_selling = (d in target_dates and not too_volatile_for_selling
+                                  and not earnings_within_dte and not ex_div_within_dte)
+                    is_buying = d in config.LONG_TARGET_DATES and not earnings_within_dte
+                    if option_no == 5:  # long calls: also skip ex-div (stock drop hurts calls)
+                        is_buying = is_buying and not ex_div_within_dte
                     if not is_selling and not is_buying:
                         continue
                     df = functions.get_alpaca_option_chain(t, d, opt_type)
@@ -264,7 +301,8 @@ def main(exchange_number: int = 0, option_type_input: int | None = None):
                             best = scan_sell(
                                 ticker, stock_exchange, d, min_bid_price, t, price,
                                 lowest_price, highest_price, avg_price, avg_price_7d,
-                                avg_price_30d, trend, rel_std_deviation, hv=hv, df=df)
+                                avg_price_30d, trend, rel_std_deviation, hv=hv, df=df,
+                                ex_dividend_date=ex_dividend_date, earnings_date=earnings_date)
                             selling.extend(best)
                         except Exception:
                             pass
@@ -273,7 +311,8 @@ def main(exchange_number: int = 0, option_type_input: int | None = None):
                             best = scan_buy(
                                 ticker, stock_exchange, d, t, price,
                                 lowest_price, highest_price, avg_price, avg_price_7d,
-                                avg_price_30d, trend, rel_std_deviation, hv=hv, df=df)
+                                avg_price_30d, trend, rel_std_deviation, hv=hv, df=df,
+                                ex_dividend_date=ex_dividend_date, earnings_date=earnings_date)
                             buying.extend(best)
                         except Exception:
                             pass
@@ -293,27 +332,26 @@ def main(exchange_number: int = 0, option_type_input: int | None = None):
                         best_contracts = cov_calls.scan_covered_calls(
                             ticker, stock_exchange, d, min_bid_price, t, price,
                             lowest_price, highest_price, avg_price, avg_price_7d,
-                            avg_price_30d, trend, rel_std_deviation, hv=hv)
+                            avg_price_30d, trend, rel_std_deviation, hv=hv,
+                            ex_dividend_date=ex_dividend_date, earnings_date=earnings_date)
                     elif option_no == 1:
                         best_contracts = put_options.scan_put_options(
                             ticker, stock_exchange, d, min_bid_price, t, price,
                             lowest_price, highest_price, avg_price, avg_price_7d,
-                            avg_price_30d, trend, rel_std_deviation, hv=hv)
-                    elif option_no == 2 and len(options) > config.SPREAD_MIN_EXPIRY_DATES:
-                        best_contracts = spread_options.scan_spread_options(
-                            ticker, stock_exchange, d, min_bid_price, t, price,
-                            lowest_price, highest_price, avg_price, avg_price_7d,
-                            avg_price_30d, trend, rel_std_deviation)
+                            avg_price_30d, trend, rel_std_deviation, hv=hv,
+                            ex_dividend_date=ex_dividend_date, earnings_date=earnings_date)
                     elif option_no == 3:
                         best_contracts = long_calls.scan_long_calls(
                             ticker, stock_exchange, d, t, price,
                             lowest_price, highest_price, avg_price, avg_price_7d,
-                            avg_price_30d, trend, rel_std_deviation, hv=hv)
+                            avg_price_30d, trend, rel_std_deviation, hv=hv,
+                            ex_dividend_date=ex_dividend_date, earnings_date=earnings_date)
                     elif option_no == 4:
                         best_contracts = long_puts.scan_long_puts(
                             ticker, stock_exchange, d, t, price,
                             lowest_price, highest_price, avg_price, avg_price_7d,
-                            avg_price_30d, trend, rel_std_deviation, hv=hv)
+                            avg_price_30d, trend, rel_std_deviation, hv=hv,
+                            ex_dividend_date=ex_dividend_date, earnings_date=earnings_date)
                     else:
                         best_contracts = []
                 except Exception:

@@ -1,7 +1,6 @@
 import json
 import yfinance as yf
 import numpy as np
-import requests_cache
 from sklearn.linear_model import LinearRegression
 import pandas as pd
 import math
@@ -211,12 +210,6 @@ def get_price_trend(price_list: list):
     slope = model.coef_[0][0]
     trend = 1 if slope > 0 else 0
     return trend
-
-
-def create_user_agent():
-    session = requests_cache.CachedSession('yfinance.cache')
-    session.headers['User-Agent'] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:132.0) Gecko/20100101 Firefox/132.0"
-    return session
 
 
 def compute_main_trend(

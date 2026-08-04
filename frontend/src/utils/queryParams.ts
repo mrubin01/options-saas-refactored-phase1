@@ -5,7 +5,6 @@ import {
 import type {
   CoveredCallsDiscoveryFilters,
   PutOptionsDiscoveryFilters,
-  SpreadOptionsDiscoveryFilters,
   LongCallsDiscoveryFilters,
   LongPutsDiscoveryFilters,
   SortDirection,
@@ -14,7 +13,6 @@ import type {
 type DiscoveryFilters =
   | CoveredCallsDiscoveryFilters
   | PutOptionsDiscoveryFilters
-  | SpreadOptionsDiscoveryFilters
   | LongCallsDiscoveryFilters
   | LongPutsDiscoveryFilters;
 
@@ -236,34 +234,6 @@ export function buildPutOptionsPathFromFilters(
   return qs ? `/put-options?${qs}` : "/put-options";
 }
 
-export function parseSpreadOptionsFiltersFromSearchParams(
-  searchParams: URLSearchParams,
-): SpreadOptionsDiscoveryFilters {
-  return parseDiscoveryFiltersFromSearchParams<SpreadOptionsDiscoveryFilters>(
-    searchParams,
-  );
-}
-
-export function spreadOptionsFiltersToSearchParams(
-  filters: SpreadOptionsDiscoveryFilters,
-): URLSearchParams {
-  return discoveryFiltersToSearchParams(filters);
-}
-
-export function hasActiveSpreadOptionsDiscoveryFilters(
-  filters: SpreadOptionsDiscoveryFilters,
-): boolean {
-  return hasActiveDiscoveryFilters(filters);
-}
-
-export function buildSpreadOptionsPathFromFilters(
-  filters: SpreadOptionsDiscoveryFilters,
-) {
-  const searchParams = spreadOptionsFiltersToSearchParams(filters);
-  const qs = searchParams.toString();
-
-  return qs ? `/spread-options?${qs}` : "/spread-options";
-}
 
 export function parseLongCallsFiltersFromSearchParams(
   searchParams: URLSearchParams,

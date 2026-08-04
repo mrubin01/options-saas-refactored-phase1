@@ -1,4 +1,4 @@
-export type StrategyType = "covered_calls" | "put_options" | "long_calls" | "long_puts" | "spread_options";
+export type StrategyType = "covered_calls" | "put_options" | "long_calls" | "long_puts";
 import type { CoveredCallsDiscoveryFilters } from "./discovery";
 import type { OptionsFilters } from "./filters";
 

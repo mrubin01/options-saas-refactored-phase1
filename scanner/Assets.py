@@ -4,7 +4,7 @@ import functions
 import alpaca_client
 from alpaca.data.requests import StockLatestTradeRequest, StockBarsRequest
 from alpaca.data.timeframe import TimeFrame
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 
 class Asset(object):
@@ -113,12 +113,35 @@ class Equity(Asset):
             if not info or not isinstance(info, dict):
                 return {}
 
+            ex_div_ts = info.get("exDividendDate")
+            if ex_div_ts and isinstance(ex_div_ts, (int, float)):
+                try:
+                    ex_dividend_date = date.fromtimestamp(int(ex_div_ts)).strftime("%Y-%m-%d")
+                except Exception:
+                    ex_dividend_date = None
+            else:
+                ex_dividend_date = None
+
+            try:
+                cal = stock.calendar
+                if cal and isinstance(cal, dict):
+                    dates = cal.get("Earnings Date") or []
+                    today = date.today()
+                    upcoming = [d for d in dates if hasattr(d, "date") and d.date() >= today]
+                    earnings_date = upcoming[0].strftime("%Y-%m-%d") if upcoming else None
+                else:
+                    earnings_date = None
+            except Exception:
+                earnings_date = None
+
             return {
                 "price": price,
                 "options": options,
                 "sector": info.get("sector"),
                 "industry": info.get("industry"),
                 "beta": info.get("beta"),
+                "ex_dividend_date": ex_dividend_date,
+                "earnings_date": earnings_date,
             }
 
         except Exception:
@@ -145,9 +168,24 @@ class ETF(Asset):
             if not options:
                 return {}
 
+            try:
+                cal = stock.calendar
+                if cal and isinstance(cal, dict):
+                    ex_div = cal.get("Ex-Dividend Date")
+                    if ex_div and hasattr(ex_div, "strftime"):
+                        ex_dividend_date = ex_div.strftime("%Y-%m-%d")
+                    else:
+                        ex_dividend_date = None
+                else:
+                    ex_dividend_date = None
+            except Exception:
+                ex_dividend_date = None
+
             return {
                 "price": price,
                 "options": options,
+                "ex_dividend_date": ex_dividend_date,
+                "earnings_date": None,
             }
 
         except Exception:

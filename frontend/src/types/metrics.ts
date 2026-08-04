@@ -1,7 +1,8 @@
 export type StrategyType =
   | "covered_calls"
   | "put_options"
-  | "spread_options";
+  | "long_calls"
+  | "long_puts";
 
 export type MetricImportance = "core" | "supporting" | "advanced";
 
