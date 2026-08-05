@@ -44,20 +44,43 @@ class _RateLimiter:
 
 _limiter = _RateLimiter(180)
 
+_MAX_RETRIES = 3
+_RETRY_BASE_DELAY = 2.0
+
+
+def _is_retryable(e: Exception) -> bool:
+    msg = str(e).lower()
+    return (
+        "too many requests" in msg
+        or "connection aborted" in msg
+        or "remote end closed" in msg
+        or "remotedisconnected" in msg
+        or "connection reset" in msg
+    )
+
+
+def _call_with_retry(fn, req):
+    for attempt in range(_MAX_RETRIES):
+        _limiter.acquire()
+        try:
+            return fn(req)
+        except Exception as e:
+            if _is_retryable(e) and attempt < _MAX_RETRIES - 1:
+                time.sleep(_RETRY_BASE_DELAY * (2 ** attempt))
+                continue
+            raise
+
 
 def get_latest_trades(req):
-    _limiter.acquire()
-    return stock_client.get_stock_latest_trade(req)
+    return _call_with_retry(stock_client.get_stock_latest_trade, req)
 
 
 def get_stock_bars(req):
-    _limiter.acquire()
-    return stock_client.get_stock_bars(req)
+    return _call_with_retry(stock_client.get_stock_bars, req)
 
 
 def get_option_chain(req):
-    _limiter.acquire()
-    return option_client.get_option_chain(req)
+    return _call_with_retry(option_client.get_option_chain, req)
 
 
 if __name__ == "__main__":
