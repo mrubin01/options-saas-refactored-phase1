@@ -2,9 +2,9 @@ from datetime import date, datetime
 from pydantic import BaseModel
 from typing import List
 from typing import Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
-# response schema: data to expose via API   
+# response schema: data to expose via API
 
 class PutOptionBase(BaseModel):
     contract: str
@@ -15,6 +15,13 @@ class PutOptionBase(BaseModel):
     strike_price: float
 
     days_to_expiration: int | None = None
+
+    @validator("days_to_expiration", always=True)
+    def compute_dte_from_expiry(cls, v, values):
+        expiry = values.get("expiry_date")
+        if expiry is not None:
+            return (expiry - date.today()).days
+        return v
     coeff_variation: float | None = None
     max_profit: float | None = None
     max_profit_per_contract: float | None = None

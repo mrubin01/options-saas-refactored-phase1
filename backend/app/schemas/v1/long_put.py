@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import Literal
 
 
@@ -12,6 +12,13 @@ class LongPutOut(BaseModel):
     strike_price: float
 
     days_to_expiration: int | None = None
+
+    @validator("days_to_expiration", always=True)
+    def compute_dte_from_expiry(cls, v, values):
+        expiry = values.get("expiry_date")
+        if expiry is not None:
+            return (expiry - date.today()).days
+        return v
     coeff_variation: float | None = None
     otm: float | None = None
     moneyness: float | None = None

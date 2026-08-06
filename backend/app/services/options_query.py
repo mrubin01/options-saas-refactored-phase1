@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 from typing import Any, Literal, Type
 
 from sqlalchemy.orm import Session
@@ -65,8 +66,10 @@ def _apply_filters(query, model: Type[Any], **kwargs) -> Any:
     if kwargs.get("industry") is not None:
         query = query.filter(model.industry == kwargs["industry"])
 
-    query = _apply_min_filter(query, model.days_to_expiration, kwargs.get("days_to_expiration_min"))
-    query = _apply_max_filter(query, model.days_to_expiration, kwargs.get("days_to_expiration_max"))
+    if kwargs.get("days_to_expiration_min") is not None:
+        query = query.filter(model.expiry_date >= date.today() + timedelta(days=kwargs["days_to_expiration_min"]))
+    if kwargs.get("days_to_expiration_max") is not None:
+        query = query.filter(model.expiry_date <= date.today() + timedelta(days=kwargs["days_to_expiration_max"]))
     query = _apply_min_filter(query, model.option_yield, kwargs.get("option_yield_min"))
     query = _apply_max_filter(query, model.option_yield, kwargs.get("option_yield_max"))
     query = _apply_min_filter(query, model.roc, kwargs.get("roc_min"))
@@ -146,6 +149,7 @@ def build_options_query(
     total = filtered.count()
 
     sort_fields = {name: getattr(model, name) for name in SORT_FIELD_NAMES}
+    sort_fields["days_to_expiration"] = model.expiry_date
     if sort_by is not None:
         sort_column = sort_fields[sort_by]
         order = sort_column.asc() if sort_dir == "asc" else sort_column.desc()
