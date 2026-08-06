@@ -54,7 +54,7 @@ def scan_long_calls(
         if moneyness > config.LONG_MAX_MONEYNESS:
             continue
 
-        if row.openInterest > 0 and row.openInterest < config.LONG_MIN_OPEN_INTEREST:
+        if row.openInterest < config.LONG_MIN_OPEN_INTEREST:
             continue
 
         iv_hv_ratio = round(row.impliedVolatility / hv, 2) if hv > 0 else None
