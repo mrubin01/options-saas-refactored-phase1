@@ -98,20 +98,47 @@ Each strategy route exposes two expiry params:
 ### Scanner architecture
 The scanner uses **6 combined scans** (`SCANS = [(0,5),(1,5),(2,5),(0,6),(1,6),(2,6)]`): option type 5 = Combined Call, type 6 = Combined Put, exchange 0/1/2 = NYSE/NASDAQ/ARCA. Each combined scan fetches the option chain **once per ticker/expiry** and applies both selling and buying filter sets to the same DataFrame, producing two output JSON files per scan (e.g. `best_cov_calls_nyse.json` + `best_long_calls_nyse.json`).
 
-Key config thresholds (`scanner/config.py`):
-- `TARGET_DATES` — next 3 Fridays (selling side expiries)
-- `LONG_TARGET_DATES` — 3rd and 4th next Fridays (buying side needs more time)
-- `SELL_MIN_IV_HV_RATIO = 1.0` — only sell when IV ≥ HV (options are "rich")
-- `LONG_MAX_IV_HV_RATIO = 1.0` — only buy when IV ≤ HV (options are "cheap")
-- `LONG_MAX_ASK = 1.00` — cheap contracts only for buying side
-- `LONG_MIN_DELTA = 30` — minimum delta for buying side
-- `LONG_MAX_MONEYNESS = 5.0` — max % OTM for buying side
-
 HV (historical volatility) is computed in `functions.compute_hv()` as annualised std dev of daily log returns × √252. Open interest is fetched from yfinance option chain (Alpaca indicative feed has no OI field).
 
-Directional filters: covered calls skip uptrending stocks (`main_trend > 0`); put options skip downtrending stocks; long calls skip downtrending; long puts skip uptrending.
-
 Earnings/ex-div filters (applied per expiry date in the combined loop): `ex_dividend_date` and `earnings_date` are fetched from yfinance (`stock.info` / `stock.calendar`) in `Assets.py` and threaded into every scan call. If either event falls between today and the option expiry date (`today <= event <= option_dt`), the contract is skipped. Rules: selling side skips both earnings and ex-div within DTE; long calls skip both (ex-div drops the stock price, hurting calls); long puts skip earnings only (an ex-div drop actually helps puts).
+
+#### Selling-side filters (covered calls & put options)
+
+Stock-level (applied before fetching the option chain):
+- `coeff_variation > STD_DEV_THRESHOLD (15)` — skip high-volatility stocks
+- `current_price > max_stock_price` — skip if above exchange cap (NYSE/NASDAQ: $50, ARCA: $200)
+- Directional: covered calls skip uptrending stocks (`main_trend > 0`); put options skip downtrending (`main_trend < 0`)
+- Earnings or ex-div date falls between today and the expiry date → skip
+
+Contract-level (per row in the option chain):
+- `bid` is NaN → skip
+- `bid < min_bid_price` — skip if below exchange minimum (NYSE/NASDAQ: $0.20, ARCA: $0.50)
+- Strike must be OTM: `strike ≤ current_price` for calls, `strike ≥ current_price` for puts → skip
+- `openInterest < SELL_MIN_OPEN_INTEREST (50)` — skip low-liquidity contracts (OI = 0 also rejected)
+- `spread_bid_ask` is NaN → skip
+- `moneyness < SELL_MIN_MONEYNESS (5.0%)` — strike must be ≥ 5% OTM
+- `option_yield ≥ OPTION_YIELD_THRESHOLD (15%)` — skip suspiciously high yields
+- `iv_hv_ratio < SELL_MIN_IV_HV_RATIO (1.0)` — only sell when IV ≥ HV (options are "rich")
+
+Expiry dates: next 3 Fridays (`TARGET_DATES`).
+
+#### Buying-side filters (long calls & long puts)
+
+Stock-level:
+- `current_price > max_stock_price` — same exchange caps as selling side
+- Directional: long calls skip downtrending stocks (`main_trend < 0`); long puts skip uptrending (`main_trend > 0`)
+- Earnings date falls between today and the expiry date → skip (both strategies); ex-div also skipped for long calls (price drop hurts calls), but not for long puts (price drop helps puts)
+
+Contract-level:
+- `ask` is NaN → treated as 0.0
+- `ask < LONG_MIN_ASK (0) or ask > LONG_MAX_ASK ($1.00)` — cheap contracts only
+- Strike must be OTM: `strike ≤ current_price` for calls, `strike ≥ current_price` for puts → skip
+- `moneyness > LONG_MAX_MONEYNESS (5.0%)` — strike must be within 5% OTM
+- `openInterest < LONG_MIN_OPEN_INTEREST (50)` — skip low-liquidity contracts (OI = 0 also rejected)
+- `iv_hv_ratio > LONG_MAX_IV_HV_RATIO (1.0)` — only buy when IV ≤ HV (options are "cheap")
+- `delta < LONG_MIN_DELTA (30)` — minimum sensitivity to underlying move
+
+Expiry dates: 3rd and 4th next Fridays (`LONG_TARGET_DATES = _next_n_fridays(4)[2:]`) — buying side needs more time value.
 
 ### Scanner expiry dates
 `scanner/config.py` uses `_next_n_fridays(3)` for the selling-side `TARGET_DATES` and `_next_n_fridays(4)[2:]` for the buying-side `LONG_TARGET_DATES`. Not all stocks list options for every Friday — coverage depends on what Alpaca/yfinance returns for each ticker.
@@ -161,7 +188,7 @@ Alpaca's ToS requires 30 days written notice before making a User Application av
 - `bid_per_share`, `premium_per_contract` — option bid/premium values
 - `max_profit`, `max_profit_per_contract` — derived dollar profit figures
 - `break_even` — derived break-even price
-- `open_interest` — fetched from yfinance option chain (Alpaca's indicative feed has no OI field); may be 0 for thinly-traded contracts
+- `open_interest` — fetched from yfinance option chain (Alpaca's indicative feed has no OI field)
 
 `strike_price` is displayed — it is already embedded in the option contract name, so it adds no additional raw market data exposure.
 
