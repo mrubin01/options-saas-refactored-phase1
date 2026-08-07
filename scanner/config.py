@@ -16,7 +16,7 @@ STD_DEV_THRESHOLD = 15
 SELL_MIN_MONEYNESS = 5.0
 SCOPE = 0  # 0 only tickers with options, 1 whole ticker list
 
-OPTION_TYPE = ["Call", "Put", "Long Call", "Long Put", "Combined Call", "Combined Put"]
+OPTION_TYPE = ["Call", "Put", "Long Call", "Long Put", "Combined Call", "Combined Call", "Combined Put"]
 EXCHANGES = ["NYSE", "NASDAQ", "ARCA"]
 
 RISK_FREE_RATE = 3.686  # 1-month Treasury rate
